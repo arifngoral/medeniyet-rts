@@ -1,0 +1,639 @@
+// Mouse / keyboard input: selection, commands, placement, camera.
+import { BUILDINGS, UNITS } from './data.js';
+import { RES_ICONS } from './icons.js';
+
+const DRAG_PX = 5;
+const EDGE_PX = 12;
+const PAN_FAST = 2.5;   // camera pan speed multiplier while Shift is held
+const C_MOVE = 0x7dff7a, C_ATTACK = 0xff4a3d, C_GATHER = 0xffd84a, C_BUILD = 0x6ab8ff, C_RALLY = 0xffffff;
+
+export class Input {
+  constructor(app) {
+    this.app = app;
+    this.canvas = app.renderer.canvas || document.getElementById('game');
+    this.placing = null;
+    this.keys = new Set();
+    this.mouse = { x: 0, y: 0, inside: false };
+    this.drag = null;      // left button box select {x0,y0,active}
+    this.rot = null;       // middle button rotate {x,y}
+    this.wallStart = null; // {tx,tz}
+    this.groups = {};
+    this.lastGroupTap = { n: -1, t: 0 };
+    this.idleIdx = 0;
+    this.shift = false;
+
+    this.box = document.createElement('div');
+    this.box.style.cssText = 'position:fixed;display:none;z-index:50;pointer-events:none;' +
+      'border:1px solid #9dff8a;background:rgba(120,255,110,0.12);box-shadow:0 0 0 1px rgba(0,0,0,.5)';
+    document.body.appendChild(this.box);
+
+    const c = this.canvas;
+    c.addEventListener('mousedown', e => this.onDown(e));
+    window.addEventListener('mousemove', e => this.onMove(e));
+    window.addEventListener('mouseup', e => this.onUp(e));
+    c.addEventListener('dblclick', e => this.onDbl(e));
+    c.addEventListener('wheel', e => this.onWheel(e), { passive: false });
+    c.addEventListener('contextmenu', e => e.preventDefault());
+    c.addEventListener('auxclick', e => e.preventDefault());
+    window.addEventListener('keydown', e => this.onKeyDown(e));
+    window.addEventListener('keyup', e => {
+      this.keys.delete(e.code); this.shift = e.shiftKey;
+      if (e.key === ' ' && this.rot && this.rot.space) {
+        const tap = this.rot.moved < 4; this.rot = null;
+        if (tap && this.app.lastAlert) this.app.focus(this.app.lastAlert.x, this.app.lastAlert.z);
+      }
+      // Shift released after Shift-placing several buildings: the placement tool stays (2026-11-17 playtest: "letting go
+      // of Shift drops the building, you have to pick it from the list again"); the next plain click places the last
+      // one and ends it, Esc / right click end it as before
+      if (e.key === 'Shift' && this.shiftPlaced) this.shiftPlaced = false;
+    });
+    window.addEventListener('blur', () => { this.keys.clear(); this.shift = false; this.mouse.inside = false; this.endDrag(); this.rot = null; });
+    document.addEventListener('mouseleave', () => { this.mouse.inside = false; });
+    // only trust "inside" together with real coordinates (a bare mouseenter left x/y at 0,0 -> edge scroll to the corner)
+    document.addEventListener('mouseenter', e => {
+      if (e && e.clientX != null && (e.clientX || e.clientY)) { this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.mouse.inside = true; }
+    });
+  }
+
+  get game() { return this.app.game; }
+  get active() { return !!this.app.game && !this.app.demo; }
+  me() { return this.app.game?.me ?? 0; }
+  // other player on our team (not ourselves): friendly but not controllable
+  isAllyOwner(o) { const g = this.app.game, me = this.me(); if (o == null || o < 0 || o === me) return false; try { const r = g?.isAlly?.(me, o); if (r !== undefined) return !!r; } catch (err) { /* ignore */ } return false; }
+  isEnemyOwner(o) { const g = this.app.game, me = this.me(); if (o == null || o < 0 || o === me) return false; try { const r = g?.isEnemy?.(me, o); if (r !== undefined) return !!r; } catch (err) { /* ignore */ } return !this.isAllyOwner(o); }
+
+  reset() {
+    this.placing = null; this.wallStart = null; this.placeDown = false; this.groups = {}; this.keys.clear();
+    this.endDrag(); this.rot = null; this.setLineLabel(null);
+    try { this.app.renderer.setGhost(null); } catch (err) { /* ignore */ }
+  }
+
+  // ---------- helpers ----------
+  ent(id) { return id == null ? null : this.game.getEntity(id); }
+  ownUnits() { return this.app.selection.filter(id => { const e = this.ent(id); return e && e.kind === 'unit' && e.owner === this.me() && !e.dead; }); }
+  ownVillagers() { return this.app.selection.filter(id => { const e = this.ent(id); return e && e.kind === 'unit' && e.owner === this.me() && !e.dead && e.type === 'villager'; }); }
+  // a building that trains units (only those take a rally flag)
+  _trains(id) { const e = this.ent(id); return !!e && !!BUILDINGS[e.type] && (BUILDINGS[e.type].trains || []).length > 0; }
+  ownBuildings() { return this.app.selection.filter(id => { const e = this.ent(id); return e && e.kind === 'building' && e.owner === this.me(); }); }
+  sfx(name) { try { this.app.audio.ui(name); } catch (err) { /* ignore */ } }
+
+  tileFor(type, g) {
+    const size = (BUILDINGS[type] && BUILDINGS[type].size) || 1;
+    return { tx: Math.round(g.x - size / 2), tz: Math.round(g.z - size / 2) };
+  }
+
+  // ---------- placement ----------
+  startPlacement(type) {
+    if (!this.active || !BUILDINGS[type]) return;
+    this.placing = type; this.wallStart = null; this.placeDown = false; this.shiftPlaced = false;
+    try { this.app.ui.setPlacement(type); } catch (err) { /* ignore */ }
+    this.updateGhost();
+  }
+  cancelPlacement() {
+    if (!this.placing) return;
+    this.placing = null; this.wallStart = null; this.placeDown = false;
+    try { this.app.renderer.setGhost(null); } catch (err) { /* ignore */ }
+    try { this.app.ui.setPlacement(null); } catch (err) { /* ignore */ }
+    this.setLineLabel(null);
+  }
+  // wall-like tools: drag a line of 1-tile segments
+  isLineTool(type) { return type === 'wall' || type === 'gate' || type === 'rail'; }
+  // drag-line tools (start tile -> end tile); gate stays a single-click 1-tile tool
+  isDragLine(type) { return type === 'wall' || type === 'rail'; }
+  // 4-connected tile line (corner tile inserted on diagonal steps, so the wall stays closed)
+  lineTiles(x0, z0, x1, z1) {
+    const out = [[x0, z0]], dx = Math.abs(x1 - x0), dz = Math.abs(z1 - z0), sx = x1 > x0 ? 1 : -1, sz = z1 > z0 ? 1 : -1;
+    let x = x0, z = z0, ix = 0, iz = 0;
+    while ((ix < dx || iz < dz) && out.length < 120) {
+      if ((0.5 + ix) / dx < (0.5 + iz) / dz) { x += sx; ix++; } else { z += sz; iz++; }
+      out.push([x, z]);
+    }
+    return out;
+  }
+  // own wall/gate/tower already on the tile: skipped silently (counts as connected)
+  ownLinkAt(tx, tz) {
+    const b = this.game.buildingAt ? this.game.buildingAt(tx, tz) : null;
+    if (!b || b.owner !== this.me()) return false;
+    if (this.placing === 'rail') return b.type === 'rail';
+    return b.type === 'wall' || b.type === 'gate' || b.type === 'tower';
+  }
+  // the tiles the current line would place: [{tx,tz,valid}]
+  linePlan(end, start) {
+    const type = this.placing, game = this.game, d = BUILDINGS[type];
+    const s = !this.isDragLine(type) ? end : start || (this.placeDown && this.wallStart) || end;
+    const res = Object.assign({}, game.players[this.me()].res), out = [];
+    for (const [tx, tz] of this.lineTiles(s.tx, s.tz, end.tx, end.tz)) {
+      if (this.isDragLine(type) && this.ownLinkAt(tx, tz)) continue;
+      let valid = !!game.canPlace(type, tx, tz, this.me());
+      if (valid) { for (const k in d.cost) if ((res[k] || 0) < d.cost[k]) valid = false; if (valid) for (const k in d.cost) res[k] -= d.cost[k]; }
+      out.push({ type, tx, tz, valid });
+    }
+    return out;
+  }
+  setLineLabel(plan) {
+    if (!plan) { if (this.lineLbl) this.lineLbl.style.display = 'none'; return; }
+    if (!this.lineLbl) {
+      this.lineLbl = document.createElement('div');
+      this.lineLbl.style.cssText = 'position:fixed;z-index:60;pointer-events:none;padding:2px 7px;border-radius:4px;font:600 12px system-ui,sans-serif;background:rgba(10,12,16,.82);white-space:nowrap';
+      document.body.appendChild(this.lineLbl);
+    }
+    const d = BUILDINGS[this.placing], n = plan.filter(p => p.valid).length, want = plan.length;
+    const cost = Object.keys(d.cost).map(k => (RES_ICONS[k] || k) + ' ' + d.cost[k] * want).join(' ');
+    const l = this.lineLbl, ok = n === want && want > 0;
+    l.innerHTML = want + ' parça · ' + cost + (ok ? '' : ' (' + n + ' yerleşir)');   // (numbers and our icons only)
+    l.style.color = ok ? '#bfffb0' : '#ff7a6a';
+    l.style.left = (this.mouse.x + 16) + 'px'; l.style.top = (this.mouse.y + 18) + 'px'; l.style.display = 'block';
+  }
+  updateGhost() {
+    if (!this.placing) return;
+    const g = this.app.renderer.screenToGround(this.mouse.x, this.mouse.y);
+    if (!g) { this.app.renderer.setGhost(null); this.setLineLabel(null); return; }
+    const { tx, tz } = this.tileFor(this.placing, g);
+    if (this.isLineTool(this.placing)) {
+      const plan = this.linePlan({ tx, tz });
+      this.app.renderer.setGhost(plan.length ? plan : null);
+      this.setLineLabel(plan.length && (this.placeDown || plan.length !== 1) ? plan : null);
+      return;
+    }
+    const valid = !!this.game.canPlace(this.placing, tx, tz, this.me()) && !!this.game.canAfford(this.me(), BUILDINGS[this.placing].cost);
+    this.app.renderer.setGhost({ type: this.placing, tx, tz, valid });
+  }
+  placeAt(tx, tz, queue = false) {
+    const id = this.game.placeBuilding(this.me(), this.placing, tx, tz, this.ownVillagers(), queue);
+    return id != null && id !== false;
+  }
+  finishPlacement(e) {
+    const type = this.placing;
+    const g = this.app.renderer.screenToGround(e.clientX, e.clientY);
+    if (!g) { this.wallStart = null; return; }
+    const end = this.tileFor(type, g);
+    let placed = 0;
+    if (this.isLineTool(type)) {
+      const plan = this.linePlan(end, this.wallStart).filter(p => this.game.canPlace(type, p.tx, p.tz, this.me()));
+      const want = plan.length;
+      const ids = want ? this.game.placeLine(this.me(), type, plan.map(p => [p.tx, p.tz]), this.ownVillagers(), !!e.shiftKey) : [];
+      placed = ids.length;
+      this.wallStart = null;
+      this.setLineLabel(null);
+      if (placed) {
+        this.sfx('place');
+        if (want > 1) { try { this.app.ui.toast(placed + ' / ' + want + ' ' + (BUILDINGS[type].name || '') + ' parçası yerleştirildi' + (placed < want ? ' (kaynak yetmedi)' : ''), placed < want ? 'warn' : 'info'); } catch (err) { /* ignore */ } }
+        this.updateGhost();
+        return; // tool stays active: press again to continue the wall
+      }
+    } else if (this.placeAt(end.tx, end.tz, !!e.shiftKey)) placed = 1;
+    this.wallStart = null;
+    if (placed) {
+      this.sfx('place');
+      if (!e.shiftKey) this.cancelPlacement(); else this.shiftPlaced = true; // Shift held: keep placing, villagers queue the jobs
+    } else {
+      this.sfx('error');
+      try {
+        const ui = this.app.ui, d = BUILDINGS[type];
+        if (ui && ui.hint) {
+          if (d && d.cost && !this.game.canAfford(this.me(), d.cost)) ui.hint('afford', '⛔ Yetersiz kaynak: ' + (d.name || 'bina') + ' için kaynağın yetmiyor');
+          else if (type === 'dock') ui.hint('place', '⛔ Kıyıya yerleştir: bir kısmı suda olmalı');
+          else ui.hint('place', '⛔ Buraya inşa edilemez — boş ve keşfedilmiş bir alan seç');
+        }
+      } catch (err) { /* ignore */ }
+    }
+  }
+
+  // ---------- one-shot targeting (transport unload) ----------
+  startUnload(transportId) {
+    if (!this.game.cmdUnload) return false;
+    this.cancelPlacement();
+    this.targeting = { kind: 'unload', id: transportId };
+    if (!this.tgtLbl) {
+      this.tgtLbl = document.createElement('div');
+      this.tgtLbl.style.cssText = 'position:fixed;z-index:60;pointer-events:none;padding:2px 7px;border-radius:4px;font:600 12px system-ui,sans-serif;background:rgba(10,12,16,.82);color:#bfe6ff;white-space:nowrap';
+      document.body.appendChild(this.tgtLbl);
+    }
+    this.tgtLbl.textContent = '⚓ Boşaltma noktası: kıyıya sol tık · Esc / sağ tık: iptal';
+    this.tgtLbl.style.left = (this.mouse.x + 16) + 'px'; this.tgtLbl.style.top = (this.mouse.y + 18) + 'px';
+    this.tgtLbl.style.display = 'block';
+    try { this.canvas.style.cursor = 'crosshair'; } catch (err) { /* ignore */ }
+    return true;
+  }
+  cancelTargeting() {
+    this.targeting = null;
+    if (this.tgtLbl) this.tgtLbl.style.display = 'none';
+    try { this.canvas.style.cursor = ''; } catch (err) { /* ignore */ }
+  }
+  finishTargeting(e) {
+    const t = this.targeting; this.cancelTargeting();
+    if (!t || !this.active) return;
+    const g = this.app.renderer.screenToGround(e.clientX, e.clientY);
+    if (!g) return;
+    if (t.kind === 'unload' && this.game.cmdUnload?.(t.id, g.x, g.z)) { this.app.renderer.addMarker(g.x, g.z, C_MOVE); this.sfx('command'); }
+    else this.sfx('error');
+  }
+
+  // ---------- mouse ----------
+  onDown(e) {
+    this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.mouse.inside = true;
+    if (e.button === 1) { e.preventDefault(); this.rot = { x: e.clientX, y: e.clientY }; return; }
+    if (!this.active) return;
+    if (this.targeting && (e.button === 0 || e.button === 2)) {
+      e.preventDefault();
+      if (e.button === 0) this.finishTargeting(e); else this.cancelTargeting();
+      return;
+    }
+    // map flare: Alt + left click, or a left click after the 📍 button (right click cancels)
+    if ((this.flareArmed || (e.altKey && e.button === 0)) && (e.button === 0 || e.button === 2)) {
+      e.preventDefault();
+      const armed = this.flareArmed; this.disarmFlare();
+      if (e.button === 2 && armed) return;
+      const g = this.app.renderer.screenToGround(e.clientX, e.clientY);
+      if (g) this.app.flare?.(g.x, g.z);
+      return;
+    }
+    if (e.button === 0) {
+      if (this.placing) {
+        const g = this.app.renderer.screenToGround(e.clientX, e.clientY);
+        this.wallStart = g ? this.tileFor(this.placing, g) : null;
+        this.placeDown = true;
+        this.updateGhost();
+        return;
+      }
+      this.drag = { x0: e.clientX, y0: e.clientY, active: false };
+    } else if (e.button === 2) {
+      e.preventDefault();
+      if (this.placing) { this.cancelPlacement(); return; }
+      this.contextCommand(e);
+    }
+  }
+
+  onMove(e) {
+    this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.mouse.inside = true;
+    this.shift = e.shiftKey;
+    if (this.placing && this.active && !this.rot) this.updateGhost();
+    if (this.targeting && this.tgtLbl) { this.tgtLbl.style.left = (e.clientX + 16) + 'px'; this.tgtLbl.style.top = (e.clientY + 18) + 'px'; }
+    if (this.rot) {
+      const cam = this.app.renderer.cam;
+      if (this.rot.space) this.rot.moved += Math.abs(e.clientX - this.rot.x) + Math.abs(e.clientY - this.rot.y);
+      cam.yaw -= (e.clientX - this.rot.x) * 0.006;
+      cam.pitch += (e.clientY - this.rot.y) * 0.003;
+      this.rot.x = e.clientX; this.rot.y = e.clientY;
+      return;
+    }
+    if (this.drag) {
+      const d = this.drag;
+      if (!d.active && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) > DRAG_PX) d.active = true;
+      if (d.active) {
+        const s = this.box.style;
+        s.display = 'block';
+        s.left = Math.min(d.x0, e.clientX) + 'px'; s.top = Math.min(d.y0, e.clientY) + 'px';
+        s.width = Math.abs(e.clientX - d.x0) + 'px'; s.height = Math.abs(e.clientY - d.y0) + 'px';
+      }
+    }
+  }
+
+  endDrag() { this.drag = null; this.box.style.display = 'none'; }
+
+  onUp(e) {
+    if (e.button === 1) { if (!(this.rot && this.rot.space)) this.rot = null; return; }
+    if (e.button !== 0) return;
+    if (this.placing && this.placeDown) {
+      this.placeDown = false;
+      if (this.active) this.finishPlacement(e);
+      return;
+    }
+    this.placeDown = false;
+    const d = this.drag;
+    if (!d) return;
+    this.endDrag();
+    if (!this.active) return;
+    const app = this.app;
+    if (d.active) {
+      const ids = app.renderer.unitsInRect(Math.min(d.x0, e.clientX), Math.min(d.y0, e.clientY),
+        Math.max(d.x0, e.clientX), Math.max(d.y0, e.clientY)) || [];
+      if (e.shiftKey) app.select(app.selection.concat(ids));
+      else app.select(ids);
+      return;
+    }
+    const id = app.renderer.pick(e.clientX, e.clientY);
+    const ent = this.ent(id);
+    if (!ent || ent.dead || !this.game.isEntityVisible(ent)) { if (!e.shiftKey) app.select([]); return; }
+    if (e.shiftKey && ent.owner === this.me()) {
+      // only keep a homogeneous own selection when shift-adding
+      const cur = app.selection.filter(i => { const x = this.ent(i); return x && x.owner === this.me() && x.kind === ent.kind; }); // units with units, buildings with buildings
+      if (cur.includes(id)) app.select(cur.filter(i => i !== id));
+      else app.select(cur.concat([id]));
+    } else app.select([id]);
+  }
+
+  onDbl(e) {
+    if (!this.active || this.placing || e.button !== 0) return;
+    const ent = this.ent(this.app.renderer.pick(e.clientX, e.clientY));
+    if (ent && ent.owner === this.me() && ent.kind === 'building' && !ent.dead) {
+      // all own finished buildings of the same type on screen
+      const r = this.app.renderer, W = window.innerWidth, H = window.innerHeight;
+      const ids = this.game.buildingsOf(this.me()).filter(b => !b.dead && b.done && b.type === ent.type && (() => { const s = r.worldToScreen(b.x, r.groundY ? r.groundY(b.x, b.z) : 0, b.z); return s.visible && s.x >= 0 && s.y >= 0 && s.x <= W && s.y <= H; })()).map(b => b.id);
+      if (!ids.includes(ent.id)) ids.unshift(ent.id);
+      this.app.select(ids);
+      return;
+    }
+    if (!ent || ent.owner !== this.me() || ent.kind !== 'unit') return;
+    const ids = (this.app.renderer.unitsInRect(0, 0, window.innerWidth, window.innerHeight) || [])
+      .filter(id => { const u = this.ent(id); return u && u.type === ent.type; });
+    if (ids.length) this.app.select(ids);
+  }
+
+  onWheel(e) {
+    e.preventDefault();
+    const r = this.app.renderer, cam = r.cam;
+    const f = Math.pow(1.0015, e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY);
+    const old = cam.dist;
+    const nd = Math.max(8, Math.min(110, old * f));
+    const k = nd / old;
+    if (this.active && k < 1) {
+      const g = r.screenToGround(e.clientX, e.clientY);
+      if (g) { cam.tx = g.x + (cam.tx - g.x) * k; cam.tz = g.z + (cam.tz - g.z) * k; }
+    }
+    cam.dist = nd;
+  }
+
+  // ---------- commands ----------
+  contextCommand(e) {
+    const app = this.app, game = this.game, r = app.renderer;
+    const queue = e.shiftKey;
+    let units = this.ownUnits();
+    const g = r.screenToGround(e.clientX, e.clientY);
+    let target = this.ent(r.pick(e.clientX, e.clientY));
+    if (target && (target.dead || !game.isEntityVisible(target))) target = null;
+
+    if (!units.length) {
+      const blds = this.ownBuildings().filter(id => this._trains(id));
+      if (!blds.length) return;
+      const work = target && (target.kind === 'resource' || (target.kind === 'building' && target.owner === this.me() && (target.type === 'farm' || target.type === 'pasture')));
+      const p = work ? { x: target.x, z: target.z } : g;
+      if (!p) return;
+      let ok = false;
+      for (const id of blds) ok = game.setRally(id, p.x, p.z, work ? target.id : null) || ok;
+      if (ok) { r.addMarker(p.x, p.z, work ? C_GATHER : C_RALLY); this.sfx('command'); if (work) app.ui?.hint?.('rallywork', '🚩 Yeni köylüler doğrudan burada çalışacak', 'info', 4); }
+      return;
+    }
+
+    const villagers = this.ownVillagers();
+    // ships: their own commands; land units of a mixed selection continue below
+    const isShip = (id) => { const u = this.ent(id); return !!(u && (u.naval || UNITS[u.type]?.naval)); };
+    const ships = units.filter(isShip);
+    if (ships.length) {
+      const land = units.filter(id => !ships.includes(id));
+      this.shipCommand(ships, target, g, queue, land.length > 0);
+      if (!land.length) return;
+      units = land;
+    }
+    if (target && target.kind === 'unit' && target.owner === this.me() && target.type === 'transport' && !target.dead) {
+      if (game.cmdBoard?.(units, target.id)) { r.addMarker(target.x, target.z, C_GATHER); this.sfx('command'); }
+      return;
+    }
+    if (target) {
+      if (target.owner >= 0 && target.owner !== this.me() && this.isEnemyOwner(target.owner)) {
+        if (game.cmdAttack(units, target.id, queue)) { r.addMarker(target.x, target.z, C_ATTACK); this.sfx('command'); }
+        return;
+      }
+      if (target.kind === 'resource') {
+        if (villagers.length) {
+          game.cmdGather(villagers, target.id, queue);
+          const rest = units.filter(id => !villagers.includes(id));
+          if (rest.length) game.cmdMove(rest, target.x, target.z, queue);
+          r.addMarker(target.x, target.z, C_GATHER); this.sfx('command');
+          return;
+        }
+      } else if (target.kind === 'building' && target.owner === this.me() && villagers.length) {
+        if (!target.done || target.hp < target.maxHp) {
+          game.cmdBuild(villagers, target.id, queue);
+          r.addMarker(target.x, target.z, C_BUILD); this.sfx('command');
+          return;
+        }
+        if (target.type === 'farm' || target.type === 'pasture') {
+          game.cmdGather(villagers, target.id, queue);
+          r.addMarker(target.x, target.z, C_GATHER); this.sfx('command');
+          return;
+        }
+      }
+    }
+    const p = g || (target ? { x: target.x, z: target.z } : null);
+    if (p) this.commandGround(p.x, p.z, queue);
+  }
+
+  // right click with ships selected (silent=true: land units of the same selection get the sound/marker)
+  shipCommand(ships, target, g, queue, silent) {
+    const game = this.game, r = this.app.renderer;
+    const ok = (x, z, col) => { if (!silent) { r.addMarker(x, z, col); this.sfx('command'); } };
+    if (target) {
+      if (target.owner >= 0 && target.owner !== this.me() && this.isEnemyOwner(target.owner)) {
+        const war = ships.filter(id => { const u = this.ent(id); return u && !['fishboat', 'transport'].includes(u.type); });
+        if (war.length && game.cmdAttack(war, target.id, queue)) { ok(target.x, target.z, C_ATTACK); }
+        const rest = ships.filter(id => !war.includes(id));
+        if (rest.length && g) game.cmdMove(rest, g.x, g.z, queue);
+        return;
+      }
+      const fish = ships.filter(id => this.ent(id)?.type === 'fishboat');
+      const others = ships.filter(id => !fish.includes(id));
+      if (fish.length && target.kind === 'resource' && (target.type === 'fish' || target.res === 'fish')) {
+        game.cmdGather(fish, target.id); ok(target.x, target.z, C_GATHER);
+        if (others.length && g) game.cmdMove(others, g.x, g.z, queue);
+        return;
+      }
+      if (fish.length && target.kind === 'building' && target.owner === this.me() && target.type === 'dock' && target.done) {
+        const done = game.cmdReturn ? game.cmdReturn(fish, target.id) : game.cmdGather(fish, target.id);
+        if (!done) game.cmdMove(fish, target.x, target.z, queue);
+        ok(target.x, target.z, C_GATHER);
+        if (others.length && g) game.cmdMove(others, g.x, g.z, queue);
+        return;
+      }
+    }
+    const p = g || (target ? { x: target.x, z: target.z } : null);
+    if (p && game.cmdMove(ships, p.x, p.z, queue)) ok(p.x, p.z, C_MOVE);
+  }
+
+  commandGround(x, z, queue = false) {
+    if (!this.active) return;
+    const units = this.ownUnits();
+    if (units.length) {
+      if (this.game.cmdMove(units, x, z, queue)) { this.app.renderer.addMarker(x, z, C_MOVE); this.sfx('command'); }
+      return;
+    }
+    const blds = this.ownBuildings().filter(id => this._trains(id));
+    let ok = false;
+    for (const id of blds) ok = this.game.setRally(id, x, z) || ok;
+    if (ok) { this.app.renderer.addMarker(x, z, C_RALLY); this.sfx('command'); }
+  }
+
+  // ---------- keyboard ----------
+  onKeyDown(e) {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    this.shift = e.shiftKey;
+    const app = this.app, game = this.game;
+    const k = e.key, code = e.code;
+
+    if (code === 'F5') { e.preventDefault(); if (this.active && !app.net) app.saveGame(); return; }
+    if (!this.active) return;
+    if (k === 'Enter' && app.net) { e.preventDefault(); try { app.ui.openChat?.(); } catch (err) { /* ignore */ } return; }
+    if (code === 'F10' || ((k === 'p' || k === 'P') && !e.ctrlKey)) {
+      e.preventDefault();
+      // single player: pause; multiplayer: pause / resume the match for everybody
+      if (!e.repeat) { if (!app.net) app.setPaused(!app.paused); else if (typeof app.net.requestPause === 'function') app.net.requestPause(!app.net.paused); }
+      return;
+    }
+    if (k === 'Escape') {
+      const modal = app.ui && app.ui.modalEl;
+      if (modal && !modal.classList.contains('hidden')) { try { app.ui._closeModal(); } catch (err) { /* ignore */ } } // an open modal (tech tree, stats) closes first
+      else if (app.ui && app.ui.gameMenuVisible && app.ui.gameMenuVisible()) { try { app.ui.toggleGameMenu(false); } catch (err) { /* ignore */ } }
+      else if (this.flareArmed) this.disarmFlare();
+      else if (this.targeting) this.cancelTargeting();
+      else if (this.placing) this.cancelPlacement();
+      else if (app.ui && app.ui.cardBack && app.ui.cardBack()) { /* a build page was open: back to the main card */ }
+      else if (app.selection.length) app.select([]);
+      else { try { app.ui.toggleGameMenu(true); } catch (err) { /* ignore */ } }   // nothing to cancel: the game menu
+      return;
+    }
+    // control groups
+    if (/^Digit[1-9]$/.test(code)) {
+      const n = +code.slice(5);
+      if (e.ctrlKey) {
+        e.preventDefault();
+        this.setGroup(n);
+        return;
+      }
+      if (!e.altKey && !e.metaKey) {
+        const now = performance.now();
+        this.recallGroup(n, this.lastGroupTap.n === n && now - this.lastGroupTap.t < 400);
+        this.lastGroupTap = { n, t: now };
+        return;
+      }
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    // W/A/S/D are camera-only: never routed to the command card or any other shortcut
+    if (code === 'KeyW' || code === 'KeyA' || code === 'KeyS' || code === 'KeyD') { this.keys.add(code); return; }
+    if (k === 'Home' || k === 'Backspace') { if (k === 'Backspace') e.preventDefault(); this.goHome(); return; }
+    if (k === ' ') {
+      e.preventDefault();
+      // held: the mouse turns the camera like the middle button; released without turning: jump to the last alert (keyup)
+      if (!e.repeat && !this.rot) this.rot = { x: this.mouse.x, y: this.mouse.y, space: true, moved: 0 };
+      return;
+    }
+    if (k === '.' || k === 'Tab') { e.preventDefault(); this.nextIdleVillager(); return; }
+    if (k === 'Delete') {
+      const own = app.selection.filter(id => { const x = this.ent(id); return x && x.owner === this.me(); });
+      for (const id of own) game.deleteEntity(id);
+      return;
+    }
+    if (k.startsWith('Arrow')) { e.preventDefault(); this.keys.add(code); return; }
+
+    if (k.length === 1 && /[a-zA-ZçğıöşüÇĞİÖŞÜ]/.test(k)) {
+      if (!e.repeat) {
+        let handled = false;
+        try { handled = !!(app.ui.hotkey && app.ui.hotkey(k.toLowerCase())); } catch (err) { console.warn(err); }
+        if (handled) return;
+      }
+    }
+  }
+
+  goHome() {
+    const game = this.game;
+    const tc = game.buildingsOf(this.me()).find(b => b.type === 'towncenter');
+    if (tc) this.app.focus(tc.x, tc.z);
+    else { const p = game.players[this.me()]; this.app.focus(p.startX, p.startZ); }
+  }
+
+  // ---- map flare (the 📍 button): the next left click on the map or the minimap places it
+  armFlare() {
+    if (this.placing) this.cancelPlacement();
+    if (this.targeting) this.cancelTargeting();
+    this.flareArmed = true;
+    try { this.canvas.style.cursor = 'crosshair'; } catch (err) { /* ignore */ }
+  }
+  disarmFlare() {
+    if (!this.flareArmed) return;
+    this.flareArmed = false;
+    try { this.canvas.style.cursor = ''; } catch (err) { /* ignore */ }
+  }
+
+  // ---- control groups (Ctrl+1..9 / the shortcut bar above the bottom panel); own living entities only
+  groupIds(n) {
+    const me = this.app.game ? this.app.game.me : 0;
+    const ids = (this.groups[n] || []).filter(id => { const x = this.ent(id); return x && !x.dead && x.owner === me; });
+    this.groups[n] = ids;
+    return ids;
+  }
+  setGroup(n, ids) {
+    const me = this.app.game ? this.app.game.me : 0;
+    const list = (ids || this.app.selection).filter(id => { const x = this.ent(id); return x && !x.dead && x.owner === me; });
+    if (list.length) this.groups[n] = list.slice(); else delete this.groups[n];
+    this.groupsRev = (this.groupsRev || 0) + 1;
+    this._saveGroup(n, list);
+    return list.length;
+  }
+  clearGroup(n) { delete this.groups[n]; this.groupsRev = (this.groupsRev || 0) + 1; this._saveGroup(n, []); }
+  // the sim keeps a copy per player for the save (a lockstep command in multiplayer, see Game.cmdGroup)
+  _saveGroup(n, ids) { const g = this.app.game; if (!g || this.app.demo || typeof g.cmdGroup !== 'function') return; try { g.cmdGroup(g.me ?? 0, n, ids.slice()); } catch (err) { console.warn('[groups]', err); } }
+  // after a load: the groups saved with the game, by entity id (dead units are gone)
+  restoreGroups(game) {
+    const cg = game && typeof game.controlGroups === 'function' ? game.controlGroups(game.me ?? 0) : {};
+    this.groups = {}; for (const n in cg) this.groups[n] = cg[n].slice();
+    this.groupsRev = (this.groupsRev || 0) + 1;
+  }
+  recallGroup(n, focus) {
+    const ids = this.groupIds(n);
+    if (!ids.length) return false;
+    this.app.select(ids);
+    if (focus) {
+      let sx = 0, sz = 0;
+      for (const id of ids) { const x = this.ent(id); sx += x.x; sz += x.z; }
+      this.app.focus(sx / ids.length, sz / ids.length);
+    }
+    return true;
+  }
+
+  nextIdleVillager() {
+    const idle = this.game.unitsOf(this.me()).filter(u => u.type === 'villager' && u.state === 'idle' && !u.dead);
+    if (!idle.length) {
+      this.game.events.emit('notify', { text: 'Boşta köylü yok.', type: 'info' });
+      return;
+    }
+    const u = idle[this.idleIdx++ % idle.length];
+    this.app.select([u.id]);
+    this.app.focus(u.x, u.z);
+  }
+
+  // ---------- per frame ----------
+  update(dt) {
+    if (!this.active) return;
+    const r = this.app.renderer, cam = r.cam, K = this.keys;
+    let mx = 0, mz = 0; // right, forward
+    if (K.has('KeyW') || K.has('ArrowUp')) mz += 1;
+    if (K.has('KeyS') || K.has('ArrowDown')) mz -= 1;
+    if (K.has('KeyD') || K.has('ArrowRight')) mx += 1;
+    if (K.has('KeyA') || K.has('ArrowLeft')) mx -= 1;
+    if (this.mouse.inside && document.hasFocus() && !this.rot && !this.app.paused) {
+      const w = window.innerWidth, h = window.innerHeight, m = this.mouse;
+      if (m.x >= 0 && m.y >= 0 && m.x <= w && m.y <= h) {
+        if (m.x <= EDGE_PX) mx -= 1; else if (m.x >= w - EDGE_PX) mx += 1;
+        if (m.y <= EDGE_PX) mz += 1; else if (m.y >= h - EDGE_PX) mz -= 1;
+      }
+    }
+    if (mx || mz) {
+      // derive ground-plane basis from the actual camera matrix (independent of yaw convention)
+      const el = r.camera.matrixWorld.elements;
+      let rx = el[0], rz = el[2];
+      let fx = -el[8], fz = -el[10];
+      if (Math.hypot(fx, fz) < 0.05) { fx = el[4]; fz = el[6]; }
+      let l = Math.hypot(fx, fz) || 1; fx /= l; fz /= l;
+      l = Math.hypot(rx, rz) || 1; rx /= l; rz /= l;
+      // Shift held: pan PAN_FAST times faster (keys and screen edge)
+      const sp = Math.max(10, cam.dist * 0.9) * (this.shift ? PAN_FAST : 1) * dt / (Math.hypot(mx, mz) || 1);
+      cam.tx += (rx * mx + fx * mz) * sp;
+      cam.tz += (rz * mx + fz * mz) * sp;
+      const N = this.game.map.size;
+      cam.tx = Math.max(0, Math.min(N, cam.tx));
+      cam.tz = Math.max(0, Math.min(N, cam.tz));
+    }
+    if (this.placing) this.updateGhost();
+  }
+}
