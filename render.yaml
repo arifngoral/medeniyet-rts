@@ -4,6 +4,7 @@ services:
     name: medeniyet-rts
     runtime: node
     plan: free
+    region: frankfurt   # closest to Turkey (a service cannot change region later: delete and create again)
     buildCommand: "echo no build step"
     startCommand: node server.js
     healthCheckPath: /mp/ping
