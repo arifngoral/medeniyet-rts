@@ -15,6 +15,20 @@
   const ID = IDM.createIdentity({ projectId: process.env.AEVUM_FIREBASE_PROJECT || undefined, keys: KEYS.keys, noAuth: NO_AUTH, tpMinMs: process.env.AEVUM_TP_MIN_MS != null ? Number(process.env.AEVUM_TP_MIN_MS) : undefined });
   if (KEYS.source === 'ephemeral') console.warn('AEVUM_SECRET yok: TP kayitlari bu surec kapaninca gecersiz olur (yalnizca yerel test icin uygun).');
   if (NO_AUTH) console.warn('AEVUM_NO_AUTH: kimlik dogrulamasi KAPALI (yalnizca yerel test).');
+  // player statistics (srv/stats.mjs), shown only to the accounts in AEVUM_OWNERS (comma separated Firebase uids).
+  // AEVUM_SA (a service account key, set in the host's dashboard) keeps the daily numbers in Firestore.
+  const STM = await import(pathToFileURL(path.join(ROOT, 'srv', 'stats.mjs')).href);
+  const SAM = await import(pathToFileURL(path.join(ROOT, 'srv', 'firestore-sa.mjs')).href);
+  const OWNERS = new Set(String(process.env.AEVUM_OWNERS || '').split(',').map(s => s.trim()).filter(Boolean));
+  const SA = SAM.serviceAccountFromEnv(process.env);
+  const STATS = STM.createStats({
+    store: SA ? SAM.createSaStore({ sa: SA, projectId: process.env.AEVUM_FIREBASE_PROJECT || undefined }) : null,
+    log: (t, e) => logErr(t, e),
+  });
+  if (!SA) console.warn('AEVUM_SA yok: istatistikler yalnizca bellekte tutulur.');
+  setInterval(() => { STATS.flush().catch(() => {}); }, 3 * 60 * 1000).unref();
+  // a deploy or a restart: write the last minutes of numbers before going
+  for (const sig of ['SIGTERM', 'SIGINT']) process.once(sig, () => { const end = () => process.exit(0); STATS.flush().then(end, end); setTimeout(end, 4000).unref(); });
   const MIME = {
     '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
     '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.md': 'text/markdown; charset=utf-8',
@@ -243,6 +257,20 @@
       reply(res, 200, J, JSON.stringify({ ok: true, uptime: Math.round(process.uptime()), since: new Date(T0).toISOString(), rooms: rooms.size, peers, blobs: nb, blobBytes: blobBytes(), rssMB: Math.round(process.memoryUsage().rss / 1048576), pid: process.pid, auth: NO_AUTH ? 'off' : 'on', tpKey: KEYS.source }));
       return;
     }
+    // ---- statistics: a beat from every open game tab (a random browser id, what it is doing), the owner's report ----
+    if (url.pathname === '/mp/beat') {
+      const me = identOf(req, url);
+      STATS.beat(url.searchParams.get('v') || '', url.searchParams.get('s') || '', me ? me.fb : null);
+      reply(res, 204, { 'Cache-Control': 'no-store' });
+      return;
+    }
+    if (url.pathname === '/mp/stats' && req.method === 'GET') {
+      const me = identOf(req, url);
+      if (!me) { reply(res, 401, J, '{"error":"ticket"}'); return; }
+      if (!OWNERS.has(me.fb)) { reply(res, 403, J, '{"error":"owner"}'); return; }
+      STATS.report(30).then(r => reply(res, 200, J, JSON.stringify(r)), e => { logErr('stats', e); reply(res, 500, J, '{"error":"stats"}'); });
+      return;
+    }
     // ---- friends: online status + room invites (an inbox per verified account; memory only) ----
     if (url.pathname === '/mp/inbox' && req.method === 'GET') {
       const me = identOf(req, url);
@@ -294,7 +322,7 @@
         let body; try { body = JSON.parse(buf.toString('utf8') || '{}'); } catch { reply(res, 400, J, '{"error":"bad json"}'); return; }
         const fail = (code, msg) => reply(res, code, J, JSON.stringify({ error: msg }));
         if (url.pathname === '/mp/auth') {
-          ID.auth(body).then((r) => reply(res, 200, J, JSON.stringify(r)), (e) => {
+          ID.auth(body).then((r) => reply(res, 200, J, JSON.stringify(Object.assign(r, OWNERS.has(r.ident.fb) ? { owner: true } : {}))), (e) => {
             if (e instanceof IDM.IdentityError) { fail(e.status, e.message); return; }
             logErr('auth', e); fail(503, 'Kimlik şu an doğrulanamadı.');
           });
@@ -303,7 +331,7 @@
         const me = identOf(req, url);
         if (!me) { fail(401, 'Bilet geçersiz.'); return; }
         try {
-          if (url.pathname === '/mp/tp/start') reply(res, 200, J, JSON.stringify(ID.matchStart(me, body)));
+          if (url.pathname === '/mp/tp/start') { reply(res, 200, J, JSON.stringify(ID.matchStart(me, body))); STATS.match(body.mode === 'mp' ? 'mp' : 'sp', typeof body.room === 'string' ? body.room.slice(0, 16) : null, me.fb); }
           else if (url.pathname === '/mp/tp/claim') reply(res, 200, J, JSON.stringify(ID.matchClaim(me, body)));
           else if (url.pathname === '/mp/tp/info') reply(res, 200, J, JSON.stringify(ID.ledgerInfo(me, body.ledger)));
           else reply(res, 404, {}, '');

@@ -249,6 +249,13 @@ export class UI {
     Promise.resolve(safe(() => this.app.listSaves(), [])).then((l) => { cont.disabled = !(l && l.length); }).catch(() => {});
     this._mbtn(box, 'Nasıl Oynanır', () => this._menuHowto());
     this._mbtn(box, 'Ayarlar', () => this._menuSettings());
+    // the game's owner: player statistics (the server says who that is)
+    Promise.resolve(safe(() => this.app.cloud.isOwner(), false)).then((own) => {
+      if (!own || !box.isConnected) return;
+      const b = this._mbtn(box, 'İstatistikler', () => import('./stats-ui.js').then((m) => m.menuStats(this)));
+      const set = [...box.querySelectorAll('.mbtn')].find((x) => x.textContent === 'Ayarlar');
+      if (set) set.after(b);
+    }).catch(() => {});
     if (this.game && !this.game.over && !this.app.demo && !this.app.net) this._mbtn(box, 'Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); });
     safe(() => menuHud(this));   // the player plate (avatar, name, level, TP) and account chips around the menu
     void saves; void firstLaunch;

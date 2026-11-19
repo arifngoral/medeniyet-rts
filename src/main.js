@@ -361,6 +361,27 @@ function recordGame(game, final) {
 // the profile uid that owns new saves (the signed-in account)
 function ownerUid() { const p = app.getProfile(); return p ? p.uid : null; }
 // a server match ticket for the TP of a match that starts now (a promise; null without account / server)
+// player statistics (srv/stats.mjs): every open tab tells the server once a minute that it is here and what it is
+// doing. Only a random id of this browser is sent (plus the relay ticket when one is at hand), nothing else.
+function startBeat() {
+  let vid = null;
+  try { vid = LS && LS.getItem('aevum.vid'); } catch (err) { vid = null; }
+  if (!/^[A-Za-z0-9]{8,32}$/.test(vid || '')) {
+    const a = new Uint8Array(12); crypto.getRandomValues(a);
+    vid = Array.from(a, b => (b % 36).toString(36)).join('');
+    try { LS && LS.setItem('aevum.vid', vid); } catch (err) { /* private mode: a new id per visit */ }
+  }
+  const beat = () => {
+    try {
+      const s = app.net ? 'mp' : (app.game && !app.demo && app.ui && app.ui.mode === 'hud') ? 'sp' : 'menu';
+      const tk = cloud && cloud.ticketNow ? cloud.ticketNow() : null;
+      fetch('/mp/beat?v=' + vid + '&s=' + s + (tk ? '&tk=' + encodeURIComponent(tk) : ''), { cache: 'no-store', keepalive: true }).catch(() => {});
+    } catch (err) { /* never matters */ }
+  };
+  setTimeout(beat, 3000);
+  setInterval(beat, 60 * 1000);
+}
+
 function tpStart(mode, room) { return cloudOn() ? cloud.tpStart(mode, room).catch(() => null) : Promise.resolve(null); }
 function notifyTp(game, text, type) {
   try { if (app.game === game) game.events.emit('notify', { text, type }); else app.ui.toast?.(text, type); } catch (err) { console.warn(err); }
@@ -603,6 +624,7 @@ function boot() {
 
   startDemo();
   app.ui.showMenu();
+  startBeat();
   if (cloud) {
     // invites from friends (and being shown online to them) while signed in
     cloud.startInbox(m => { if (m && m.type === 'invite') app.ui.showInvite(m); });

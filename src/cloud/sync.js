@@ -528,11 +528,23 @@ export class CloudSync {
           r = await this._relay('/mp/auth', { token });
         }
         if (!this.auth.user || this.auth.user.uid !== fb) throw new CloudError('stale', 'SESSION_CHANGED', 'Oturum değişti.');
-        this._tkt = { ticket: r.ticket, ident: r.ident, exp: r.exp, fb };
+        this._tkt = { ticket: r.ticket, ident: r.ident, exp: r.exp, fb, owner: r.owner === true };
         return this._tkt;
       })().finally(() => { this._tktP = null; });
     }
     return this._tktP;
+  }
+  // the current relay ticket when one is at hand (never fetches one): the stats beat carries it when it can
+  ticketNow() { return this.loggedIn && this._tkt && this._tkt.fb === this.auth.user.uid && this._tkt.exp > this.now() ? this._tkt.ticket : null; }
+  // the game's owner (AEVUM_OWNERS on the server) sees the player statistics
+  async isOwner() { try { return !!(await this.relayTicket()).owner; } catch (e) { return false; } }
+  // -> {online: {total, menu, sp, mp, signedIn}, today, days: [{day, visitors, players, sp, mp, peak}], persisted}
+  async stats() {
+    const t = await this.relayTicket();
+    let r;
+    try { r = await this.relayFetch(this.relayBase + '/mp/stats', { cache: 'no-store', headers: { 'X-Aevum-Ticket': t.ticket } }); } catch (e) { throw new CloudError('network', 'NETWORK', 'Oyun sunucusuna ulaşılamadı.'); }
+    if (!r.ok) throw new CloudError('server', 'STATS_' + r.status, r.status === 403 ? 'Bu ekran yalnızca oyunun sahibine açık.' : 'İstatistikler alınamadı (' + r.status + ').', r.status);
+    return r.json();
   }
   // a match starts -> the server's match ticket (null when it cannot be had: no TP for this match then)
   async tpStart(mode, room) {
