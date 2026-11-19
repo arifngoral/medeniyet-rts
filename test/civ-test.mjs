@@ -1,6 +1,7 @@
 // Civilizations: data shape, bonuses reach the simulation, deterministic. Run from ROOT: node test/civ-test.mjs
 import { UNITS } from '../src/data.js';
-import { CIVS, CIV_IDS, resolveCiv, civLines } from '../src/civs.js';
+import { CIVS, CIV_IDS, resolveCiv, civLines, civUnit } from '../src/civs.js';
+import { BUILDINGS } from '../src/data.js';
 import { Game } from '../src/sim/game.js';
 import { NetSession } from '../src/net/session.js';
 
@@ -60,6 +61,52 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
   ok(p0.res.gold === g0 + 8, `viking: +8 gold for an enemy unit (${g0} -> ${p0.res.gold})`);
   const g1 = p0.res.gold; vik._kill(own, mine);
   ok(p0.res.gold === g1, 'viking: nothing for killing your own unit');
+}
+
+// --- unique units: one per civilization, replacing a standard unit
+{
+  const bad = [], ids = new Set();
+  for (const id of CIV_IDS) {
+    const u = UNITS[CIVS[id].unit];
+    if (!u) { bad.push(id + ': no unique unit'); continue; }
+    const b = UNITS[u.base];
+    if (ids.has(u.id)) bad.push(id + ': id used twice'); ids.add(u.id);
+    if (u.civ !== id || !b || b.civ) bad.push(id + ': civ / base');
+    if (!u.name || !u.desc || u.name === b.name) bad.push(id + ': name / text');
+    if (u.cls !== b.cls || u.age !== b.age) bad.push(id + ': class and age must be the base unit\'s');
+    if (!(u.hp > 0 && u.atk > 0 && u.speed > 0 && u.rof > 0 && u.time > 0 && Object.keys(u.cost).length)) bad.push(id + ': numbers');
+    if (u.range > 0 && !u.proj) bad.push(id + ': a ranged unit needs a projectile');
+    if (civUnit(id, u.base) !== u.id || civUnit(id, 'villager') !== 'villager' || civUnit(null, u.base) !== u.base) bad.push(id + ': swap');
+    if (!civLines(id).some(l => l.includes(u.name))) bad.push(id + ': not in the bonus text');
+  }
+  ok(!bad.length, CIV_IDS.length + ' unique units: data' + (bad.length ? ' - ' + bad.join('; ') : ''));
+  // training the standard unit gives the unique one (also when the AI asks for the standard name); others get the standard one
+  const g = new Game({ ...base, startAge: 2, startRes: 'high', mp: true, me: 0, players: [{ kind: 'human', team: 1, civ: 'roma' }, { kind: 'human', team: 2, civ: 'mogol' }, { kind: 'human', team: 3 }] });
+  const got = [];
+  for (const pid of [0, 1, 2]) {
+    const p = g.players[pid]; Object.assign(p.res, { food: 5000, wood: 5000, gold: 5000, stone: 5000 }); p.popCap = 50;
+    const bar = g._addBuilding('barracks', pid, Math.round(p.startX) + 8, Math.round(p.startZ) + 8, true), stb = g._addBuilding('stable', pid, Math.round(p.startX) - 12, Math.round(p.startZ) + 8, true);
+    const gold0 = p.res.gold, food0 = p.res.food;
+    const a = g.train(bar.id, 'swordsman'), b2 = g.train(stb.id, 'lightcav');
+    got.push([a && bar.queue[0].id, b2 && stb.queue[0].id, food0 - p.res.food, gold0 - p.res.gold].join(':'));
+  }
+  const sw = UNITS.swordsman.cost, lc = UNITS.lightcav.cost, lj = UNITS.lejyoner.cost, mg = UNITS.mangudai.cost;
+  ok(got[0] === ['lejyoner', 'lightcav', lj.food + lc.food, lj.gold + lc.gold].join(':'), 'roma trains Lejyoner for swordsman, pays its cost: ' + got[0]);
+  ok(got[1] === ['swordsman', 'mangudai', sw.food + mg.food, sw.gold + mg.gold].join(':'), 'mogol trains Mangudai for lightcav: ' + got[1]);
+  ok(got[2] === ['swordsman', 'lightcav', sw.food + lc.food, sw.gold + lc.gold].join(':'), 'no civilization: standard units');
+  ok(!g.train(g.buildings.find(b => b.owner === 0 && b.type === 'barracks').id, 'mangudai') && !Object.values(BUILDINGS).some(b => b.trains.includes('lejyoner')), 'a unique unit cannot be asked for directly from the wrong building');
+  // they come out, fight and keep both sides in sync
+  for (let t = 0; t < 30 * 60; t++) g.update(1 / 30);
+  const types = new Set(g.units.map(u => u.type));
+  ok(types.has('lejyoner') && types.has('mangudai'), 'the unique units are produced');
+  const lej = g.units.find(u => u.type === 'lejyoner'), man = g.units.find(u => u.type === 'mangudai');
+  ok(lej.maxHp === Math.round(UNITS.lejyoner.hp * 1.16), 'the civilization bonus applies to its unique unit (Lejyoner hp ' + lej.maxHp + ')');
+  // a mounted archer shoots from range
+  const foe = g.units.find(u => u.owner === 0 && u.type === 'lejyoner'), hp0 = foe.hp;
+  man.x = foe.x + 3; man.z = foe.z; foe.stance = 'hold';
+  g.cmdAttack([man.id], foe.id);
+  let shot = false; for (let t = 0; t < 30 * 8 && !shot; t++) { g.update(1 / 30); if (g.projectiles.length) shot = true; }
+  ok(shot, 'Mangudai attacks with a projectile from range');
 }
 
 // --- save / load keeps the civilization and its mods; two runs stay in sync

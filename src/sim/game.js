@@ -1,6 +1,6 @@
 // Aevum — headless simulation core (pure JS, no DOM/three)
 import { AGES, RES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS, FARM_SLOTS } from '../data.js';
-import { CIVS, resolveCiv } from '../civs.js';
+import { CIVS, resolveCiv, civUnit } from '../civs.js';
 // big farm: cells (x, z) of its 3x3 grid, ring order around the granary (1, 1); food / s of a farmer while his plot is ripe
 export const FARM_CELLS = [[0, 0], [1, 0], [2, 0], [2, 1], [2, 2], [1, 2], [0, 2], [0, 1]];
 const FARM_RATE = 16 / 9 * 0.85;
@@ -1075,9 +1075,12 @@ export class Game {
   cmdStop(ids) { for (const u of this._live(ids)) { if (u.order && u.order.type === 'gather') this._unhunt(u.order); u.order = null; u.queue.length = 0; u.path = null; u.pk = null; u.targetId = null; u.state = 'idle'; u.anim = 'idle'; } return true; }
 
   train(buildingId, unitType) {
-    const b = this.entities.get(buildingId), d = UNITS[unitType];
-    if (!b || b.dead || b.kind !== 'building' || !b.done || !d) return false;
-    if (!BUILDINGS[b.type].trains.includes(unitType) || !this.isUnlocked(b.owner, 'unit', unitType) || b.queue.length >= TRAIN_QUEUE_MAX || !this.canAfford(b.owner, d.cost)) return false;
+    const b = this.entities.get(buildingId);
+    if (!b || b.dead || b.kind !== 'building' || !b.done || !UNITS[unitType] || !BUILDINGS[b.type].trains.includes(unitType)) return false;
+    // a civilization's unique unit replaces the standard one it is based on (asked for by either name)
+    unitType = civUnit(this.players[b.owner].civ, unitType);
+    const d = UNITS[unitType];
+    if ( !this.isUnlocked(b.owner, 'unit', unitType) || b.queue.length >= TRAIN_QUEUE_MAX || !this.canAfford(b.owner, d.cost)) return false;
     this._pay(b.owner, d.cost); b.queue.push({ kind: 'unit', id: unitType, t: 0, total: d.time }); return true;
   }
   research(buildingId, techId) {
@@ -1414,7 +1417,7 @@ export class Game {
   // high lob, whichever is longer. The damage lands when the flight ends.
   _fire(src, target, dmg, proj) {
     const m = this.map, d = Math.hypot(target.x - src.x, target.z - src.z), sy = m.heightAt(src.x, src.z) + (src.kind === 'building' ? 2.5 : 1.0);
-    const bolt = proj === 'arrow' && src.kind === 'unit' && src.type === 'crossbow', A = bolt ? BOLT_ARC : ARROW_ARC, ty = m.heightAt(target.x, target.z) + 0.7;
+    const bolt = proj === 'arrow' && src.kind === 'unit' && (src.type === 'crossbow' || UNITS[src.type].base === 'crossbow'), A = bolt ? BOLT_ARC : ARROW_ARC, ty = m.heightAt(target.x, target.z) + 0.7;
     let arc = proj === 'bullet' ? 0 : proj === 'arrow' ? A[0] + d * A[1] : d * 0.22, dur = Math.max(0.08, d / PSPEED[proj]);
     if (proj === 'arrow') { if (src.kind === 'unit') arc = Math.max(arc, this._lobOver(src.x, src.z, sy, target.x, target.z, ty)); dur = Math.max(A[2] + d / A[3], arc > A[0] + d * A[1] + 0.01 ? LOB_T * Math.sqrt(arc) : 0); }   // (the slow high lob only over a wall)
     const p = { id: this.nextId++, type: proj, x: src.x, y: sy, z: src.z, sx: src.x, sy, sz: src.z, tx: target.x, ty, tz: target.z, t: 0, dur, targetId: target.id, dmg, owner: src.owner, srcId: src.id, arc };

@@ -1,6 +1,6 @@
 // Aevum UI: main menu, HUD, minimap, tooltips, overlays. DOM only, no three.js.
 import { AGES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS } from '../data.js';
-import { CIVS, CIV_IDS, civLines, civLabel } from '../civs.js';
+import { CIVS, CIV_IDS, civLines, civLabel, civUnit } from '../civs.js';
 import { ACCOUNTS } from '../cloud/config.js';
 import { BRAND_LOGO, BRAND_SUB, TAGLINE } from '../brand.js';
 import { BUILD_TIME_MUL, QUEUE_TIME_MUL, TOWER_AGE_ATK, towerAgeBonus } from '../sim/game.js';
@@ -1130,12 +1130,12 @@ export class UI {
         run: () => !!safe(() => g.cmdOpenGate(e.id), false),
       }, 0);
     }
-    for (const uid of bd.trains || []) {
-      const u = UNITS[uid]; if (!u) continue;
+    for (const uid0 of bd.trains || []) {
+      const uid = civUnit(p.civ, uid0), u = UNITS[uid]; if (!u) continue;   // (my civilization's unique unit in place of the standard one)
       if (later(u.age)) { put(false); continue; }
       put({
-        icon: u.icon || ico('x-unknown'), name: u.name, cost: u.cost, time: u.time * QUEUE_TIME_MUL / (sb * (1 + (p.mods?.train || 0) + (e.type === 'factory' ? (p.mods?.factory || 0) : 0))),
-        desc: (u.desc || '') + ` — ${ico('x-atk')}${u.atk} ${ico('x-armor')}${u.armor} ${ico('x-hp')}${u.hp}${u.range ? ' ' + ico('x-range') + u.range : ''} ${ico('x-pop')}${u.pop ?? 1}` + (pool.length > 1 ? ` · ${pool.length} binada aynı anda` : '') + ' · Shift: 5 adet',
+        icon: u.icon || ico('x-unknown'), name: u.civ ? '★ ' + u.name : u.name, cost: u.cost, time: u.time * QUEUE_TIME_MUL / (sb * (1 + (p.mods?.train || 0) + (e.type === 'factory' ? (p.mods?.factory || 0) : 0))),
+        desc: (u.civ ? `Özel birlik (${UNITS[u.base].name} yerine). ` : '') + (u.desc || '') + ` — ${ico('x-atk')}${u.atk} ${ico('x-armor')}${u.armor} ${ico('x-hp')}${u.hp}${u.range ? ' ' + ico('x-range') + u.range : ''} ${ico('x-pop')}${u.pop ?? 1}` + (pool.length > 1 ? ` · ${pool.length} binada aynı anda` : '') + ' · Shift: 5 adet',
         check: () => {
           if (!safe(() => g.isUnlocked(this._me(), 'unit', uid), true)) return { ok: false, locked: true, reason: 'Gerekli çağ: ' + (AGES[u.age]?.name || u.age) };
           if (!afford(u.cost)) return { ok: false, reason: 'Yetersiz kaynak' };

@@ -15,7 +15,8 @@ for (const [tid, t] of Object.entries(TECHS)) {
   if (!where[tid]) fail('tech not researchable anywhere: ' + tid);
   if (!t.name || !t.desc || !t.icon || !t.fx) fail('tech incomplete: ' + tid);
 }
-for (const u of Object.keys(UNITS)) if (UNITS[u].cls !== 'train' && !Object.values(BUILDINGS).some(b => b.trains.includes(u))) fail('unit not trainable: ' + u);
+// (a civilization's unique unit is trained through the unit it replaces: its base must be trainable)
+for (const u of Object.keys(UNITS)) if (UNITS[u].cls !== 'train' && !Object.values(BUILDINGS).some(b => b.trains.includes(UNITS[u].base || u))) fail('unit not trainable: ' + u);
 
 // every fx key must be a known mod of the right shape
 const g = new Game({ mapSize: 256, enemies: 0, seed: 7, startAge: 4, sandbox: true });   // (256: the smallest size since 2026-11-13, room for the 12x12 farm)

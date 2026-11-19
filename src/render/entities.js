@@ -1,7 +1,7 @@
 // Aevum - entity rendering: procedural buildings, units, resources, projectiles, selection.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { BUILDINGS } from '../data.js';
+import { BUILDINGS, UNITS } from '../data.js';
 import { updateConstruction, disposeConstruction, updateRepair } from './construction.js';
 import { SEA_BUILD, SEA_UNITS, makeSeaUnit, seaAnimUnit, seaAnimBuilding, makeFish, seaAnimFish, seaMask } from './models-sea.js';
 import { StaticBatches } from './static-batch.js';
@@ -1364,6 +1364,9 @@ function makeHuman(g, color, k, P, age) {
   else if (hs === 'hat') { cy(P.head, MT.black, .16, .02, 0, .16, 0); cy(P.head, MT.black, .085, .08, 0, .17, 0); bx(P.head, cloth, .03, .1, .03, .07, .2, 0); }
   else if (hs === 'kepi') { cy(P.head, cloth, .09, .08, 0, .16, 0); bx(P.head, MT.black, .12, .015, .08, 0, .16, .1); }
   else { cy(P.head, MT.black, .085, .15, 0, .16, 0); bx(P.head, MT.black, .12, .015, .07, 0, .16, .1); sp(P.head, cloth, .035, 0, .34, 0); bx(P.head, MT.gold, .05, .05, .01, 0, .2, .086); }
+  // unique units: a crest on the helmet and / or a cape, in their own colour
+  if (k.crest != null) bx(P.head, mat(k.crest, .7), .05, .13, .24, 0, .3, -.01);
+  if (k.cape != null) bx(P.torso, mat(k.cape, .9), .3, .5, .03, 0, .06, -.115);
   P.armL = piv(P.torso, .2, .33, 0); bx(P.armL, armM, .085, .32, .085, 0, -.32, 0); bx(P.armL, MT.skin, .07, .06, .07, 0, -.36, 0);
   P.armR = piv(P.torso, -.2, .33, 0); bx(P.armR, armM, .085, .32, .085, 0, -.32, 0); bx(P.armR, MT.skin, .07, .06, .07, 0, -.36, 0);
   if (!V && A === 1) { bx(P.armL, MT.bronze, .095, .08, .095, 0, -.3, 0); bx(P.armR, MT.bronze, .095, .08, .095, 0, -.3, 0); }
@@ -1448,8 +1451,9 @@ function makeUnitRaw(type, color, age) {
   const root = new THREE.Group(), inner = new THREE.Group(); root.add(inner);
   const P = {}; let rig = 'human', h = .8, pw = .5, pd = .5;
   const cloth = mat(color, .85, 0);
-  const k = KIT[type];
-  if (k && !k.cav) { makeHuman(inner, color, k, P, A); inner.scale.setScalar(.72); }
+  // (a civilization's unique unit: its base unit's kit with its own changes)
+  const ud = UNITS[type], k = KIT[type] || (ud && ud.base && KIT[ud.base] ? Object.assign({}, KIT[ud.base], ud.kit) : undefined), ks = (k && k.scale) || 1;
+  if (k && !k.cav) { makeHuman(inner, color, k, P, A); inner.scale.setScalar(.72 * ks); }
   else if (k && k.cav) {
     rig = 'cav'; h = 1.25; pw = .6; pd = 1.0;
     makeHorse(inner, k.coat, P);
@@ -1466,7 +1470,7 @@ function makeUnitRaw(type, color, age) {
     }
     const r = piv(P.hbody, 0, .42, -.02); makeHuman(r, color, k, P, A);
     P.legL.rotation.set(-1.1, 0, .45); P.legR.rotation.set(-1.1, 0, -.45);
-    inner.scale.setScalar(.72);
+    inner.scale.setScalar(.72 * ks);
   } else if (type === 'ram') {
     rig = 'ram'; h = .9; pw = .8; pd = 1.3;
     makeWheels(inner, P, .16, .34, .4, -.4, A);
