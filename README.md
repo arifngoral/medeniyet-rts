@@ -3,6 +3,9 @@
 > Bu depo [Aevum](https://github.com/flickrz/aevum-rts)'un bir çatalıdır (fork): üstüne **medeniyetler** eklenir.
 > Kod Aevum gibi AGPL v3. "Aevum" adı ve logosu asıl projeye aittir; bu çatalın oyun içindeki adı "Medeniyet" (`src/brand.js`).
 >
+> **Menü görünümü:** `menu.css` (kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, medeniyet afiş şeridi); çizimler
+> `assets/ui/` ve `assets/civ/` (CC BY 4.0, bkz. `assets/LICENSE.md`). Oyun içi arayüz asıl projedeki gibidir.
+>
 > **Girişsiz oynanır (misafir modu):** bu çatalda hesap sistemi kapalı gelir (`src/cloud/config.js` boş). İlk açılışta yerel bir profil
 > oluşur, çok oyunculu oda koduyla çalışır, ad lobide değiştirilir. Arkadaş listesi, bulut kaydı ve TP puanı bu modda yoktur.
 > Hesapları açmak için kendi Firebase projeni `src/cloud/config.js`'e yaz ve sunucuyu `AEVUM_FIREBASE_PROJECT=<id>` ile başlat.

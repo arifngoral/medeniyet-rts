@@ -2,7 +2,7 @@
 import { AGES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS } from '../data.js';
 import { CIVS, CIV_IDS, civLines, civLabel } from '../civs.js';
 import { ACCOUNTS } from '../cloud/config.js';
-import { BRAND_LOGO, TAGLINE } from '../brand.js';
+import { BRAND_LOGO, BRAND_SUB, TAGLINE } from '../brand.js';
 import { BUILD_TIME_MUL, QUEUE_TIME_MUL, TOWER_AGE_ATK, towerAgeBonus } from '../sim/game.js';
 import { firstLaunch, menuProfile } from './profile-ui.js';
 import { levelOf } from '../rank.js';
@@ -53,6 +53,7 @@ const ATTACK_MS = 4000;  // how long the attack banner stays
 const DIR_TR = ['doğusunda', 'güneydoğusunda', 'güneyinde', 'güneybatısında', 'batısında', 'kuzeybatısında', 'kuzeyinde', 'kuzeydoğusunda'];   // how long a map flare stays on the minimap
 // civilizations: the picker's options and the text of what one gives
 const CIV_OPTS = [['random', '🎲 Rastgele'], ...CIV_IDS.map((id) => [id, civLabel(id)])];
+const civShort = (name) => String(name).replace(/\s*\(.*\)$/, '');
 const civTitle = (id) => (CIVS[id] ? CIVS[id].name + ' - ' + CIVS[id].passive + '\n' + civLines(id).join('\n') : 'Rastgele medeniyet: maç başlayınca belli olur');
 const civInfoHtml = (id) => (CIVS[id] ? `<b>${esc(CIVS[id].passive)}</b>` + civLines(id).map((l) => `<span>${esc(l)}</span>`).join('') : '<span>Maç başlayınca rastgele bir medeniyet gelir.</span>');
 // map types (must match the generator's cfg.mapType values; 'random' is resolved by the simulation)
@@ -228,8 +229,19 @@ export class UI {
     this.hudEl.classList.remove('hidden');
     this.cardSig = null; this.selSig = null; this.questSig = null;
   }
+  // empties the menu layer for the next screen. The painted cover stays (dim: blurred and dark behind a framed screen,
+  // clear on the home screen); over a running game there is no painting, the game shows through.
+  _menuClear(dim) {
+    const m = this.menuEl, live = !!(this.game && !this.game.over && !this.app.demo);
+    let bg = m.querySelector(':scope > .mn-bg');
+    for (const c of [...m.children]) if (c !== bg) c.remove();
+    m.classList.remove('with-hud'); m.classList.toggle('mn-live', live);
+    if (live) { if (bg) bg.remove(); return; }
+    if (!bg) { bg = el('div', 'mn-bg', '<div class="mn-art"></div><div class="mn-shade"></div><div class="mn-embers"></div><div class="mn-vignette"></div>'); bg.setAttribute('aria-hidden', 'true'); m.prepend(bg); }
+    bg.classList.toggle('dim', !!dim);
+  }
   _menuBox(html) {
-    this.menuEl.innerHTML = ''; this.menuEl.classList.remove('with-hud');
+    this._menuClear(true);
     const box = el('div', 'menu-box panel', html);
     this.menuEl.append(box);
     return box;
@@ -246,34 +258,49 @@ export class UI {
   _menuMain(note) {
     // nothing is playable before signing in with Google (one account = one player)
     if (!this._signedIn()) { loginScreen(this); if (note) this._menuNote(note); return; }
-    const box = this._menuBox(`<div class="logo">${esc(BRAND_LOGO)}</div><div class="tagline">${esc(TAGLINE)}</div>`);
+    this._menuClear(false);
+    const box = el('section', 'mn-home');
+    box.innerHTML = `<header class="mn-logo"><h1><span class="t1">${esc(BRAND_LOGO)}</span><span class="t2">${esc(BRAND_SUB)}</span></h1><div class="mn-rule" aria-hidden="true"><i></i><b></b><i></i></div></header>`;
+    const tiles = el('nav', 'mn-tiles'), links = el('nav', 'mn-links');
+    const go = (fn) => () => { this._click(); safe(() => this.app.audio?.resume()); fn(); };
+    const tile = (i, img, title, desc, fn) => {
+      const b = el('button', 'mn-tile', `<span class="mt-pic"><span class="mt-img" style="background-image:url(assets/ui/${img}.webp)"></span></span><span class="mt-frame"></span><span class="mt-plate"><b>${title}</b></span><span class="mt-desc">${desc}</span>`);
+      b.type = 'button'; b.style.setProperty('--i', i); b.onclick = go(fn); tiles.append(b);
+    };
+    tile(0, 'karo_tek', 'Tek Oyunculu', 'Yapay zekâya karşı savaş', () => this._menuSetup());
+    tile(1, 'karo_cok', 'Çok Oyunculu', 'Arkadaşınla oda kur, kodla katıl', () => this._menuMulti());
+    // the row of text links (this._mbtn(box, ...) below builds one of these on the home screen)
+    const link = (text, fn, cls = '') => {
+      if (links.childElementCount) links.append(el('i'));
+      const b = el('button', 'mn-link mbtn-home' + (cls ? ' ' + cls : ''), esc(text)); b.type = 'button'; b.onclick = go(fn); links.append(b); return b;
+    };
+    box.append(tiles, links);
+    const foot = el('footer', 'mn-foot', '<span>Açık kaynak · <a href="https://github.com/arifngoral/medeniyet-rts" target="_blank" rel="noopener">kaynak kodu</a> (AGPL v3) · Aevum çatalı</span><span></span>');
+    box.append(foot);
+    this.menuEl.append(box);
     if (note) this._menuNote(note);
-    this._mbtn(box, 'Yeni Oyun', () => this._menuSetup(), 'primary');
-    this._mbtn(box, 'Çok Oyunculu', () => this._menuMulti());
-    if (ACCOUNTS) this._mbtn(box, 'Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
-    this._mbtn(box, 'Sandbox', () => this.app.newGame({ mapSize: 256, enemies: 1, difficulty: 'normal', startRes: 'high', startAge: 0, sandbox: true, seed: (Math.random() * 1e9) | 0 }));
-    const cont = this._mbtn(box, 'Devam Et', () => Promise.resolve(safe(() => this.app.continueLast(), false)).then((ok) => { if (!ok && this.app.lastLoadError && this.mode === 'menu') this._menuSaves(this.app.lastLoadError); }).catch(() => {}));
-    const saves = this._mbtn(box, 'Kayıtlı Oyunlar', () => this._menuSaves());
+    if (this.game && !this.game.over && !this.app.demo && !this.app.net) link('Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); }, 'hot');
+    const cont = link('Devam Et', () => Promise.resolve(safe(() => this.app.continueLast(), false)).then((ok) => { if (!ok && this.app.lastLoadError && this.mode === 'menu') this._menuSaves(this.app.lastLoadError); }).catch(() => {}));
+    const saves = link('Kayıtlı Oyunlar', () => this._menuSaves());
+    link('Sandbox', () => this.app.newGame({ mapSize: 256, enemies: 1, difficulty: 'normal', startRes: 'high', startAge: 0, sandbox: true, seed: (Math.random() * 1e9) | 0 }));
+    if (ACCOUNTS) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
     cont.disabled = true;
     Promise.resolve(safe(() => this.app.listSaves(), [])).then((l) => { cont.disabled = !(l && l.length); }).catch(() => {});
-    this._mbtn(box, 'Nasıl Oynanır', () => this._menuHowto());
-    this._mbtn(box, 'Ayarlar', () => this._menuSettings());
+    link('Nasıl Oynanır', () => this._menuHowto());
+    link('Ayarlar', () => this._menuSettings());
     // the game's owner: player statistics (the server says who that is)
     Promise.resolve(safe(() => this.app.cloud.isOwner(), false)).then((own) => {
       if (!own || !box.isConnected) return;
-      const b = this._mbtn(box, 'İstatistikler', () => import('./stats-ui.js').then((m) => m.menuStats(this)));
-      const set = [...box.querySelectorAll('.mbtn')].find((x) => x.textContent === 'Ayarlar');
-      if (set) set.after(b);
+      link('İstatistikler', () => import('./stats-ui.js').then((m) => m.menuStats(this)));
     }).catch(() => {});
-    if (this.game && !this.game.over && !this.app.demo && !this.app.net) this._mbtn(box, 'Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); });
     safe(() => menuHud(this));   // the player plate (avatar, name, level, TP) and account chips around the menu
     void saves; void firstLaunch;
   }
   // a short message at the top of the current menu box (green)
   _menuNote(text) {
-    const box = this.menuEl.querySelector('.menu-box'); if (!box || !text) return;
+    const box = this.menuEl.querySelector('.menu-box') || this.menuEl.querySelector('.mn-home'); if (!box || !text) return;
     const n = el('div', 'mperr prof-ok menu-note'); n.textContent = String(text); n.setAttribute('role', 'status');
-    const logo = box.querySelector('.tagline') || box.querySelector('.logo');
+    const logo = box.querySelector('.tagline') || box.querySelector('.logo') || box.querySelector('.mn-logo');
     if (logo) logo.after(n); else box.prepend(n);
   }
   _seg(parent, label, key, opts, cls = '') {
@@ -286,17 +313,44 @@ export class UI {
     }
     row.append(seg); parent.append(row);
   }
-  // civilization picker: a select and, under it, what the chosen one gives
+  // civilization picker: a strip of banners (portrait, emblem, name; "random" first) and, under it, what the chosen
+  // one gives. Arrow keys move along the strip.
   _civRow(parent, val, onch) {
-    const row = el('div', 'frow civrow', '<label>Medeniyet</label>'), wrap = el('div', 'civpick'), s = el('select', 'mpsel'), info = el('div', 'civinfo');
-    for (const [v, t] of CIV_OPTS) { const o = el('option', '', esc(t)); o.value = v; if (v === val) o.selected = true; s.append(o); }
-    const show = () => { info.innerHTML = civInfoHtml(s.value); };
-    s.onchange = () => { this._click(); onch(s.value); show(); }; s.onkeydown = (ev) => ev.stopPropagation();
-    wrap.append(s, info); row.append(wrap); parent.append(row); show();
-    return row;
+    const wrap = el('div', 'civsel'), strip = el('div', 'civ-banners'), head = el('div', 'civhead'), info = el('div', 'civinfo');
+    strip.setAttribute('role', 'listbox'); strip.setAttribute('aria-label', 'Medeniyet');
+    const btns = new Map();
+    const show = (id, scroll) => {
+      const c = CIVS[id];
+      for (const [k, b] of btns) { const on = k === id; b.classList.toggle('sel', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; }
+      wrap.style.setProperty('--civ', c ? c.color : '#6b4a1e'); wrap.style.setProperty('--civ-2', c ? c.color2 : '#e3ad4c');
+      head.innerHTML = c ? `<span class="civname">${esc(civShort(c.name))}</span><span class="civpas">${esc(c.passive)}</span>` : '<span class="civname">Rastgele</span><span class="civpas">Şansına ne çıkarsa</span>';
+      info.innerHTML = c ? civLines(id).map((l) => `<span>${esc(l)}</span>`).join('') : '<span>Maç başlayınca rastgele bir medeniyet gelir.</span>';
+      if (scroll) safe(() => btns.get(id).scrollIntoView({ block: 'nearest', inline: 'center', behavior: scroll === 'jump' ? 'auto' : 'smooth' }));
+    };
+    const ids = ['random', ...CIV_IDS];
+    for (const id of ids) {
+      const c = CIVS[id];
+      const b = el('button', 'civ-banner' + (c ? '' : ' rnd'), c
+        ? `<span class="cb-in"><span class="cb-art" style="background-image:url(${c.art})"></span><span class="cb-shade"></span><span class="cb-foot"><span class="cb-emb">${c.icon}</span><span class="cb-name">${esc(civShort(c.name))}</span></span></span>`
+        : '<span class="cb-in"><span class="cb-foot"><span class="cb-emb">🎲</span><span class="cb-name">Rastgele</span></span></span>');
+      b.type = 'button'; b.setAttribute('role', 'option'); b.title = civTitle(id);
+      if (c) { b.style.setProperty('--civ', c.color); b.style.setProperty('--civ-2', c.color2); }
+      const pick = (how) => { this._click(); onch(id); show(id, how); };
+      b.onclick = () => pick('smooth');
+      b.onkeydown = (ev) => {
+        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+        ev.preventDefault(); ev.stopPropagation();
+        const n = btns.get(ids[(ids.indexOf(id) + d + ids.length) % ids.length]); n.focus(); n.click();
+      };
+      btns.set(id, b); strip.append(b);
+    }
+    wrap.append(strip, head, info); parent.append(wrap);
+    show(btns.has(val) ? val : 'random', 'jump');
+    return wrap;
   }
   _menuSetup() {
     const box = this._menuBox('<h2>Yeni Oyun</h2>');
+    box.classList.add('wide');
     this._civRow(box, this.setup.civ, (v) => { this.setup.civ = v; });
     this._seg(box, 'Harita Boyutu', 'mapSize', [[256, 'Küçük'], [320, 'Orta'], [384, 'Büyük'], [448, 'Çok Büyük'], [512, 'Dev']]);
     this._seg(box, 'Harita Türü', 'mapType', MAP_TYPES, 'wrap');
@@ -312,11 +366,13 @@ export class UI {
     devBox.onchange = () => { this._click(); this.devOn = devBox.checked; };
     box.append(dev);
     if (devModeOffered()) dev.classList.remove('hidden'); else this.devOn = false;
-    this._mbtn(box, 'Başla', () => {
+    // Geri | Başla: a bar that stays at the bottom of the box while the options scroll
+    const bar = el('div', 'mn-bar'); box.append(bar);
+    this._mbtn(bar, 'Geri', () => this._menuMain());
+    this._mbtn(bar, 'Başla', () => {
       const d = !!this.devOn && !dev.classList.contains('hidden');
       this.app.newGame({ ...this.setup, sandbox: d, dev: d, seed: (Math.random() * 1e9) | 0 });
     }, 'primary');
-    this._mbtn(box, 'Geri', () => this._menuMain());
   }
   _menuSaves(errText) {
     const box = this._menuBox('<h2>Kayıtlı Oyunlar</h2><div class="mperr hidden"></div><div class="savelist">Yükleniyor...</div>');

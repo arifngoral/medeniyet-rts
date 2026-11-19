@@ -8,6 +8,7 @@ are **not** covered by the AGPL; each group has its own licence:
 | `assets/models/` (3D buildings, walls, trees) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), full text in `LICENSE-CC-BY-NC-SA-4.0.txt`. Credit: "Aevum". No commercial use. Share changes under the same licence. |
 | `assets/icons/` | CC BY 3.0, game-icons.net authors (see `assets/icons/LICENSE.md`) |
 | `assets/sfx/` | Per file, see `assets/sfx/LICENSES.md` |
+| `assets/ui/`, `assets/civ/` (this fork: menu cover, the two menu tiles, civilization portraits) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Paintings from the card game "Medeniyetler: Kart Savaşı" by the fork's owner (made with an image model), copied here by its `tools/rts-civ-uret.mjs`. Free to use, credit "Medeniyetler: Kart Savaşı". |
 
 **Sounds marked LIB or KIT in `assets/sfx/LICENSES.md` are not in the public repository.** They come from a free
 sound pack that grants no licence to redistribute it, so only the official game ships them. Without them the game
