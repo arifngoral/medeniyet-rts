@@ -8,7 +8,8 @@ import * as storage from './storage.js';
 import * as profile from './profile.js';
 import { CloudSync, mergeSaveLists } from './cloud/sync.js';
 import { setChatSink } from './chatlog.js';
-import { FIREBASE } from './cloud/config.js';
+import { FIREBASE, ACCOUNTS } from './cloud/config.js';
+import { BRAND } from './brand.js';
 import { AUTH_KEY } from './cloud/auth.js';
 import { GoogleSignIn } from './cloud/google.js';
 
@@ -42,7 +43,7 @@ function showError(err) {
       'font:14px/1.5 monospace;padding:12px 16px;white-space:pre-wrap;max-height:50vh;overflow:auto;pointer-events:auto';
     document.body.appendChild(el);
   }
-  el.textContent = 'Aevum bir hatayla karşılaştı:\n' + (err && (err.stack || err.message) || String(err));
+  el.textContent = BRAND + ' bir hatayla karşılaştı:\n' + (err && (err.stack || err.message) || String(err));
 }
 
 const app = {
@@ -406,6 +407,7 @@ async function mergedSaves(mp) {
 }
 
 function initCloud() {
+  if (!ACCOUNTS) { cloud = null; return; }   // guest mode (no Firebase project configured): local profile only
   try {
     cloud = new CloudSync({
       fetch: (u, init) => fetch(u, init), apiKey: FIREBASE.apiKey, projectId: FIREBASE.projectId, ls: LS, authTimers: true,
@@ -618,7 +620,7 @@ function boot() {
     if (!on) { if (n) n.remove(); return; }
     if (n) return;
     n = document.createElement('div'); n.id = 'storage-blocked'; n.className = 'storage-blocked';
-    n.textContent = 'Aevum başka bir sekmede (eski sürüm) açık. Kayıtlar ve maç geçmişi için o sekmeyi kapat.';
+    n.textContent = BRAND + ' başka bir sekmede (eski sürüm) açık. Kayıtlar ve maç geçmişi için o sekmeyi kapat.';
     document.body.append(n);
   });
 

@@ -10,11 +10,15 @@
   // AEVUM_NO_AUTH=1 (local tests only): the relay also accepts peers without a ticket and dev identities.
   const { pathToFileURL } = await import('node:url');
   const IDM = await import(pathToFileURL(path.join(ROOT, 'srv', 'identity.mjs')).href);
-  const NO_AUTH = /^(1|true|yes)$/i.test(process.env.AEVUM_NO_AUTH || '');
+  // This fork: no AEVUM_FIREBASE_PROJECT = no accounts at all (guest mode, see src/cloud/config.js), so the relay takes
+  // everybody without a ticket. Set the project (and the client's web config) to get verified accounts back.
+  const GUEST = !process.env.AEVUM_FIREBASE_PROJECT;
+  const NO_AUTH = GUEST || /^(1|true|yes)$/i.test(process.env.AEVUM_NO_AUTH || '');
   const KEYS = IDM.keysFromEnv(process.env);
   const ID = IDM.createIdentity({ projectId: process.env.AEVUM_FIREBASE_PROJECT || undefined, keys: KEYS.keys, noAuth: NO_AUTH, tpMinMs: process.env.AEVUM_TP_MIN_MS != null ? Number(process.env.AEVUM_TP_MIN_MS) : undefined });
   if (KEYS.source === 'ephemeral') console.warn('AEVUM_SECRET yok: TP kayitlari bu surec kapaninca gecersiz olur (yalnizca yerel test icin uygun).');
-  if (NO_AUTH) console.warn('AEVUM_NO_AUTH: kimlik dogrulamasi KAPALI (yalnizca yerel test).');
+  if (GUEST) console.log('Misafir modu: hesap yok, oda koduyla oynanir (hesap icin AEVUM_FIREBASE_PROJECT).');
+  else if (NO_AUTH) console.warn('AEVUM_NO_AUTH: kimlik dogrulamasi KAPALI (yalnizca yerel test).');
   // player statistics (srv/stats.mjs), shown only to the accounts in AEVUM_OWNERS (comma separated Firebase uids).
   // AEVUM_SA (a service account key, set in the host's dashboard) keeps the daily numbers in Firestore.
   const STM = await import(pathToFileURL(path.join(ROOT, 'srv', 'stats.mjs')).href);
@@ -501,7 +505,7 @@
   server.requestTimeout = 0; server.headersTimeout = 60000; server.keepAliveTimeout = 30000;
   server.listen(PORT, '0.0.0.0', async () => {
     listening = true;
-    console.log(`Aevum calisiyor: http://localhost:${PORT}  (kapatmak icin Ctrl+C)`);
+    console.log(`Medeniyet RTS calisiyor: http://localhost:${PORT}  (kapatmak icin Ctrl+C)`);
     try {
       const os = await import('node:os');
       const ips = [];

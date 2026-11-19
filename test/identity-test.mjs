@@ -142,7 +142,7 @@ const UID = 'a'.repeat(32);
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 function startServer(port, env) {
   return new Promise((resolve, reject) => {
-    const p = spawn(process.execPath, [path.join(ROOT, 'server.js')], { env: Object.assign({}, process.env, { PORT: String(port), AEVUM_NO_AUTH: '', AEVUM_SECRET: '' }, env), stdio: ['ignore', 'pipe', 'pipe'] });
+    const p = spawn(process.execPath, [path.join(ROOT, 'server.js')], { env: Object.assign({}, process.env, { PORT: String(port), AEVUM_NO_AUTH: '', AEVUM_SECRET: '', AEVUM_FIREBASE_PROJECT: 'test-project' /* accounts on: without a project this fork runs in guest mode */ }, env), stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     const to = setTimeout(() => reject(new Error('server did not start: ' + out)), 8000);
     p.stdout.on('data', (d) => { out += d; if (out.includes('calisiyor')) { clearTimeout(to); resolve(p); } });

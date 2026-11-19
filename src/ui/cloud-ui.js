@@ -79,7 +79,7 @@ export async function resumeGoogleRedirect(ui) {
   if (!cloud) return;
   const box = ui._menuBox('');
   box.classList.add('acc-gate');
-  box.append(h('div', 'logo', 'AEVUM'), h('div', 'mpnote', 'Google ile giriş tamamlanıyor...'));
+  box.append(h('div', 'logo', BRAND_LOGO), h('div', 'mpnote', 'Google ile giriş tamamlanıyor...'));
   const r = await cloud.finishGoogleRedirect({ askMerge: async (n) => confirm(mergeQuestion(n)) });
   if (!r) { ui._menuMain(); return; }
   if (!r.ok) { carriedError = r.silent ? '' : (r.error || ''); ui._menuMain(); return; }
@@ -120,10 +120,11 @@ export function googleBlock(ui, opts = {}) {
 }
 
 // the first window: nothing is playable before signing in with Google
+import { BRAND_LOGO, TAGLINE } from '../brand.js';
 export function loginScreen(ui) {
   const box = ui._menuBox('');
   box.classList.add('acc-gate');
-  box.append(h('div', 'logo', 'AEVUM'), h('div', 'tagline', 'Çağları aş · Uygarlığını kur'));
+  box.append(h('div', 'logo', BRAND_LOGO), h('div', 'tagline', TAGLINE));
   const card = h('div', 'gate-card');
   card.append(h('h2', '', 'Hoş Geldin, Komutan'),
     h('p', 'gate-text', 'Oynamak için Google hesabınla giriş yap. Her hesap tek bir oyuncudur: adın, avatarın, TP puanın, maç geçmişin ve kayıtların hesabına bağlı kalır ve her bilgisayarda seninle gelir.'));

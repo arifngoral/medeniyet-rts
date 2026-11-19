@@ -545,6 +545,8 @@ button.gbtn, button.gbtn .gbtn-t { color: #1f1f1f !important; text-shadow: none 
 .av-pick.on { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(232,194,106,.35); }
 .mp-who { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin: 0 0 12px; }
 .mp-who-name { font-weight: 600; }
+.mp-who-input { font: inherit; font-weight: 600; color: inherit; background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; width: 190px; text-align: center; }
+.mp-who-input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
 .mp-who small { flex-basis: 100%; font-size: 12px; }
 .lb-tp { font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; white-space: nowrap; }
 @media (max-width: 640px) {

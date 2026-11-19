@@ -1,13 +1,16 @@
-// Aevum - Firebase project of the optional cloud accounts (public web config; safe to ship).
-// Only the free Spark features are used: Email/Password auth (Identity Toolkit + Secure Token) and
-// Firestore (REST). No Cloud Storage, no Cloud Functions.
+// Firebase project of the optional cloud accounts (public web config; safe to ship).
+// This fork ships WITHOUT one: the upstream game's project is not ours to use. With an empty apiKey there are no
+// accounts at all (ACCOUNTS false): everybody plays as a guest with a local profile, multiplayer runs on room codes
+// with unverified names, and friends / cloud saves / TP are hidden. To turn accounts on, create a free Firebase
+// project (Google sign-in + Firestore), put its web config here and start the server with AEVUM_FIREBASE_PROJECT=<id>.
 export const FIREBASE = Object.freeze({
-  apiKey: 'AIzaSyBO5yPYlGCiZSnkfNZ7Fa9mWeLEaZzkN1Q',
-  authDomain: 'aevum-a081f.firebaseapp.com',
-  projectId: 'aevum-a081f',
-  storageBucket: 'aevum-a081f.firebasestorage.app',
-  messagingSenderId: '753822176528',
-  appId: '1:753822176528:web:25e9f000bdeaf027cf8195',
+  apiKey: '',
+  authDomain: '',
+  projectId: '',
+  storageBucket: '',
+  messagingSenderId: '',
+  appId: '',
 });
+export const ACCOUNTS = !!FIREBASE.apiKey;
 
 export default FIREBASE;

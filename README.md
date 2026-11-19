@@ -1,7 +1,12 @@
 # Medeniyet RTS (Aevum çatalı)
 
 > Bu depo [Aevum](https://github.com/flickrz/aevum-rts)'un bir çatalıdır (fork): üstüne **medeniyetler** eklenir.
-> Kod Aevum gibi AGPL v3. "Aevum" adı ve logosu asıl projeye aittir; bu çatal yayınlanmadan önce oyun içindeki ad değişecek.
+> Kod Aevum gibi AGPL v3. "Aevum" adı ve logosu asıl projeye aittir; bu çatalın oyun içindeki adı "Medeniyet" (`src/brand.js`).
+>
+> **Girişsiz oynanır (misafir modu):** bu çatalda hesap sistemi kapalı gelir (`src/cloud/config.js` boş). İlk açılışta yerel bir profil
+> oluşur, çok oyunculu oda koduyla çalışır, ad lobide değiştirilir. Arkadaş listesi, bulut kaydı ve TP puanı bu modda yoktur.
+> Hesapları açmak için kendi Firebase projeni `src/cloud/config.js`'e yaz ve sunucuyu `AEVUM_FIREBASE_PROJECT=<id>` ile başlat.
+> Aşağıdaki asıl README'de girişle ilgili yazanlar hesap açıkken geçerlidir.
 >
 > **Medeniyetler:** 20 medeniyet, her birinin maç başından geçerli pasif bonusları var (`src/civs.js`, veri `src/civ-data.js`).
 > Tek oyunculuda Yeni Oyun ekranından, çok oyunculuda lobiden seçilir; "Rastgele" maç tohumundan belirlenir. Test: `node test/civ-test.mjs`.
