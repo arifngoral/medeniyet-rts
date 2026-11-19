@@ -1,5 +1,6 @@
 // Aevum UI: main menu, HUD, minimap, tooltips, overlays. DOM only, no three.js.
 import { AGES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS } from '../data.js';
+import { CIVS, CIV_IDS, civLines, civLabel } from '../civs.js';
 import { BUILD_TIME_MUL, QUEUE_TIME_MUL, TOWER_AGE_ATK, towerAgeBonus } from '../sim/game.js';
 import { firstLaunch, menuProfile } from './profile-ui.js';
 import { levelOf } from '../rank.js';
@@ -48,6 +49,10 @@ const CARD_GUARD_MS = 350;   // after the command card switches page, clicks / h
 const ATTACK_TEXT = 'Saldırı altındasın!';   // the sim's notify text for underAttack (the attack banner shows it instead of a toast)
 const ATTACK_MS = 4000;  // how long the attack banner stays
 const DIR_TR = ['doğusunda', 'güneydoğusunda', 'güneyinde', 'güneybatısında', 'batısında', 'kuzeybatısında', 'kuzeyinde', 'kuzeydoğusunda'];   // how long a map flare stays on the minimap
+// civilizations: the picker's options and the text of what one gives
+const CIV_OPTS = [['random', '🎲 Rastgele'], ...CIV_IDS.map((id) => [id, civLabel(id)])];
+const civTitle = (id) => (CIVS[id] ? CIVS[id].name + ' - ' + CIVS[id].passive + '\n' + civLines(id).join('\n') : 'Rastgele medeniyet: maç başlayınca belli olur');
+const civInfoHtml = (id) => (CIVS[id] ? `<b>${esc(CIVS[id].passive)}</b>` + civLines(id).map((l) => `<span>${esc(l)}</span>`).join('') : '<span>Maç başlayınca rastgele bir medeniyet gelir.</span>');
 // map types (must match the generator's cfg.mapType values; 'random' is resolved by the simulation)
 const MAP_TYPES = [['random', 'Rastgele'], ['river', 'Nehir Vadisi'], ['continent', 'Kıta'], ['highlands', 'Yaylalar'], ['plains', 'Ovalar'], ['inlandsea', 'İç Deniz'], ['islands', 'Adalar']];
 const MAP_TYPE_TR = Object.fromEntries(MAP_TYPES);
@@ -78,7 +83,7 @@ export class UI {
     this.mode = 'menu';
     this.gameOverShown = false;
     this.settings = this._loadSettings();
-    this.setup = { mapSize: 320, mapType: 'random', climate: 'random', enemies: 1, difficulty: 'normal', startRes: 'normal', startAge: 0, fog: 'explored' };
+    this.setup = { mapSize: 320, mapType: 'random', climate: 'random', enemies: 1, difficulty: 'normal', startRes: 'normal', startAge: 0, fog: 'explored', civ: 'random' };
     this._build();
     this._applySettings();
   }
@@ -277,8 +282,18 @@ export class UI {
     }
     row.append(seg); parent.append(row);
   }
+  // civilization picker: a select and, under it, what the chosen one gives
+  _civRow(parent, val, onch) {
+    const row = el('div', 'frow civrow', '<label>Medeniyet</label>'), wrap = el('div', 'civpick'), s = el('select', 'mpsel'), info = el('div', 'civinfo');
+    for (const [v, t] of CIV_OPTS) { const o = el('option', '', esc(t)); o.value = v; if (v === val) o.selected = true; s.append(o); }
+    const show = () => { info.innerHTML = civInfoHtml(s.value); };
+    s.onchange = () => { this._click(); onch(s.value); show(); }; s.onkeydown = (ev) => ev.stopPropagation();
+    wrap.append(s, info); row.append(wrap); parent.append(row); show();
+    return row;
+  }
   _menuSetup() {
     const box = this._menuBox('<h2>Yeni Oyun</h2>');
+    this._civRow(box, this.setup.civ, (v) => { this.setup.civ = v; });
     this._seg(box, 'Harita Boyutu', 'mapSize', [[256, 'Küçük'], [320, 'Orta'], [384, 'Büyük'], [448, 'Çok Büyük'], [512, 'Dev']]);
     this._seg(box, 'Harita Türü', 'mapType', MAP_TYPES, 'wrap');
     this._seg(box, 'İklim', 'climate', CLIMATE_OPTS, 'wrap');
@@ -738,7 +753,9 @@ export class UI {
       const paused = this.gameMenuVisible();
       safe(() => this._refreshScore());
       safe(() => this._chatTick());
-      if (paused && this.pauseInfoEl) { const mt = this.game.cfg?.mapType; this.pauseInfoEl.textContent = (mt && MAP_TYPE_TR[mt] ? 'Harita: ' + MAP_TYPE_TR[mt] : '') + (this.app.renderer?.climate ? ' · İklim: ' + this.app.renderer.climate.name : ''); }
+      const myCiv = this.game.players?.[this._me()]?.civ;
+      if (this._civShown !== this.game) { this._civShown = this.game; if (myCiv && CIVS[myCiv]) safe(() => this.toast(civLabel(myCiv) + ' · ' + civLines(myCiv).join(' · '), 'info')); }
+      if (paused && this.pauseInfoEl) { const mt = this.game.cfg?.mapType; this.pauseInfoEl.textContent = (mt && MAP_TYPE_TR[mt] ? 'Harita: ' + MAP_TYPE_TR[mt] : '') + (this.app.renderer?.climate ? ' · İklim: ' + this.app.renderer.climate.name : '') + (myCiv && CIVS[myCiv] ? ' · ' + civLabel(myCiv) + ': ' + civLines(myCiv).join(', ') : ''); }
       safe(() => this._syncPauseMenu());
       if (this.game.over && !this.gameOverShown) this.showGameOver(!!this.game.over.won);
     }
@@ -1728,6 +1745,8 @@ export class UI {
         const canTeam = mine || (host && s.kind === 'ai');
         if (canTeam) row.append(sel(TEAMS, s.team || 1, (v) => (mine ? call('setTeam', +v) : call('setSlot', i, { team: +v })), 'lb-team'));
         else row.append(el('span', 'lb-teamtag', 'Takım ' + (s.team || 1)));
+        if (!st.resume && (mine || (host && s.kind === 'ai'))) { const cs = sel(CIV_OPTS, s.civ || 'random', (v) => (mine ? call('setCiv', v) : call('setSlot', i, { civ: v })), 'lb-civ'); cs.title = civTitle(s.civ); row.append(cs); }
+        else if (!st.resume) { const ct = el('span', 'lb-teamtag lb-civtag', esc(s.civ && CIVS[s.civ] ? civLabel(s.civ) : '🎲 Rastgele')); ct.title = civTitle(s.civ); row.append(ct); }
         if (s.kind === 'ai') {
           if (host) row.append(sel(DIFF, s.difficulty || 'normal', (v) => call('setSlot', i, { difficulty: v })));
           else row.append(el('span', 'lb-teamtag', (DIFF.find((d) => d[0] === s.difficulty) || DIFF[1])[1]));
@@ -1738,6 +1757,7 @@ export class UI {
         list.append(row);
       });
       body.append(list);
+      { const my = slots.find((s) => s.kind === 'human' && s.peer != null && s.peer === me); if (my && !st.resume) body.append(el('div', 'lb-hint civinfo', civInfoHtml(my.civ || 'random'))); }
       if (host) {
         const add = el('div', 'lb-add');
         add.append(el('span', '', 'Yapay zekâ ekle:'), sel(TEAMS, aTeam, (v) => { aTeam = +v; }), sel(DIFF, aDiff, (v) => { aDiff = v; }));
@@ -1936,7 +1956,7 @@ export class UI {
     for (const { p, id } of rows) {
       const ally = this._ally(me, id), you = id === me;
       const res = ally && !you ? `<span class="sbres">${RES_LIST.map((r) => `${RES_ICON[r]}${Math.floor(p.res?.[r] || 0)}`).join(' ')}</span>` : '';
-      h += `<div class="sbrow${you ? ' you' : ally ? ' ally' : ''}${p.defeated || p.left ? ' out' : ''}"><span class="dot" style="background:${hex(PLAYER_COLORS[id] ?? 0xffffff)}"></span><span class="sbn">${esc(this._pname(id))}${p.kind === 'ai' ? ' 🤖' : ''}${p.defeated ? ' ☠' : p.left ? ' ⏏' : ''}</span><span class="sbt team${this._teamOf(id)}">T${this._teamOf(id)}</span><span class="sba">${esc((AGES[p.age]?.name || '').split(' ')[0])}</span>${res}</div>`;
+      h += `<div class="sbrow${you ? ' you' : ally ? ' ally' : ''}${p.defeated || p.left ? ' out' : ''}"><span class="dot" style="background:${hex(PLAYER_COLORS[id] ?? 0xffffff)}"></span><span class="sbn"${p.civ && CIVS[p.civ] ? ` title="${esc(civTitle(p.civ))}"` : ''}>${p.civ && CIVS[p.civ] ? CIVS[p.civ].icon + ' ' : ''}${esc(this._pname(id))}${p.kind === 'ai' ? ' 🤖' : ''}${p.defeated ? ' ☠' : p.left ? ' ⏏' : ''}</span><span class="sbt team${this._teamOf(id)}">T${this._teamOf(id)}</span><span class="sba">${esc((AGES[p.age]?.name || '').split(' ')[0])}</span>${res}</div>`;
     }
     if (h !== this.scoreSig) { this.scoreSig = h; this.scoreEl.innerHTML = h; }
   }

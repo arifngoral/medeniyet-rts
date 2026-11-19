@@ -30,6 +30,7 @@ Plain Node scripts in `test/`, no framework:
 
     node test/sim-smoke.mjs
     node test/determinism-test.mjs
+    node test/civ-test.mjs
 
 Run those two plus the suites your change touches (for example `path-test.mjs` for pathing, `net-test.mjs` for
 multiplayer). The simulation must stay deterministic: multiplayer is lockstep, so no `Math.random()`, `Date.now()`

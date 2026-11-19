@@ -1,4 +1,5 @@
 import { logChat } from '../chatlog.js';
+import { CIVS } from '../civs.js';
 // Aevum - multiplayer session: lobby + deterministic lockstep over an abstract transport.
 // Transport: { id, async connect(room), send(topic, data), on(topic, fn(data, from, ident)), peers(), onPeers(fn), close() }
 // A transport with `verified` (the node relay with tickets) hands every message the sender's identity as the relay
@@ -17,6 +18,7 @@ export const MAX_CMDS = 40;
 export const MAX_MSG = 3500;
 export const MAX_PLAYERS = 8;
 // map types the lobby may pick ('random' is resolved from the seed inside the simulation, identically on every client)
+const okCiv = c => c === 'random' || (typeof c === 'string' && Object.prototype.hasOwnProperty.call(CIVS, c));
 export const MAP_TYPES = ['random', 'river', 'continent', 'highlands', 'plains', 'inlandsea', 'islands'];
 // map climates: view only (the renderer's colours), never read by the simulation
 export const CLIMATES = ['random', 'temperate', 'spring', 'autumn', 'winter', 'arid'];
@@ -285,6 +287,7 @@ export class NetSession {
         if (!this.verified && !s.uid && who.uid) s.uid = who.uid;
         if (d.op === 'setName') { if (!this.verified) s.name = String(d.v || '').slice(0, 20) || s.name; }   // (verified: the account's name)
         else if (d.op === 'setTeam') { const t = d.v | 0; if (t >= 1 && t <= 4) s.team = t; }
+        else if (d.op === 'setCiv') { if (okCiv(d.v)) s.civ = d.v; }
         else if (d.op === 'setReady') s.ready = !!d.v;
         this._broadcastLobby();
       } else if (d.k === 'ack') {
@@ -485,6 +488,7 @@ export class NetSession {
       if (this.state.resume && op !== 'setReady') return;   // names and teams come from the save
       if (op === 'setName') { if (!this.verified) s.name = String(v || '').slice(0, 20) || s.name; }
       else if (op === 'setTeam') { const t = v | 0; if (t >= 1 && t <= 4) s.team = t; }
+      else if (op === 'setCiv') { if (okCiv(v)) s.civ = v; }
       else if (op === 'setReady') s.ready = !!v;
       this._broadcastLobby();
     } else {
@@ -495,11 +499,11 @@ export class NetSession {
   }
   _resendWants() {
     if (this.isHost || this.phase !== 'lobby' || !this._want || !this.state) return;
-    if (this.state.resume) { delete this._want.setName; delete this._want.setTeam; }   // fixed by the save
+    if (this.state.resume) { delete this._want.setName; delete this._want.setTeam; delete this._want.setCiv; }   // fixed by the save
     const s = this.state.slots.find(x => x.peer === this.t.id); if (!s) return;
     const now = this.clock.now();
     if (now - (this._lastWant || -1e9) < 300) return;
-    const cur = { setName: s.name, setTeam: s.team, setReady: s.ready };
+    const cur = { setName: s.name, setTeam: s.team, setReady: s.ready, setCiv: s.civ || 'random' };
     for (const op in this._want) {
       const v = this._want[op];
       if (op === 'setReady' ? cur[op] === !!v : op === 'setTeam' ? cur[op] === (v | 0) : cur[op] === String(v).slice(0, 20)) delete this._want[op];
@@ -508,6 +512,7 @@ export class NetSession {
   }
   setName(n) { if (this.verified) return; this.name = String(n || '').slice(0, 20) || this.name; this._req('setName', this.name); }
   setTeam(t) { this._req('setTeam', t); }
+  setCiv(c) { if (okCiv(c)) this._req('setCiv', c); }   // a civilization id or 'random' (the default)
   setReady(b) { this._req('setReady', b); }
 
   _hostOnly() { if (!this.isHost || this.phase !== 'lobby') throw new Error('Bunu sadece oda kurucusu yapabilir.'); }
@@ -536,6 +541,7 @@ export class NetSession {
     if (patch.team != null) { const t = patch.team | 0; if (t >= 1 && t <= 4) s.team = t; }
     if (patch.difficulty && s.kind === 'ai' && ['easy', 'normal', 'hard'].includes(patch.difficulty)) s.difficulty = patch.difficulty;
     if (patch.name) s.name = String(patch.name).slice(0, 20);
+    if (patch.civ && s.kind === 'ai' && okCiv(patch.civ)) s.civ = patch.civ;
     this._broadcastLobby(); return true;
   }
   setSettings(patch = {}) {
@@ -597,6 +603,7 @@ export class NetSession {
     const players = start.slots.map(s => {
       const p = { kind: s.kind === 'ai' || s.mode === 'ai' ? 'ai' : 'human', team: s.team | 0 || 1, name: s.name };
       if (p.kind === 'ai') p.difficulty = s.difficulty || 'normal';
+      p.civ = okCiv(s.civ) ? s.civ : 'random';   // 'random' is resolved from the seed by the simulation (same on every client)
       return p;
     });
     const me = Math.max(0, start.slots.findIndex(s => s.kind === 'human' && s.peer === myPeer));

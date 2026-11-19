@@ -123,6 +123,8 @@ S[0].setSettings({ mapType: 'volcano' });
 ok(S[0].state.settings.mapType === 'islands', 'setSettings accepts a valid mapType and rejects an invalid one');
 await runFor(3000);
 ok(S[1].state.settings.mapType === 'islands' && S[2].state.settings.mapType === 'islands', 'joiners see mapType islands in the lobby state');
+// civilizations: the host and a joiner pick, another joiner sends a forged one (ignored), the host picks for one AI
+S[0].setCiv('mogol'); S[1].setCiv('roma'); S[2]._req('setCiv', 'constructor'); S[0].setSlot(3, { civ: 'viking' });
 S[1].setReady(true); S[2].setReady(true);
 await runFor(3000);
 const st = S[0].state;
@@ -130,6 +132,7 @@ ok(st.slots.length === 5, 'host lobby has 5 slots (3 humans + 2 AI)');
 ok(S[1].state.slots.length === 5 && S[2].state.slots.length === 5, 'joiners see the same roster (re-broadcast)');
 const sl1 = st.slots.find(x => x.peer === 'peer1'), sl2 = st.slots.find(x => x.peer === 'peer2');
 ok(sl2.name === 'Mehmet2' && sl2.team === 2 && sl1.ready && sl2.ready, 'setName/setTeam/setReady reached the host');
+ok(st.slots[0].civ === 'mogol' && sl1.civ === 'roma' && !sl2.civ && st.slots[3].civ === 'viking' && S[2].state.slots.find(x => x.peer === 'peer1').civ === 'roma', 'setCiv reached the host and the other joiner; a forged civilization is ignored');
 ok(S[0].canStart().ok, 'host can start');
 S[0].start();
 for (let i = 0; i < 200 && !(ev[1].start && ev[2].start); i++) await runFor(25);
@@ -139,6 +142,7 @@ ok(cfgs.every((c, i) => S[0].start0.slots[c.me].peer === 'peer' + i) && new Set(
 const P2 = cfgs[2].me;
 const strip = c => JSON.stringify(Object.assign({}, c, { me: 0 }));
 ok(strip(cfgs[0]) === strip(cfgs[1]) && strip(cfgs[0]) === strip(cfgs[2]), 'all cfgs identical except me');
+ok(cfgs[0].players.map((p, i) => (S[0].start0.slots[i].peer || 'ai') + ':' + p.civ).sort().join() === 'ai:random,ai:viking,peer0:mogol,peer1:roma,peer2:random', 'cfg carries the civilizations (unpicked = random): ' + cfgs[0].players.map(p => p.civ).join());
 ok(cfgs.every(c => c.mapType === 'islands'), 'every client built its Game cfg with mapType islands');
 ok(NetSession.cfgFrom({ settings: { mapSize: 128 }, slots: [{ kind: 'human', peer: 'x', team: 1 }], seed: 1 }, 'x').mapType === 'river', 'settings without mapType (old host/record) fall back to river');
 

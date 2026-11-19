@@ -1,5 +1,6 @@
 // Aevum — headless simulation core (pure JS, no DOM/three)
 import { AGES, RES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS, FARM_SLOTS } from '../data.js';
+import { CIVS, resolveCiv } from '../civs.js';
 // big farm: cells (x, z) of its 3x3 grid, ring order around the granary (1, 1); food / s of a farmer while his plot is ripe
 export const FARM_CELLS = [[0, 0], [1, 0], [2, 0], [2, 1], [2, 2], [1, 2], [0, 2], [0, 1]];
 const FARM_RATE = 16 / 9 * 0.85;
@@ -437,6 +438,10 @@ export class Game {
     for (let i = 0; i < np; i++) {
       const p = { id: i, isAI: cp ? (cp[i] && cp[i].kind) === 'ai' : i > 0, color: PLAYER_COLORS[i], res: (cfg.sandbox && i > 0) ? { food: 300, wood: 300, stone: 150, gold: 100 } : { ...sr }, age: Math.max(0, Math.min(4, cfg.startAge | 0)), pop: 0, popCap: 0, techs: new Set(), pending: [], defeated: false, startX: starts[i][0], startZ: starts[i][1], ageProgress: 0, ageAt: 0,
         stats: { gathered: { food: 0, wood: 0, stone: 0, gold: 0 }, unitsTrained: 0, unitsLost: 0, kills: 0, buildingsBuilt: 0, buildingsLost: 0, razed: 0, techs: 0 } };
+      // civilization: multiplayer slots carry their own (cfg.players[i].civ); in single player cfg.civ is the human's and
+      // the AIs draw theirs from the seed. No cfg.civ at all (tests, old callers) = nobody has one.
+      const civ = resolveCiv(cp ? cp[i] && cp[i].civ : cfg.civ === undefined ? null : i === 0 ? cfg.civ : 'random', cfg.seed, i);
+      if (civ) p.civ = civ;
       this._mods(p); this.players.push(p);
     }
     // resources
@@ -631,14 +636,17 @@ export class Game {
 
   // ---------- entity creation ----------
   _mods(p) {
-    const m = { gather: { food: 1, wood: 1, stone: 1, gold: 1 }, carry: 0, farm: 0, vspeed: 0, atk: {}, armor: {}, range: {}, speed: {}, atkMul: {}, bhp: 0, wallhp: 0, towerAtk: 0, towerRange: 0, vhp: 0, hp: {}, heal: 0, blos: 0, train: 0, factory: 0, trade: 0, cart: 0, bank: 0, pasture: 0, rail: 0 };
+    const m = { gather: { food: 1, wood: 1, stone: 1, gold: 1 }, carry: 0, farm: 0, vspeed: 0, atk: {}, armor: {}, range: {}, speed: {}, atkMul: {}, bhp: 0, wallhp: 0, towerAtk: 0, towerRange: 0, vhp: 0, hp: {}, heal: 0, blos: 0, train: 0, factory: 0, trade: 0, cart: 0, bank: 0, pasture: 0, rail: 0, killGold: 0 };
     for (const id of p.techs) { const fx = TECHS[id] && TECHS[id].fx; if (!fx) continue;
       for (const k in fx) { const v = fx[k]; if (typeof v === 'number') m[k] = (m[k] || 0) + v; else for (const c in v) (m[k] || (m[k] = {}))[c] = (m[k][c] || (k === 'gather' ? 1 : 0)) + v[c]; } }
+    // the civilization's passive bonuses: the same fx format as a tech, in effect from the start
+    const cfx = p.civ && CIVS[p.civ] && CIVS[p.civ].fx;
+    if (cfx) for (const k in cfx) { const v = cfx[k]; if (typeof v === 'number') m[k] = (m[k] || 0) + v; else for (const c in v) (m[k] || (m[k] = {}))[c] = (m[k][c] || (k === 'gather' ? 1 : 0)) + v[c]; }
     p.mods = m;
   }
   _bMaxHp(type, owner) { const d = BUILDINGS[type], p = this.players[owner]; let h = d.hp * (1 + 0.15 * p.age) * (1 + p.mods.bhp); if (type === 'wall' || type === 'gate') h *= 1 + p.mods.wallhp; return Math.round(h); }
   _rescaleBuildings(p) { for (const b of this.buildings) if (b.owner === p.id) { const n = this._bMaxHp(b.type, p.id); b.hp = n > b.maxHp ? Math.min(n, b.hp + (n - b.maxHp)) : Math.max(1, Math.round(b.hp * n / b.maxHp)); b.maxHp = n; b.ageLook = p.age; } }
-  _uMaxHp(type, owner) { const d = UNITS[type], m = this.players[owner].mods; return Math.round(d.hp * (1 + (m.hp[d.cls] || 0) + (type === 'villager' ? m.vhp : 0))); }
+  _uMaxHp(type, owner) { const d = UNITS[type], m = this.players[owner].mods; return Math.round(d.hp * (1 + (m.hp[d.cls] || 0) + (m.hp[type] || 0) + (type === 'villager' ? m.vhp : 0))); }   // (m.hp[type]: a civilization bonus for one unit type)
   _rescaleUnits(p) { for (const u of this.units) if (u.owner === p.id && !u.dead) { const n = this._uMaxHp(u.type, p.id); if (n !== u.maxHp) { u.hp = n > u.maxHp ? u.hp + (n - u.maxHp) : Math.max(1, Math.min(n, u.hp)); u.maxHp = n; } } }
   _addUnit(type, owner, x, z) {
     const d = UNITS[type], uh = this._uMaxHp(type, owner);
@@ -1496,7 +1504,7 @@ export class Game {
       if (e.order && e.order.type === 'gather') this._unhunt(e.order);
       e.state = 'dead'; e.anim = 'die'; e.deathTime = this.time; e.order = null; e.queue.length = 0; e.path = null;
       if (e.cargo && e.cargo.length) this._navSinkCargo(e, killer);
-      p.pop -= UNITS[e.type].pop; p.stats.unitsLost++; if (kp) kp.stats.kills++;
+      p.pop -= UNITS[e.type].pop; p.stats.unitsLost++; if (kp) { kp.stats.kills++; if (kp.mods.killGold && !kp.defeated) this._credit(kp, 'gold', kp.mods.killGold); }
       this.events.emit('death', { e, killer: killer || null });
     } else if (e.kind === 'building') {
       this._block(e, 0);

@@ -1,3 +1,11 @@
+# Medeniyet RTS (Aevum çatalı)
+
+> Bu depo [Aevum](https://github.com/flickrz/aevum-rts)'un bir çatalıdır (fork): üstüne **medeniyetler** eklenir.
+> Kod Aevum gibi AGPL v3. "Aevum" adı ve logosu asıl projeye aittir; bu çatal yayınlanmadan önce oyun içindeki ad değişecek.
+>
+> **Medeniyetler:** 20 medeniyet, her birinin maç başından geçerli pasif bonusları var (`src/civs.js`, veri `src/civ-data.js`).
+> Tek oyunculuda Yeni Oyun ekranından, çok oyunculuda lobiden seçilir; "Rastgele" maç tohumundan belirlenir. Test: `node test/civ-test.mjs`.
+
 # Aevum
 
 **Oyna:** https://aevum-8clf.onrender.com · **English:** see [CONTRIBUTING.md](CONTRIBUTING.md)
