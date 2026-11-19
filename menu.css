@@ -147,10 +147,23 @@
 .civ-banner.sel { transform: translateY(-8px); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--civ-2) 70%, transparent)) drop-shadow(0 10px 14px #000b); }
 .civ-banner.sel .cb-art { filter: none; transform: scale(1.06); }
 .civ-banner.sel .cb-in::after { box-shadow: inset 0 0 0 2px #ffe1a0, inset 0 4px 0 var(--civ-2); }
-.civ-banner.rnd .cb-in { background: linear-gradient(#3a2312, #1f1209); }
-.civ-banner.rnd .cb-foot { bottom: 50%; transform: translateY(50%); gap: 10px; }
-.civ-banner.rnd .cb-emb { width: 44px; font-size: 22px; background: #1f1209; border-color: var(--gold); }
-.civ-banner.rnd .cb-name { color: var(--gold-2); letter-spacing: .1em; text-transform: uppercase; }
+/* the dice tile stays put on the left of the strip */
+.civ-strip { display: flex; align-items: stretch; gap: 12px; min-width: 0; }
+.civ-strip .civ-banners { flex: 1; min-width: 0; }
+#ui .civ-dice { position: relative; flex: none; align-self: flex-start; margin-top: 12px; width: clamp(84px, 9vw, 112px); height: calc(clamp(112px, 17vh, 180px) * .91); box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px 6px; overflow: hidden; cursor: pointer; color: var(--gold-2);
+  background: linear-gradient(#3a2312, #1f1209); border: 1px solid var(--mline); box-shadow: inset 0 0 0 4px #1f1209, inset 0 0 0 5px var(--line), 0 10px 22px #0009; transition: border-color .2s, box-shadow .2s; }
+.civ-dice .cd-ico { font-size: clamp(24px, 2.6vw, 34px); line-height: 1; filter: drop-shadow(0 3px 4px #000a); }
+.civ-dice b { font: 700 .78rem var(--display); letter-spacing: .12em; text-transform: uppercase; }
+.civ-dice small { font: 600 .6rem 'Inter', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+.civ-dice::after { content: ''; position: absolute; top: 0; bottom: 0; width: 45%; left: -60%; background: linear-gradient(100deg, transparent, #ffe1a033, transparent); animation: mn-shine 3.6s ease-in-out infinite; }
+#ui .civ-dice:hover, #ui .civ-dice:focus-visible, #ui .civ-dice.sel { border-color: var(--gold-2); box-shadow: inset 0 0 0 4px #1f1209, inset 0 0 0 5px var(--mline), 0 0 22px #e3ad4c66; outline: none; }
+.civ-dice:hover .cd-ico { animation: mn-dice .6s var(--ease); }
+.spinning .civ-dice .cd-ico { animation: mn-dice .35s linear infinite; }
+.spinning .civ-banner { transition: none; }
+@keyframes mn-dice { 50% { transform: rotate(-18deg) scale(1.15); } }
+.civ-banner.landed { animation: civ-land .7s var(--ease); }
+@keyframes civ-land { 0% { transform: translateY(-8px) scale(1); } 35% { transform: translateY(-14px) scale(1.09); } 100% { transform: translateY(-8px) scale(1); } }
 /* what the chosen one gives */
 .civhead { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; padding: 2px 4px 0; border-left: 3px solid var(--civ-2); padding-left: 12px; }
 .civhead .civname { font: 800 clamp(1.2rem, 2vw, 1.7rem)/1.1 var(--display); letter-spacing: .04em; color: #fff3d6; text-shadow: 0 2px 8px #000; }

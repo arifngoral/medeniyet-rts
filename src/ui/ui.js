@@ -313,38 +313,59 @@ export class UI {
     }
     row.append(seg); parent.append(row);
   }
-  // civilization picker: a strip of banners (portrait, emblem, name; "random" first) and, under it, what the chosen
-  // one gives. Arrow keys move along the strip.
+  // civilization picker: the dice tile, then a strip of banners (portrait, emblem, name), and under them what the chosen
+  // one gives. Nothing picked = 'random' (decided when the match starts). The dice spins along the strip and lands on
+  // one, which is then the choice. Arrow keys move along the strip.
   _civRow(parent, val, onch) {
-    const wrap = el('div', 'civsel'), strip = el('div', 'civ-banners'), head = el('div', 'civhead'), info = el('div', 'civinfo');
+    const wrap = el('div', 'civsel'), row = el('div', 'civ-strip'), strip = el('div', 'civ-banners'), head = el('div', 'civhead'), info = el('div', 'civinfo');
     strip.setAttribute('role', 'listbox'); strip.setAttribute('aria-label', 'Medeniyet');
     const btns = new Map();
+    let spin = 0;   // a running spin (its timer), 0 = none
+    const dice = el('button', 'civ-dice', '<span class="cd-ico">🎲</span><b>Rastgele</b><small>Zarı at</small>');
+    dice.type = 'button'; dice.title = 'Zarı at: şans hangi medeniyeti verecek?';
     const show = (id, scroll) => {
       const c = CIVS[id];
-      for (const [k, b] of btns) { const on = k === id; b.classList.toggle('sel', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; }
+      for (const [k, b] of btns) { const on = k === id; b.classList.toggle('sel', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on || (!c && k === CIV_IDS[0]) ? 0 : -1; }
+      dice.classList.toggle('sel', !c);
       wrap.style.setProperty('--civ', c ? c.color : '#6b4a1e'); wrap.style.setProperty('--civ-2', c ? c.color2 : '#e3ad4c');
       head.innerHTML = c ? `<span class="civname">${esc(civShort(c.name))}</span><span class="civpas">${esc(c.passive)}</span>` : '<span class="civname">Rastgele</span><span class="civpas">Şansına ne çıkarsa</span>';
-      info.innerHTML = c ? civLines(id).map((l) => `<span>${esc(l)}</span>`).join('') : '<span>Maç başlayınca rastgele bir medeniyet gelir.</span>';
-      if (scroll) safe(() => btns.get(id).scrollIntoView({ block: 'nearest', inline: 'center', behavior: scroll === 'jump' ? 'auto' : 'smooth' }));
+      info.innerHTML = c ? civLines(id).map((l) => `<span>${esc(l)}</span>`).join('') : '<span>Maç başlayınca rastgele bir medeniyet gelir. Şimdi görmek için zarı at.</span>';
+      if (scroll && c) safe(() => { const b = btns.get(id); strip.scrollTo({ left: b.offsetLeft - (strip.clientWidth - b.offsetWidth) / 2, behavior: scroll === 'jump' ? 'auto' : 'smooth' }); });
     };
-    const ids = ['random', ...CIV_IDS];
-    for (const id of ids) {
+    const stop = () => { if (spin) { clearTimeout(spin); spin = 0; wrap.classList.remove('spinning'); } };
+    dice.onclick = () => {
+      if (spin) return;
+      this._click();
+      const target = CIV_IDS[(Math.random() * CIV_IDS.length) | 0];
+      const land = () => { stop(); onch(target); show(target, 'smooth'); const b = btns.get(target); b.classList.remove('landed'); void b.offsetWidth; b.classList.add('landed'); this._click(); };
+      if (safe(() => matchMedia('(prefers-reduced-motion: reduce)').matches, false)) { land(); return; }
+      // run along the strip, slowing down, and stop on the target
+      const N = CIV_IDS.length, steps = N + CIV_IDS.indexOf(target) + 1; let i = 0;
+      wrap.classList.add('spinning');
+      const tick = () => {
+        if (!wrap.isConnected) { spin = 0; return; }
+        const id = CIV_IDS[i % N]; i++;
+        if (i >= steps) { land(); return; }
+        show(id, 'jump');
+        const left = steps - i;
+        spin = setTimeout(tick, left > 12 ? 45 : left > 6 ? 90 : 90 + (7 - left) * 55);
+      };
+      tick();
+    };
+    for (const id of CIV_IDS) {
       const c = CIVS[id];
-      const b = el('button', 'civ-banner' + (c ? '' : ' rnd'), c
-        ? `<span class="cb-in"><span class="cb-art" style="background-image:url(${c.art})"></span><span class="cb-shade"></span><span class="cb-foot"><span class="cb-emb">${c.icon}</span><span class="cb-name">${esc(civShort(c.name))}</span></span></span>`
-        : '<span class="cb-in"><span class="cb-foot"><span class="cb-emb">🎲</span><span class="cb-name">Rastgele</span></span></span>');
+      const b = el('button', 'civ-banner', `<span class="cb-in"><span class="cb-art" style="background-image:url(${c.art})"></span><span class="cb-shade"></span><span class="cb-foot"><span class="cb-emb">${c.icon}</span><span class="cb-name">${esc(civShort(c.name))}</span></span></span>`);
       b.type = 'button'; b.setAttribute('role', 'option'); b.title = civTitle(id);
-      if (c) { b.style.setProperty('--civ', c.color); b.style.setProperty('--civ-2', c.color2); }
-      const pick = (how) => { this._click(); onch(id); show(id, how); };
-      b.onclick = () => pick('smooth');
+      b.style.setProperty('--civ', c.color); b.style.setProperty('--civ-2', c.color2);
+      b.onclick = () => { if (spin) return; this._click(); onch(id); show(id, 'smooth'); };
       b.onkeydown = (ev) => {
-        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+        const d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0; if (!d || spin) return;
         ev.preventDefault(); ev.stopPropagation();
-        const n = btns.get(ids[(ids.indexOf(id) + d + ids.length) % ids.length]); n.focus(); n.click();
+        const n = btns.get(CIV_IDS[(CIV_IDS.indexOf(id) + d + CIV_IDS.length) % CIV_IDS.length]); n.focus(); n.click();
       };
       btns.set(id, b); strip.append(b);
     }
-    wrap.append(strip, head, info); parent.append(wrap);
+    row.append(dice, strip); wrap.append(row, head, info); parent.append(wrap);
     show(btns.has(val) ? val : 'random', 'jump');
     return wrap;
   }
