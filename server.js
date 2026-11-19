@@ -89,6 +89,20 @@
   const inboxes = new Map(), inviteRate = new Map();
   function inboxOf(fb) { let b = inboxes.get(fb); if (!b) { b = { q: [], waiter: null, seen: 0 }; inboxes.set(fb, b); } return b; }
   function isOnline(fb) { const b = inboxes.get(fb); return !!b && (!!b.waiter || Date.now() - b.seen < 40000); }
+  // puts a message in an account's inbox and wakes its long-poll
+  function deliver(to, msg) {
+    const box = inboxOf(to);
+    box.q.push(msg);
+    if (box.q.length > 20) box.q.splice(0, box.q.length - 20);
+    if (box.waiter) { const w = box.waiter; box.waiter = null; clearTimeout(w.to); reply(w.res, 200, J, JSON.stringify(box.q.splice(0))); }
+  }
+  // every signed-in account with the game open (its card comes from its own verified ticket), what it is doing
+  function onlinePlayers(exceptFb) {
+    const st = STATS.fbStates(), out = [];
+    for (const [fb, b] of inboxes) if (fb !== exceptFb && b.card && isOnline(fb)) out.push(Object.assign({ s: st.get(fb) || 'menu' }, b.card));
+    return out;
+  }
+  const inviteAllRate = new Map();   // fb -> time of the last "invite everyone"
   setInterval(() => {
     const t = Date.now();
     for (const [fb, b] of inboxes) if (!b.waiter && t - b.seen > 10 * 60000) inboxes.delete(fb);
@@ -277,6 +291,7 @@
       if (!me) { reply(res, 401, J, '{"error":"ticket"}'); return; }
       const box = inboxOf(me.fb);
       box.seen = Date.now();
+      box.card = { fb: me.fb, uid: me.uid, name: me.name, av: me.av, tp: me.tp | 0 };
       if (box.waiter) { const w = box.waiter; box.waiter = null; clearTimeout(w.to); reply(w.res, 200, J, '[]'); }
       if (box.q.length) { reply(res, 200, J, JSON.stringify(box.q.splice(0))); return; }
       const w = { res, to: setTimeout(() => { if (box.waiter === w) { box.waiter = null; box.seen = Date.now(); reply(res, 200, J, '[]'); } }, 25000) };
@@ -304,13 +319,39 @@
         if (recent.length >= 20) { reply(res, 429, J, '{"error":"Çok fazla davet; biraz bekle."}'); return; }
         recent.push(now); inviteRate.set(me.fb, recent);
         const online = isOnline(to);
-        if (online) {
-          const box = inboxOf(to);
-          box.q.push({ type: 'invite', code, from: { fb: me.fb, uid: me.uid, name: me.name, av: me.av, tp: me.tp }, t: now });
-          if (box.q.length > 20) box.q.splice(0, box.q.length - 20);
-          if (box.waiter) { const w = box.waiter; box.waiter = null; clearTimeout(w.to); reply(w.res, 200, J, JSON.stringify(box.q.splice(0))); }
-        }
+        if (online) deliver(to, { type: 'invite', code, from: { fb: me.fb, uid: me.uid, name: me.name, av: me.av, tp: me.tp }, t: now });
         reply(res, 200, J, JSON.stringify({ online }));
+      });
+      return;
+    }
+    // ---- everyone online: the list of the multiplayer screen, and "invite everyone" ----
+    if (url.pathname === '/mp/players' && req.method === 'GET') {
+      const me = identOf(req, url);
+      if (!me) { reply(res, 401, J, '{"error":"ticket"}'); return; }
+      inboxOf(me.fb).seen = Date.now();
+      const order = { menu: 0, sp: 1, mp: 2 };
+      const list = onlinePlayers(me.fb).sort((a, b) => (order[a.s] - order[b.s]) || String(a.name).localeCompare(String(b.name), 'tr'));
+      reply(res, 200, J, JSON.stringify({ total: list.length, players: list.slice(0, 200) }));
+      return;
+    }
+    if (url.pathname === '/mp/invite-all' && req.method === 'POST') {
+      readBody(req, 16384, (err, buf) => {
+        if (err) { reply(res, 400, J, '{"error":"bad body"}'); return; }
+        const me = identOf(req, url);
+        if (!me) { reply(res, 401, J, '{"error":"ticket"}'); return; }
+        let body; try { body = JSON.parse(buf.toString('utf8') || '{}'); } catch { reply(res, 400, J, '{"error":"bad json"}'); return; }
+        const code = String(body.code || '').toUpperCase();
+        if (!/^[A-Z0-9]{5}$/.test(code)) { reply(res, 400, J, '{"error":"bad invite"}'); return; }
+        // once every 2 minutes per account (everyone gets a card, so it must not become spam)
+        const now = Date.now(), last = inviteAllRate.get(me.fb) || 0;
+        if (now - last < 120000) { reply(res, 429, J, JSON.stringify({ error: 'Herkesi davet etmek için ' + Math.ceil((120000 - (now - last)) / 1000) + ' sn bekle.' })); return; }
+        inviteAllRate.set(me.fb, now);
+        const skip = new Set(Array.isArray(body.skip) ? body.skip.filter(f => typeof f === 'string').slice(0, 50) : []);
+        // (players already in a match are left alone; they can still be invited one by one)
+        const to = onlinePlayers(me.fb).filter(p => p.s === 'menu' && !skip.has(p.fb));
+        const msg = { type: 'invite', code, from: { fb: me.fb, uid: me.uid, name: me.name, av: me.av, tp: me.tp }, t: now };
+        for (const p of to) deliver(p.fb, msg);
+        reply(res, 200, J, JSON.stringify({ sent: to.length }));
       });
       return;
     }

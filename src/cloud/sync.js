@@ -618,6 +618,24 @@ export class CloudSync {
     const r = await this._relay('/mp/invite', { to: fb, code }, t.ticket);
     return { ok: true, online: !!r.online };
   }
+  // everyone with the game open and signed in (me left out) -> {total, players: [{fb, uid, name, av, tp, s}]}
+  // s: 'menu' | 'sp' (single player match) | 'mp' (multiplayer match)
+  async onlinePlayers() {
+    if (!this.loggedIn) return { total: 0, players: [] };
+    const t = await this.relayTicket();
+    let r;
+    try { r = await this.relayFetch(this.relayBase + '/mp/players', { cache: 'no-store', headers: { 'X-Aevum-Ticket': t.ticket } }); } catch (e) { throw new CloudError('network', 'NETWORK', 'Oyun sunucusuna ulaşılamadı.'); }
+    if (r.status === 401) this._tkt = null;
+    if (!r.ok) throw new CloudError('server', 'PLAYERS_' + r.status, 'Oyuncu listesi alınamadı (' + r.status + ').', r.status);
+    const j = await r.json();
+    return { total: j.total | 0, players: Array.isArray(j.players) ? j.players : [] };
+  }
+  // invite everyone online who is not in a match into my room (code); skip: accounts already in the room -> {sent}
+  async inviteAll(code, skip = []) {
+    const t = await this.relayTicket();
+    const r = await this._relay('/mp/invite-all', { code, skip }, t.ticket);
+    return { sent: r.sent | 0 };
+  }
   // my inbox on the game server (long-poll while signed in): it also marks me online. onMsg({type:'invite', code, from})
   startInbox(onMsg) {
     this._inboxFn = onMsg;

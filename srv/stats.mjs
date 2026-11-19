@@ -99,6 +99,13 @@ export function createStats({ now = () => Date.now(), store = null, log = () => 
       } else { day.sp++; dirty = true; }
     },
     online,
+    // account -> what its most recent tab is doing ('menu'|'sp'|'mp'), for the online players list
+    fbStates() {
+      prune();
+      const best = new Map(), out = new Map();
+      for (const x of live.values()) if (x.fb && !(best.get(x.fb) > x.t)) { best.set(x.fb, x.t); out.set(x.fb, x.s); }
+      return out;
+    },
     today() { roll(); return summary(day); },
     // writes today's numbers when they changed
     async flush() {

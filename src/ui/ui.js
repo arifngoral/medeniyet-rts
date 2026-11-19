@@ -1656,6 +1656,11 @@ export class UI {
       import('./mp-resume.js').then((m) => m.menuResume(this)).catch((e) => fail(e));
     }));
     this._mbtn(box, 'Geri', () => this._menuMain());
+    this._onlinePanel(box);
+  }
+  // the online players list on the right (src/ui/online-ui.js), next to this menu box while it is shown
+  _onlinePanel(box) {
+    import('./online-ui.js').then((m) => { if (box.isConnected && !this.menuEl.querySelector('.online-panel')) this.menuEl.append(m.onlinePanel(this)); }).catch((e) => console.warn(e));
   }
   showLobby(session) {
     // a continued (saved) match has its own lobby
@@ -1782,6 +1787,7 @@ export class UI {
     // in-game stall / resume / desync / peerLeft banners are routed by app.startMultiplayer (main.js)
     on('closed', () => { if (this.lobbySession === session) { this.lobbySession = null; this._menuMulti('Bağlantı kapandı.'); } else if (this.app.net === session) this.toast('⚠ Ağ bağlantısı kapandı', 'warn'); });
     render(); drawLog();
+    this._onlinePanel(box);
   }
   // a green line at the top of the lobby (e.g. "X davet edildi")
   _lobbyNote(text) { const n = this._lobbyNoteEl; if (!n || !n.isConnected) return; n.textContent = String(text || ''); n.classList.toggle('hidden', !text); }

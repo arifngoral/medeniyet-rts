@@ -21,6 +21,7 @@ S.beat('aaaaaaaa3', 'mp', 'fbTwo');
 S.beat('aaaaaaaa3', 'mp', 'fbTwo');     // same browser again
 await new Promise((r) => setTimeout(r, 0));
 assert.deepEqual(S.online(), { total: 3, menu: 1, sp: 1, mp: 1, signedIn: 2 });
+assert.deepEqual([...S.fbStates()].sort(), [['fbOne', 'sp'], ['fbTwo', 'mp']]);
 S.match('sp', null, 'fbOne');
 S.match('mp', 'ROOM1', 'fbTwo');
 S.match('mp', 'ROOM1', 'fbThree');    // the other player of the same room

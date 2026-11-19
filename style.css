@@ -612,6 +612,28 @@ button.gbtn, button.gbtn .gbtn-t { color: #1f1f1f !important; text-shadow: none 
 .invite-txt small { color: var(--dim); font-size: 12px; }
 .invite-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .invite-acts .mbtn.small { margin: 0; }
+/* ---- online players, right of the multiplayer screen and the lobby (src/ui/online-ui.js) ---- */
+.online-panel { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); width: 290px; max-height: min(640px, 86vh); display: flex; flex-direction: column; gap: 8px; padding: 14px 12px; box-sizing: border-box; text-align: left; animation: fadeIn .3s ease; }
+.op-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 2px; }
+.op-title { color: var(--gold); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; }
+.op-count { min-width: 24px; padding: 2px 8px; border-radius: 999px; background: rgba(79,208,122,.16); color: #7fe0a0; font-size: 12px; text-align: center; font-variant-numeric: tabular-nums; }
+.online-panel .mbtn.op-all { margin: 0; width: 100%; }
+.op-msg { font-size: 12px; color: #ff9a8a; padding: 0 2px; }
+.op-msg.ok { color: var(--green); }
+.op-list { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 2px; font-size: 13px; }
+.op-row { display: flex; align-items: center; gap: 9px; padding: 6px 6px; border-radius: 8px; border: 1px solid transparent; }
+.op-row:hover { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.07); }
+.op-row .fr-name { font-size: 13px; }
+.op-row .fr-sub { font-size: 11px; }
+.op-row.busy .fr-name { color: var(--dim); }
+.fr-dot.on.busy { background: #e8b44f; box-shadow: 0 0 0 2px #10131a, 0 0 8px rgba(232,180,79,.6); }
+.online-panel .mbtn.small.op-inv { flex: none; margin: 0; width: auto; padding: 5px 10px; font-size: 12px; letter-spacing: .5px; }
+.op-empty { padding: 10px 4px; font-size: 13px; }
+@media (max-width: 1240px) {
+  .menu:has(.online-panel) { flex-direction: column; justify-content: flex-start; overflow: auto; gap: 12px; padding: 16px 0; box-sizing: border-box; }
+  .menu:has(.online-panel) .menu-box { flex: none; max-height: none; }
+  .online-panel { position: relative; right: auto; top: auto; transform: none; flex: none; width: min(760px, 96vw); max-height: 300px; }
+}
 @media (max-width: 640px) {
   .menu-box.friends { padding: 18px 14px; }
   .fr-row { gap: 10px; padding: 8px; }
