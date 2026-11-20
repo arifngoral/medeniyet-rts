@@ -39,6 +39,7 @@ export const VERSIONS = [
         'Yenilikler penceresi ve 3B vitrin eklendi.',
         "Devam Et ve Kayıtlı Oyunlar ana menüden Tek Oyunculu'nun içine taşındı: yarıda kalan oyunun varsa Tek Oyunculu'ya tıklayınca kaldığın yerden devam etmek isteyip istemediğin sorulur, öteki kayıtlar da orada listelenir.",
         'Ana ekranın alt menüsü yenilendi: Sandbox, Yenilikler, Vitrin, Nasıl Oynanır ve Ayarlar karoların altında simgeli yuvarlak düğmeler, adı altında yazar; okunmamış yenilikte altın nokta yanar. Google ile Giriş menüden ayrıldı, sağ üstte kendi düğmesi var.',
+        'Ana menünün kapak resmi baştan çizildi: aynı sahne (kale, cami, piramitler, pagoda, nehir boyunca ordugâhlar), çok daha keskin ve ayrıntılı (2752×1536).',
       ]],
       ['Oyun içi arayüz', [
         'Kaynaklar üst çubuktan mini haritanın yanına taşındı. Her kaynağın yanında o an o kaynakta çalışan köylü sayısı yazar (dakikalık gelir yerine); balıkçı tekneleri yiyeceğe sayılır. Boşta köylü düğmesi ve nüfus panelin en üstünde, yan yana.',
