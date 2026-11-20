@@ -10,6 +10,17 @@
 /* one accent in every age (the upstream HUD recolours itself per age; the age shows in the age box instead) */
 .hud.age-0, .hud.age-1, .hud.age-2, .hud.age-3, .hud.age-4, .tooltip.age-0, .tooltip.age-1, .tooltip.age-2, .tooltip.age-3, .tooltip.age-4 { --gold: #e3ad4c; --gold2: #c27a1e; --line: #d9a64a5c; }
 
+/* ---------- size ----------
+   The panels are drawn at full size on a 2560 px wide screen and shrink on smaller ones, so they take about the same
+   share of the picture everywhere (at full size they crowd a 1920 px screen). zoom scales a panel and its own offsets;
+   the windows over the game and the tooltip keep their size. */
+.hud { --uz: 1; }
+@media (max-width: 2300px) { .hud { --uz: .8; } }
+@media (max-width: 1700px) { .hud { --uz: .74; } }
+@media (max-width: 1400px) { .hud { --uz: .7; } }
+.hud > .topbar, .hud > .objective, .hud > .minimap, .hud > .respanel, .hud > .agereq, .hud > .bottom, .hud > .groupbar,
+.hud > .quests, .hud > .toasts, .hud > .scoreboard, .hud > .chatdock, .hud > .placehint { zoom: var(--uz); }
+
 /* ---------- panels ---------- */
 .hud .panel, #ui > .tooltip.panel, #ui > .netbanner.panel,
 .hud.age-0 .panel, .hud.age-1 .topbar, .hud.age-2 .topbar, .hud.age-3 .topbar, .hud.age-4 .topbar {
@@ -43,12 +54,14 @@
 .respanel .res .wk svg, .respanel .res .wk img { width: 15px; height: 15px; }
 .respanel .res.pulse { animation: respulse .5s ease; }
 @keyframes respulse { 0% { background: #e3ad4c4d; } 100% { background: transparent; } }
-.respanel .resfoot { display: flex; align-items: center; gap: 6px; padding-top: 4px; }
+.respanel .resfoot { display: flex; align-items: center; gap: 6px; padding-top: 2px; }
+.respanel .reshead { display: flex; padding-bottom: 3px; }
 .respanel .resfoot .res { flex: 1; min-width: 0; border-bottom: 0; font-size: 12.5px; padding: 0 2px; gap: 4px; white-space: nowrap; }
 .respanel .resfoot .res .i { font-size: 15px; width: 18px; }
-#ui .respanel .idlebtn { flex: none; width: auto; min-width: 44px; height: 28px; padding: 0 6px; display: flex; align-items: center; gap: 4px; font-size: 14px; }
-#ui .respanel .idlebtn b { font-size: 13px; }
-#ui .respanel .idlebtn.has { border-color: var(--gold-2); background: #e3ad4c33; color: #fff; }
+#ui .respanel .idlebtn { flex: 1; width: auto; height: 30px; padding: 0 8px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; }
+#ui .respanel .idlebtn b { font-size: 14px; font-variant-numeric: tabular-nums; }
+#ui .respanel .idlebtn:not(.has) { opacity: .6; }
+#ui .respanel .idlebtn.has { border-color: #ffeec0; background: linear-gradient(#f7cf6c, #e3a03a 55%, #c27a1e); color: #2a1404; box-shadow: 0 0 12px #ffc04a77; }
 
 /* the next age (above the minimap and the resources): needs as icons, the age-up button over the resources' corner */
 .agereq { position: absolute; left: 10px; bottom: 252px; width: 406px; height: 56px; padding: 5px; display: flex; align-items: stretch; gap: 6px; pointer-events: auto; }
@@ -70,14 +83,14 @@
 .hud .chatdock { --chat-bottom: max(318px, calc(50vh - 220px)); }
 .hud .quests { max-height: calc(100vh - 390px); }
 
-/* control groups: a column at the right edge (they used to sit under the bottom panels and push them up) */
-.hud .groupbar { left: auto; right: 10px; bottom: 10px; transform: none; flex-direction: column; }
+/* control groups: a row fixed at the bottom right (they used to sit under the bottom panels and push them up) */
+.hud .groupbar { left: auto; right: 10px; bottom: 10px; transform: none; flex-direction: row; }
 .hud .bottom { bottom: 10px; }
 .hud .placehint { bottom: 222px; }
 
 /* the bottom group starts right of the resources (minimap 10..246, resources 252..416) */
-.hud .bottom { left: max(426px, calc(50% - var(--bw) / 2)); max-width: calc(100vw - 436px - 62px); }
-@media (max-width: 1100px) { .hud .selpanel { width: clamp(170px, calc(100vw - 436px - 62px - 334px), 340px); min-width: 0; } }
+.hud .bottom { left: max(426px, calc(50% - var(--bw) / 2)); max-width: calc(100vw - 436px - 10px); }
+@media (max-width: 1100px) { .hud .selpanel { width: clamp(170px, calc(100vw - 436px - 10px - 334px), 340px); min-width: 0; } }
 @media (max-width: 900px) { .respanel { left: 10px; bottom: 250px; width: 234px; height: auto; flex-direction: row; flex-wrap: wrap; } .respanel .res { flex: 1 0 45%; } .hud .bottom { left: 256px; max-width: calc(100vw - 266px); } .agereq { bottom: 360px; width: 234px; height: auto; flex-wrap: wrap; } #ui .agereq .ar-btn { width: 100%; height: 34px; } }
 
 /* ---------- selection panel ---------- */
