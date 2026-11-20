@@ -294,7 +294,7 @@ export class UI {
       const b = el('button', 'mn-tile', `<span class="mt-pic"><span class="mt-img" style="background-image:url(assets/ui/${img}.webp)"></span></span><span class="mt-frame"></span><span class="mt-plate"><b>${title}</b></span><span class="mt-desc">${desc}</span>`);
       b.type = 'button'; b.style.setProperty('--i', i); b.onclick = go(fn); tiles.append(b);
     };
-    tile(0, 'karo_tek', 'Tek Oyunculu', 'Yapay zekâya karşı savaş', () => this._menuSetup());
+    tile(0, 'karo_tek', 'Tek Oyunculu', 'Yapay zekâya karşı savaş', () => this._menuSolo());
     tile(1, 'karo_cok', 'Çok Oyunculu', 'Arkadaşınla oda kur, kodla katıl', () => this._menuMulti());
     // the row of text links (this._mbtn(box, ...) below builds one of these on the home screen)
     const link = (text, fn, cls = '') => {
@@ -307,13 +307,10 @@ export class UI {
     this.menuEl.append(box);
     if (note) this._menuNote(note);
     if (this.game && !this.game.over && !this.app.demo && !this.app.net) link('Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); }, 'hot');
-    const cont = link('Devam Et', () => Promise.resolve(safe(() => this.app.continueLast(), false)).then((ok) => { if (!ok && this.app.lastLoadError && this.mode === 'menu') this._menuSaves(this.app.lastLoadError); }).catch(() => {}));
-    const saves = link('Kayıtlı Oyunlar', () => this._menuSaves());
+    // (Devam Et / Kayıtlı Oyunlar: Tek Oyunculu'nun içinde, _menuSolo)
     link('Sandbox', () => this._menuSandbox());
     if (!this._account() && ACCOUNTS && this.app.cloud) link('Google ile Giriş', () => loginScreen(this), 'hot');
     if (this._account()) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
-    cont.disabled = true;
-    Promise.resolve(safe(() => this.app.listSaves(), [])).then((l) => { cont.disabled = !(l && l.length); }).catch(() => {});
     // release notes; marked until this version's notes have been opened once
     const seen = safe(() => localStorage.getItem('mrts-news-seen'), null);
     link('Yenilikler', () => this._menuNews(), seen === VERSION ? '' : 'hot');
@@ -327,7 +324,7 @@ export class UI {
     }).catch(() => {});
     safe(() => menuHud(this));   // the player plate (avatar, name, level, TP) and account chips around the menu
     safe(() => worldChat(this));   // the world chat dock (bottom left)
-    void saves; void firstLaunch;
+    void firstLaunch;
   }
   // a short message at the top of the current menu box (green)
   _menuNote(text) {
@@ -444,43 +441,72 @@ export class UI {
       this.app.newGame({ mapSize: 256, enemies: 1, difficulty: 'normal', startRes: 'high', startAge: s.startAge, mapType: s.mapType, climate: s.climate, civ: s.civ, fog: s.fog, sandbox: true, seed: (Math.random() * 1e9) | 0 });
     }, 'primary');
   }
+  // Tek Oyunculu: yarıda kalan oyun yoksa doğrudan Yeni Oyun ekranı; varsa önce sorar (_menuSaves): en yeni kayıt büyük
+  // "Devam Et" düğmesi, öteki kayıtlar altında (tıklayınca açılır). Devam Et / Kayıtlı Oyunlar eskiden ana menüdeydi.
+  _menuSolo() {
+    Promise.resolve(safe(() => this.app.listSaves(), [])).catch(() => []).then((l) => {
+      if (this.mode !== 'menu') return;
+      if (l && l.length) this._menuSaves(); else this._menuSetup();
+    });
+  }
   _menuSaves(errText) {
-    const box = this._menuBox('<h2>Kayıtlı Oyunlar</h2><div class="mperr hidden"></div><div class="savelist">Yükleniyor...</div>');
-    const list = box.querySelector('.savelist'), err = box.querySelector('.mperr');
+    const box = this._menuBox('<h2>Tek Oyunculu</h2><div class="mperr hidden"></div><p class="solo-ask hidden">Yarıda kalan bir oyunun var. Kaldığın yerden devam etmek ister misin?</p><div class="solo-cont"></div><div class="savelist">Yükleniyor...</div>');
+    box.classList.add('solo-saves');
+    const list = box.querySelector('.savelist'), err = box.querySelector('.mperr'), cont = box.querySelector('.solo-cont');
     const fail = (t) => { err.textContent = t; err.classList.remove('hidden'); };
     if (errText) fail(errText);
     const cloudOn = !!safe(() => this.app.cloud?.loggedIn, false);
+    // how long ago (the save's name already carries the date and time)
+    const when = (s) => {
+      if (!s.time) return '';
+      const m = Math.max(0, Math.round((Date.now() - s.time) / 60000)), h = Math.round(m / 60), g = Math.round(h / 24);
+      return m < 1 ? 'az önce' : m < 60 ? m + ' dk önce' : h < 24 ? h + ' saat önce' : g === 1 ? 'dün' : g + ' gün önce';
+    };
     let busy = false;
+    const open = async (s, d, small) => {
+      if (busy) return; busy = true; this._click();
+      err.classList.add('hidden');
+      if (s.cloud === 'only' || s.cloud === 'newer') { d.style.opacity = '0.6'; small.textContent = '☁ İndiriliyor...'; }
+      const ok = await Promise.resolve(safe(() => this.app.loadGame(s.key), false)).catch(() => false);
+      busy = false;
+      if (!ok && this.mode === 'menu') this._menuSaves(this.app.lastLoadError || 'Kayıt açılamadı.');
+    };
+    const delBtn = (s) => {
+      // (guests keep the list without a delete button)
+      const del = el('button', 'lb-x', '✕'); del.title = 'Kaydı sil'; del.type = 'button';
+      del.onclick = (ev) => {
+        ev.stopPropagation();
+        const c = confirmDeleteSave(s); if (!c) return;
+        Promise.resolve(safe(() => this.app.deleteSave(s.key, c), null)).then((r) => (r && r.ok === false ? this._menuSaves(r.error) : this._menuSolo())).catch(() => this._menuSaves('Kayıt silinemedi.'));
+      };
+      return del;
+    };
     Promise.resolve(safe(() => this.app.listSaves(), [])).then((l) => {
       list.innerHTML = '';
       if (!l || !l.length) { list.innerHTML = '<div style="color:var(--dim);text-align:center;padding:20px">Kayıt bulunamadı.</div>'; return; }
-      for (const s of l) {
+      box.querySelector('.solo-ask').classList.remove('hidden');
+      // the newest save: one big "Devam Et"
+      const [first, ...rest] = l;
+      const big = el('button', 'solo-big', `<span class="sb-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5 L19 12 L8 19 Z"/></svg></span><span class="sb-txt"><b>Devam Et</b><span>${esc(saveBadge(first) + (first.name || first.key))}</span><small>${esc(when(first))}</small></span>`);
+      big.type = 'button'; if (first.cloud) big.title = saveBadgeTitle(first);
+      big.onclick = () => open(first, big, big.querySelector('small'));
+      cont.append(big);
+      if (!rest.length) { list.remove(); return; }
+      list.before(el('div', 'solo-head', 'Diğer kayıtlı oyunlar'));
+      for (const s of rest) {
         // (cloud: ☁ = only in the cloud / ☁↓ = newer in the cloud; downloaded when opened)
-        const d = el('div', 'saveitem', `<span>${esc(saveBadge(s) + (s.name || s.key))}</span><small>${s.time ? new Date(s.time).toLocaleString('tr-TR') : ''}</small>`);
+        const d = el('div', 'saveitem', `<span>${esc(saveBadge(s) + (s.name || s.key))}</span><small>${esc(when(s))}</small>`);
         if (s.cloud) d.title = saveBadgeTitle(s);
         if (s.cloud === 'only' || s.cloud === 'newer') d.classList.add('cloud-only');
-        d.onclick = async () => {
-          if (busy) return; busy = true; this._click();
-          err.classList.add('hidden');
-          if (s.cloud === 'only' || s.cloud === 'newer') { d.style.opacity = '0.6'; d.querySelector('small').textContent = '☁ İndiriliyor...'; }
-          const ok = await Promise.resolve(safe(() => this.app.loadGame(s.key), false)).catch(() => false);
-          busy = false;
-          if (!ok && this.mode === 'menu') this._menuSaves(this.app.lastLoadError || 'Kayıt açılamadı.');
-        };
-        if (cloudOn) {
-          // (guests keep the old list without a delete button)
-          const del = el('button', 'lb-x', '✕'); del.title = 'Kaydı sil';
-          del.onclick = (ev) => {
-            ev.stopPropagation();
-            const c = confirmDeleteSave(s); if (!c) return;
-            Promise.resolve(safe(() => this.app.deleteSave(s.key, c), null)).then((r) => this._menuSaves(r && r.ok === false ? r.error : '')).catch(() => this._menuSaves('Kayıt silinemedi.'));
-          };
-          d.append(del);
-        }
+        d.onclick = () => open(s, d, d.querySelector('small'));
+        if (cloudOn) d.append(delBtn(s));
         list.append(d);
       }
+      if (cloudOn) { const del = delBtn(first); del.className = 'solo-del'; del.textContent = 'Bu kaydı sil'; cont.append(del); }
     }).catch(() => { list.textContent = 'Kayıtlar okunamadı.'; });
-    this._mbtn(box, 'Geri', () => this._menuMain());
+    const bar = el('div', 'mn-bar'); box.append(bar);
+    this._mbtn(bar, 'Geri', () => this._menuMain());
+    this._mbtn(bar, 'Yeni Oyun', () => this._menuSetup(), 'primary');
   }
   // release notes (versions.js): every version with its changes; one with new / changed models links to the 3D showcase
   _menuNews() {

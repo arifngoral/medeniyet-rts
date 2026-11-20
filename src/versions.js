@@ -37,6 +37,7 @@ export const VERSIONS = [
         'Giriş gerekmez: oyun doğrudan açılır, çok oyunculu oda koduyla çalışır, adını lobide değiştirirsin.',
         'Yeni menü görünümü: kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, portreli medeniyet şeridi.',
         'Yenilikler penceresi ve 3B vitrin eklendi.',
+        "Devam Et ve Kayıtlı Oyunlar ana menüden Tek Oyunculu'nun içine taşındı: yarıda kalan oyunun varsa Tek Oyunculu'ya tıklayınca kaldığın yerden devam etmek isteyip istemediğin sorulur, öteki kayıtlar da orada listelenir.",
       ]],
       ['Oyun içi arayüz', [
         'Kaynaklar üst çubuktan mini haritanın yanına taşındı. Her kaynağın yanında o an o kaynakta çalışan köylü sayısı yazar (dakikalık gelir yerine); balıkçı tekneleri yiyeceğe sayılır. Boşta köylü düğmesi ve nüfus panelin en üstünde, yan yana.',

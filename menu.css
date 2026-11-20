@@ -221,3 +221,24 @@
 .wchat .wc-err { color: #ff9b8a; font-size: 12px; min-height: 0; }
 .wchat .wc-err:empty { display: none; }
 @media (max-width: 760px) { .wchat { bottom: 12px; left: 12px; } }
+
+/* ======================= Tek Oyunculu: kaldığın yerden (ui.js _menuSolo / _menuSaves) ======================= */
+.menu .menu-box.solo-saves { width: min(620px, 96vw); padding-bottom: 0; }
+.solo-saves .solo-ask { margin: -6px 0 16px; text-align: center; color: var(--dim); font-size: .98rem; }
+.solo-saves .solo-big { display: flex; align-items: center; gap: 18px; width: 100%; padding: 18px 22px; cursor: pointer; text-align: left; font: inherit; color: var(--ink);
+  border: 2px solid var(--mline); background: radial-gradient(ellipse at 20% 50%, #4a2c12, #1d1109 70%); box-shadow: inset 0 0 0 4px #1a0f07, inset 0 0 0 5px var(--line), 0 12px 28px #000a;
+  transition: transform .25s var(--ease), border-color .25s, box-shadow .25s; }
+.solo-saves .solo-big:hover, .solo-saves .solo-big:focus-visible { outline: none; transform: translateY(-2px); border-color: var(--gold-2);
+  box-shadow: inset 0 0 0 4px #1a0f07, inset 0 0 0 5px var(--mline), 0 0 26px #e3ad4c66, 0 14px 30px #000b; }
+.solo-saves .sb-play { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; font-size: 1.3rem; color: #2a1404;
+  background: linear-gradient(#f7cf6c, #e3a03a 55%, #c27a1e); border: 1px solid #ffeec0; box-shadow: 0 0 0 3px #1a0f07, 0 0 18px #e3ad4c66; }
+.solo-saves .sb-play svg { width: 24px; height: 24px; margin-left: 3px; fill: #2a1404; }
+.solo-saves .sb-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.solo-saves .sb-txt b { font: 700 clamp(1.15rem, 1.7vw, 1.5rem) var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--gold-2); text-shadow: 0 2px 4px #000; }
+.solo-saves .sb-txt span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.solo-saves .sb-txt small { color: var(--dim); }
+.solo-saves .solo-del { display: block; margin: 6px 0 0 auto; padding: 2px 4px; border: 0; background: none; cursor: pointer; font: inherit; font-size: .8rem; color: var(--dim); opacity: .7; }
+.solo-saves .solo-del:hover { opacity: 1; color: #ff9b8a; }
+.solo-saves .solo-head { margin: 20px 0 4px; font: 700 .74rem var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--gold); text-align: center; }
+.solo-saves .savelist { max-height: 34vh; overflow-y: auto; }
+.solo-saves .mn-bar { margin-top: 16px; }
