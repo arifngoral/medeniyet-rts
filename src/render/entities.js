@@ -1415,6 +1415,63 @@ function makeHorse(g, coatHex, P, sc) {
   }
   if (sc) P.hbody.scale.setScalar(sc);
 }
+// Other mounts of the unique units (kit.mount). Same pivots as the horse (P.hbody, P.hhead, P.hl[4]) so the cavalry
+// animation drives them; each returns the height its rider sits at. Boxes stand on their y like everywhere here.
+function makeElephant(g, P, cloth) {
+  const m = mat(0x7d7b80, .95), dk = mat(0x5a585e, .95), ivory = mat(0xefe6cf, .6);
+  P.hbody = piv(g, 0, 0, 0);
+  const E = piv(P.hbody, 0, 0, 0), ES = 1.32; E.scale.setScalar(ES);   // (built at horse scale and enlarged; the rider on it is not)
+  bx(E, m, .54, .5, .98, 0, .5, -.02);                                   // barrel
+  bx(E, m, .46, .12, .8, 0, .98, -.04);                                  // rounded back
+  bx(E, m, .44, .4, .2, 0, .58, .52);                                    // shoulders / neck
+  P.hhead = piv(E, 0, 1.0, .68);
+  bx(P.hhead, m, .38, .4, .3, 0, -.3, 0);                                      // skull
+  bx(P.hhead, m, .3, .1, .22, 0, .08, -.02);                                   // domed forehead
+  for (const s of [1, -1]) {
+    const ear = bx(P.hhead, dk, .04, .36, .28, s * .23, -.26, -.12); ear.rotation.y = s * .5;   // big ears, swept back
+    const tusk = bx(P.hhead, ivory, .045, .045, .34, s * .12, -.34, .22); tusk.rotation.x = .45;
+    bx(P.hhead, mat(0x15120f, .5), .02, .04, .04, s * .19, -.06, .12);         // eye
+  }
+  const t1 = bx(P.hhead, m, .14, .34, .14, 0, -.6, .16); t1.rotation.x = -.12;   // trunk, three pieces curling in
+  const t2 = bx(P.hhead, m, .11, .26, .11, 0, -.84, .14); t2.rotation.x = .1;
+  const t3 = bx(P.hhead, dk, .085, .16, .085, 0, -.97, .1); t3.rotation.x = .5;
+  bx(E, dk, .04, .4, .04, 0, .52, -.53).rotation.x = -.12;               // tail
+  P.hl = [];
+  for (let i = 0; i < 4; i++) {
+    const l = piv(E, (i & 1 ? 1 : -1) * .17, .52, (i & 2 ? -1 : 1) * .34);
+    bx(l, m, .17, .52, .19, 0, -.52, 0); bx(l, ivory, .18, .05, .2, 0, -.52, 0);   // pillar legs, pale toenails
+    P.hl.push(l);
+  }
+  // war blanket in the player's colour, a gold-trimmed headpiece, the driver's seat
+  bx(E, cloth, .58, .34, .6, 0, .72, -.06); bx(E, MT.gold, .59, .04, .62, 0, .72, -.06);
+  bx(E, cloth, .5, .06, .56, 0, 1.1, -.06);
+  bx(P.hhead, cloth, .22, .2, .02, 0, -.16, .155); bx(P.hhead, MT.gold, .1, .1, .03, 0, -.1, .16);
+  bx(E, MT.leather, .26, .07, .3, 0, 1.16, -.04);
+  return 1.16 * ES;
+}
+function makeCamel(g, coatHex, P, cloth) {
+  const m = mat(coatHex, .95), dk = mat(0x6b5130, .9);
+  P.hbody = piv(g, 0, 0, 0);
+  bx(P.hbody, m, .28, .3, .78, 0, .62, 0);                                     // body
+  bx(P.hbody, m, .22, .2, .34, 0, .9, -.04); bx(P.hbody, m, .16, .08, .22, 0, 1.08, -.04);   // the hump
+  const n1 = bx(P.hbody, m, .13, .42, .15, 0, .7, .4); n1.rotation.x = .75;    // long neck: out, then up
+  const n2 = bx(P.hbody, m, .12, .4, .13, 0, .9, .66); n2.rotation.x = .1;
+  P.hhead = piv(P.hbody, 0, 1.34, .7);
+  bx(P.hhead, m, .13, .13, .3, 0, -.06, .06); bx(P.hhead, dk, .1, .06, .1, 0, -.07, .2);   // head, muzzle
+  bx(P.hhead, dk, .025, .06, .03, .05, .07, -.04); bx(P.hhead, dk, .025, .06, .03, -.05, .07, -.04);   // ears
+  bx(P.hbody, dk, .04, .3, .04, 0, .56, -.4).rotation.x = -.25;                // tail
+  P.hl = [];
+  for (let i = 0; i < 4; i++) {
+    const l = piv(P.hbody, (i & 1 ? 1 : -1) * .09, .64, (i & 2 ? -1 : 1) * .31);
+    bx(l, m, .065, .64, .075, 0, -.64, 0); bx(l, m, .085, .06, .085, 0, -.36, 0); bx(l, dk, .09, .05, .11, 0, -.64, .01);   // thin leg, knee, pad
+    P.hl.push(l);
+  }
+  // saddle cloth over the hump in the player's colour, tassels, a water skin
+  bx(P.hbody, cloth, .3, .26, .4, 0, .86, -.04); bx(P.hbody, MT.leather, .2, .06, .26, 0, 1.15, -.04);
+  for (const s of [1, -1]) { bx(P.hbody, MT.gold, .02, .1, .04, s * .155, .8, .1); bx(P.hbody, MT.gold, .02, .1, .04, s * .155, .8, -.18); }
+  bx(P.hbody, MT.leather, .08, .14, .1, .17, .72, -.26);
+  return 1.15;
+}
 function makeWheels(g, P, r, hw, z1, z2, age) {
   P.wheels = [];
   for (let i = 0; i < 4; i++) {
@@ -1456,8 +1513,12 @@ function makeUnitRaw(type, color, age) {
   if (k && !k.cav) { makeHuman(inner, color, k, P, A); inner.scale.setScalar(.72 * ks); }
   else if (k && k.cav) {
     rig = 'cav'; h = 1.25; pw = .6; pd = 1.0;
-    makeHorse(inner, k.coat, P);
-    if (A === 0) { bx(P.hbody, MT.leather, .31, .03, .05, 0, .78, .1); }
+    let seat = .78;   // the top of the mount's back
+    if (k.mount === 'elephant') { seat = makeElephant(inner, P, cloth); h = 2.1; pw = 1.0; pd = 1.7; }
+    else if (k.mount === 'camel') { seat = makeCamel(inner, k.coat, P, cloth); h = 1.6; pw = .6; pd = 1.1; }
+    else makeHorse(inner, k.coat, P);
+    if (k.mount) { /* its own tack is part of the model */ }
+    else if (A === 0) { bx(P.hbody, MT.leather, .31, .03, .05, 0, .78, .1); }
     else if (A === 1) { bx(P.hbody, cloth, .32, .05, .36, 0, .78, -.02); bx(P.hbody, MT.bronze, .16, .03, .05, 0, 1.0, .7); }
     else if (A === 2) {
       if (k.barding) { bx(P.hbody, cloth, .33, .3, .6, 0, .44, -.05); bx(P.hbody, MT.steel, .17, .1, .2, 0, .98, .6); bx(P.hbody, MT.steel, .2, .2, .1, 0, .6, .42); }
@@ -1468,8 +1529,8 @@ function makeUnitRaw(type, color, age) {
       if (k.barding && A === 3) bx(P.hbody, MT.steel, .17, .1, .2, 0, .98, .6);
       if (A === 4) bx(P.hbody, MT.canvas, .3, .09, .1, 0, .82, -.24);
     }
-    const r = piv(P.hbody, 0, .42, -.02); makeHuman(r, color, k, P, A);
-    P.legL.rotation.set(-1.1, 0, .45); P.legR.rotation.set(-1.1, 0, -.45);
+    const r = piv(P.hbody, 0, seat - .36, -.02); makeHuman(r, color, k, P, A);
+    P.legL.rotation.set(-1.1, 0, k.mount === 'elephant' ? .75 : .45); P.legR.rotation.set(-1.1, 0, k.mount === 'elephant' ? -.75 : -.45);
     inner.scale.setScalar(.72 * ks);
   } else if (type === 'ram') {
     rig = 'ram'; h = .9; pw = .8; pd = 1.3;

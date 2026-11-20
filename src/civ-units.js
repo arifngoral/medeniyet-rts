@@ -5,7 +5,8 @@
 //   hp / speed / rof   multipliers of the base value (rof < 1 = attacks faster)
 //   atk / armor / range / time   added to the base value
 //   cost / pop / bonus / proj   replace the base's (bonus is merged over the base's)
-//   kit    changes to the base's look (render/entities.js KIT): crest / cape (a colour), scale, coat, weapon, shield, ...
+//   kit    changes to the base's look (render/entities.js KIT): crest / cape (a colour), scale, coat, weapon, shield,
+//          mount ('elephant' | 'camel': its own model in place of the horse), ...
 // Costs are a little above the base when the unit is plainly better.
 // Balance: tools/lig.mjs (win % against an AI without a civilization; target ~75 for every civilization, 72-78 left
 // alone). Measured once on 2026-11-20 (80 matches each), then adjusted by distance from 75 - the adjusted numbers of
@@ -38,9 +39,9 @@ export const CIV_UNITS = {
   ispanyol: { id: 'almogavar', base: 'swordsman', name: 'Almogavar', icon: '🏰', speed: 1.15, atk: 1,
     desc: 'Hafif donanımlı sınır baskıncısı: hızlı koşar, sert vurur.', kit: { shield: 0, crest: 0xd4a017 } },
   arap: { id: 'deve', base: 'lightcav', name: 'Deve Süvarisi', icon: '🐪', hp: 1.3, bonus: { cavalry: 1.8 }, cost: { food: 60, gold: 15 },
-    desc: 'Atları ürküten deve süvarisi: düşman süvarisine karşı çok güçlü.', kit: { coat: 0xc9a66b, crest: 0x1e7a4a, scale: 1.08 } },
+    desc: 'Atları ürküten deve süvarisi: düşman süvarisine karşı çok güçlü.', kit: { mount: 'camel', coat: 0xc9a66b, crest: 0x1e7a4a } },
   hint: { id: 'fil', base: 'knight', name: 'Savaş Fili', icon: '🐘', hp: 1.9, atk: 5, speed: 0.8, pop: 2, time: 5, bonus: { building: 1.2 }, cost: { food: 95, gold: 95 },
-    desc: 'Yürüyen kale: çok dayanıklı, çok güçlü, yavaş. 2 nüfus tutar.', kit: { coat: 0x77777f, scale: 1.4, crest: 0xe07b1a } },
+    desc: 'Yürüyen kale: çok dayanıklı, çok güçlü, yavaş. 2 nüfus tutar.', kit: { mount: 'elephant', crest: 0xe07b1a, shield: 0 } },
   kore: { id: 'hwarang', base: 'archer', name: 'Hwarang', icon: '🐢', hp: 1.2, armor: 1, atk: 1,
     desc: 'Seçkin soylu okçu: zırhlı, dayanıklı ve keskin nişancı.', kit: { crest: 0x1f8f98, armor: 1 } },
   aztek: { id: 'jaguar', base: 'swordsman', name: 'Jaguar Savaşçısı', icon: '🐆', bonus: { infantry: 1.2 }, cost: { food: 60, gold: 25 },
