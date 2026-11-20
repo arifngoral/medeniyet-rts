@@ -10,6 +10,18 @@
 // Rule of thumb (same as the card game): changes made on the same day go into the same version.
 export const VERSIONS = [
   {
+    v: '1.1', date: '2026-11-21', title: 'Denge',
+    intro: 'Medeniyetler ilk kez kendi aralarında ölçüldü (herkes herkese, 1520 maç) ve uçtakiler ayarlandı.',
+    items: [
+      ['Medeniyet dengesi', [
+        'Botlar efsanesini kaybedince yenisini en erken 4 dakika sonra basar (baskıncılar efsaneyi her akında kaybedip çağ atlayacak parayı ona harcıyordu).',
+        'Kısılanlar: Çin (daha yavaş asker üretimi, Chu-Ko-Nu daha seyrek atar, Ateş Mızraklı), Kore (kule saldırısı, Hwarang, Woldo), Viking (öldürme altını, Berserker), Yunan (mızraklı canı, Hoplit, Peltast), Roma, Aztek, Pers (Ölümsüz).',
+        'Güçlenenler: Arap (süvari canı, altın; Deve Süvarisi, Memlûk), Bizans (Katafrakt), Mısır (yiyecek, Nubyalı Okçu), İngiliz (okçu saldırısı; Uzun Yaylı, Kırmızı Ceketli), Moğol (Mangudai), İspanyol (Almogavar, Konkistador).',
+        'Denge tablosu (denge.html) güncellendi. Kalan uçlar (Çin, Yunan, Pers güçlü; Arap zayıf) büyük ölçüde çağ binalarından geliyor: onlar sonra ayarlanacak.',
+      ]],
+    ],
+  },
+  {
     v: '1.0', date: '2026-11-20', title: 'Medeniyetler',
     intro: 'Aevum çatalının ilk sürümü: 20 medeniyet, her birinin bonusları, iki özel birliği ve kendi oynayış tarzı.',
     items: [

@@ -9,6 +9,7 @@ import { UNITS, BUILDINGS, TECHS, AGES, FARM_SLOTS } from '../data.js';
 import { QUEUE_TIME_MUL, unitLos, buildingLos, forDisc } from './game.js';
 import { tuneDiff, civRoleBias, civStyle } from '../civ-ai.js';
 import { HEROES } from '../landmarks.js';
+const HERO_RETRY = 240;   // s between two hero orders of an AI (_landmark)
 
 const MIN = 60;
 const DIFF = {
@@ -444,11 +445,13 @@ export class AIController {
         } else block(cost, 'ageWait');
       }
     }
-    // the hero, from a finished age-up building, when there is none
+    // the hero, from a finished age-up building, when there is none; at most one
+    // order every HERO_RETRY s (raiding styles lost it on every raid and paid 150 food + 150 gold for a new one each
+    // time, so they never aged up)
     const h = HEROES[g.players[this.pid].civ];
-    if (h && c.age >= 1 && g.canAfford(this.pid, UNITS[h.id].cost) && !g.heroBusy(this.pid, h.id)) {
+    if (h && c.age >= 1 && g.time >= (this._heroT || 0) && g.canAfford(this.pid, UNITS[h.id].cost) && !g.heroBusy(this.pid, h.id)) {
       const lmB = c.blds.find(b => b.done && !b.dead && BUILDINGS[b.type].landmark && !(b.queue || []).length);
-      if (lmB) g.train(lmB.id, h.id);
+      if (lmB && g.train(lmB.id, h.id)) this._heroT = g.time + HERO_RETRY;
     }
   }
   // the civilization's play style (the difficulty row re-weighted) and its taste in units (civ-ai.js); nothing without one

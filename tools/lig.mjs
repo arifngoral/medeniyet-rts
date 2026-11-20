@@ -4,6 +4,7 @@
 //   node tools/lig.mjs                      all civilizations, 40 seeds (= 80 matches) each, ~15-20 min on 12 cores
 //   node tools/lig.mjs --seeds 20 --only roma,mogol
 //   node tools/lig.mjs --no-unit            passives only (unique units off)      --no-fx   unique units only
+//   node tools/lig.mjs --no-lm              no age-up buildings (the town center ages up; no heroes)
 //   node tools/lig.mjs --no-ai              the AI ignores its civilization's play style and unit taste (civ-ai.js)
 //   node tools/lig.mjs --vs roma            against that civilization instead of the baseline
 //   node tools/lig.mjs --rr                 round robin: every civilization against every other (target ~50 % each);
@@ -42,7 +43,7 @@ if (!isMainThread) {
   parentPort.on('message', (m) => {
     // m: {civ, seed, side}: the civilization plays player `side`, the opponent the other one
     const players = [0, 1].map(i => ({ kind: 'ai', team: i + 1, difficulty: opt.diff, civ: i === m.side ? m.civ : (m.opp !== undefined ? m.opp : opt.vs) }));
-    const g = new Game({ mapSize: opt.size, seed: m.seed, mp: true, me: 0, startRes: 'normal', startAge: 0, mapType: opt.maps[m.seed % opt.maps.length], players, noCivUnit: opt.noUnit, noCivFx: opt.noFx, noCivAi: opt.noAi });
+    const g = new Game({ mapSize: opt.size, seed: m.seed, mp: true, me: 0, startRes: 'normal', startAge: 0, mapType: opt.maps[m.seed % opt.maps.length], players, noCivUnit: opt.noUnit, noCivFx: opt.noFx, noCivAi: opt.noAi, noLandmarks: opt.noLm });
     const MAX = 30 * 60 * opt.cap; let t = 0;
     while (!g.over && t < MAX) { g.update(1 / 30); t++; }
     const w = g.over ? g.over.winnerTeam : 0;   // 1 / 2, 0 = not finished, -1 = nobody
@@ -55,14 +56,14 @@ if (!isMainThread) {
   const rr = flag('rr'), seeds = +arg('seeds', rr ? 2 : 40), jobs = Math.max(1, +arg('jobs', Math.max(1, os.cpus().length - 2)));
   const vs = arg('vs', '') || undefined;
   if (vs && !CIV_IDS.includes(vs)) throw new Error('--vs: unknown civilization ' + vs);
-  const opt = { diff: arg('diff', 'hard'), size: +arg('size', 96), cap: +arg('cap', 60), maps: arg('maps', 'plains,river,highlands').split(','), vs, noUnit: flag('no-unit'), noFx: flag('no-fx'), noAi: flag('no-ai') };
+  const opt = { diff: arg('diff', 'hard'), size: +arg('size', 96), cap: +arg('cap', 60), maps: arg('maps', 'plains,river,highlands').split(','), vs, noUnit: flag('no-unit'), noFx: flag('no-fx'), noAi: flag('no-ai'), noLm: flag('no-lm') };
   const work = [];
   if (rr) { for (let a = 0; a < civs.length; a++) for (let b = a + 1; b < civs.length; b++) for (let s = 0; s < seeds; s++) for (const side of [0, 1]) work.push({ civ: civs[a], opp: civs[b], seed: 1000 + s * 7 + a * 131 + b * 17, side }); }
   else for (const civ of civs) for (let s = 0; s < seeds; s++) for (const side of [0, 1]) work.push({ civ, seed: 1000 + s * 7, side });
   const R = Object.fromEntries(civs.map(c => [c, { n: 0, w: 0, d: 0, min: 0 }]));
   const PAIR = {};   // (round robin: 'a|b' -> { n, w: a's wins (draws half), d })
   const t0 = Date.now(); let done = 0, next = 0;
-  console.log((rr ? `round robin: ${civs.length} civilizations, ${work.length} matches (${seeds * 2} per pair)` : `${civs.length} civilizations x ${seeds * 2} matches against ${vs || 'no civilization'}`) + `; ${jobs} workers` + (opt.noUnit ? '; unique units OFF' : '') + (opt.noFx ? '; passives OFF' : '') + (sets.length ? '; ' + sets.join(' ') : ''));
+  console.log((rr ? `round robin: ${civs.length} civilizations, ${work.length} matches (${seeds * 2} per pair)` : `${civs.length} civilizations x ${seeds * 2} matches against ${vs || 'no civilization'}`) + `; ${jobs} workers` + (opt.noUnit ? '; unique units OFF' : '') + (opt.noFx ? '; passives OFF' : '') + (opt.noLm ? '; landmarks OFF' : '') + (sets.length ? '; ' + sets.join(' ') : ''));
   await new Promise((resolve) => {
     for (let j = 0; j < Math.min(jobs, work.length); j++) {
       const w = new Worker(fileURLToPath(import.meta.url), { workerData: { sets, opt } });
