@@ -640,7 +640,7 @@ export class Game {
     for (const id of p.techs) { const fx = TECHS[id] && TECHS[id].fx; if (!fx) continue;
       for (const k in fx) { const v = fx[k]; if (typeof v === 'number') m[k] = (m[k] || 0) + v; else for (const c in v) (m[k] || (m[k] = {}))[c] = (m[k][c] || (k === 'gather' ? 1 : 0)) + v[c]; } }
     // the civilization's passive bonuses: the same fx format as a tech, in effect from the start
-    const cfx = p.civ && CIVS[p.civ] && CIVS[p.civ].fx;
+    const cfx = !this.cfg.noCivFx && p.civ && CIVS[p.civ] && CIVS[p.civ].fx;
     if (cfx) for (const k in cfx) { const v = cfx[k]; if (typeof v === 'number') m[k] = (m[k] || 0) + v; else for (const c in v) (m[k] || (m[k] = {}))[c] = (m[k][c] || (k === 'gather' ? 1 : 0)) + v[c]; }
     p.mods = m;
   }
@@ -1078,7 +1078,7 @@ export class Game {
     const b = this.entities.get(buildingId);
     if (!b || b.dead || b.kind !== 'building' || !b.done || !UNITS[unitType] || !BUILDINGS[b.type].trains.includes(unitType)) return false;
     // a civilization's unique unit replaces the standard one it is based on (asked for by either name)
-    unitType = civUnit(this.players[b.owner].civ, unitType);
+    if (!this.cfg.noCivUnit) unitType = civUnit(this.players[b.owner].civ, unitType);   // (noCivUnit / noCivFx: balance measurements, tools/lig.mjs)
     const d = UNITS[unitType];
     if ( !this.isUnlocked(b.owner, 'unit', unitType) || b.queue.length >= TRAIN_QUEUE_MAX || !this.canAfford(b.owner, d.cost)) return false;
     this._pay(b.owner, d.cost); b.queue.push({ kind: 'unit', id: unitType, t: 0, total: d.time }); return true;

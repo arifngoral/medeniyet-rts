@@ -47,18 +47,19 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
 {
   const none = new Game({ ...base }), roma = new Game({ ...base, civ: 'roma' });
   const hp = (g, t) => g._uMaxHp(t, 0);
-  ok(hp(roma, 'swordsman') === Math.round(UNITS.swordsman.hp * 1.16) && hp(roma, 'spearman') === Math.round(UNITS.spearman.hp * 1.32) && hp(roma, 'archer') === hp(none, 'archer'), `roma: infantry hp (${hp(none, 'swordsman')} -> ${hp(roma, 'swordsman')}), spearman class + type (${hp(none, 'spearman')} -> ${hp(roma, 'spearman')}), archers unchanged`);
+  const rf = CIVS.roma.fx.hp, tg = CIVS.turk.fx.gather.gold;
+  ok(rf.infantry > 0 && rf.spearman > 0 && hp(roma, 'swordsman') === Math.round(UNITS.swordsman.hp * (1 + rf.infantry)) && hp(roma, 'spearman') === Math.round(UNITS.spearman.hp * (1 + rf.infantry + rf.spearman)) && hp(roma, 'archer') === hp(none, 'archer'), `roma: infantry hp (${hp(none, 'swordsman')} -> ${hp(roma, 'swordsman')}), spearman class + type (${hp(none, 'spearman')} -> ${hp(roma, 'spearman')}), archers unchanged`);
   ok(roma._bMaxHp('house', 0) > none._bMaxHp('house', 0), 'roma: buildings are tougher');
   const turk = new Game({ ...base, civ: 'turk' });
-  ok(Math.abs(turk.players[0].mods.gather.gold - 1.1) < 1e-9 && turk.players[0].mods.gather.food === 1 && turk.players[1].civ !== undefined, 'turk: gold gathering x1.1, food untouched');
+  ok(tg > 0 && Math.abs(turk.players[0].mods.gather.gold - (1 + tg)) < 1e-9 && turk.players[0].mods.gather.food === 1 && turk.players[1].civ !== undefined, 'turk: gold gathering x' + (1 + tg) + ', food untouched');
   // a tech on top of a civilization bonus adds up
   turk.players[0].techs.add('pickaxe'); turk._mods(turk.players[0]);
-  ok(Math.abs(turk.players[0].mods.gather.gold - 1.35) < 1e-9, 'civilization bonus + tech add up (gold 1.35)');
+  ok(Math.abs(turk.players[0].mods.gather.gold - (1.25 + tg)) < 1e-9, 'civilization bonus + tech add up (gold ' + (1.25 + tg).toFixed(2) + ')');
   // gold for a kill
   const vik = new Game({ ...base, civ: 'viking' }), p0 = vik.players[0];
   const victim = vik.units.find(u => u.owner === 1), mine = vik.units.find(u => u.owner === 0), own = vik.units.filter(u => u.owner === 0)[1];
   const g0 = p0.res.gold; vik._kill(victim, mine);
-  ok(p0.res.gold === g0 + 8, `viking: +8 gold for an enemy unit (${g0} -> ${p0.res.gold})`);
+  ok(CIVS.viking.fx.killGold > 0 && p0.res.gold === g0 + CIVS.viking.fx.killGold, `viking: +${CIVS.viking.fx.killGold} gold for an enemy unit (${g0} -> ${p0.res.gold})`);
   const g1 = p0.res.gold; vik._kill(own, mine);
   ok(p0.res.gold === g1, 'viking: nothing for killing your own unit');
 }
@@ -100,7 +101,7 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
   const types = new Set(g.units.map(u => u.type));
   ok(types.has('lejyoner') && types.has('mangudai'), 'the unique units are produced');
   const lej = g.units.find(u => u.type === 'lejyoner'), man = g.units.find(u => u.type === 'mangudai');
-  ok(lej.maxHp === Math.round(UNITS.lejyoner.hp * 1.16), 'the civilization bonus applies to its unique unit (Lejyoner hp ' + lej.maxHp + ')');
+  ok(lej.maxHp === Math.round(UNITS.lejyoner.hp * (1 + CIVS.roma.fx.hp.infantry)) && lej.maxHp > UNITS.lejyoner.hp, 'the civilization bonus applies to its unique unit (Lejyoner hp ' + lej.maxHp + ')');
   // a mounted archer shoots from range
   const foe = g.units.find(u => u.owner === 0 && u.type === 'lejyoner'), hp0 = foe.hp;
   man.x = foe.x + 3; man.z = foe.z; foe.stance = 'hold';
@@ -116,7 +117,7 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
   for (let t = 0; t < 30 * 90; t++) { a.update(1 / 30); b.update(1 / 30); }
   ok(a.hash() === b.hash(), 'two runs with civilizations: same hash after 90 s');
   const c = Game.deserialize(JSON.parse(JSON.stringify(a.serialize())));
-  ok(c.players.map(p => p.civ).join() === a.players.map(p => p.civ).join() && c.players[0].mods.killGold === 4 && c.hash() === a.hash(), 'save / load: civilizations, mods and hash survive');
+  ok(c.players.map(p => p.civ).join() === a.players.map(p => p.civ).join() && c.players[0].mods.killGold === CIVS.mogol.fx.killGold && c.hash() === a.hash(), 'save / load: civilizations, mods and hash survive');
 }
 
 console.log(fails.length ? 'FAILED: ' + fails.length : 'ALL OK');
