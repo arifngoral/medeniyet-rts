@@ -2536,6 +2536,7 @@ export class EntityView {
     root.position.set(v.x, y, v.z); root.rotation.y = v.rot;
     if (v.rig === 'ship' || v.rig === 'train') { try { return seaAnimUnit(this, v, e, dt, t, gt, y); } catch (err) { return y; } }
     if (this._poseUnit(v, e, t, gt)) return y;
+    const walking = e.anim === 'walk';
     const fx = this.fx;
     if (fx) {
       if (walking && v.rig !== 'human' && v.rig !== 'deer' && fx.puff) {
