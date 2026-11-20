@@ -1516,6 +1516,7 @@ function makeHuman(g, color, k, P, age) {
   if (A === 4 && !V) { bx(P.armL, MT.white, .095, .04, .095, 0, -.31, 0); bx(P.armR, MT.white, .095, .04, .095, 0, -.31, 0); }
   const w = k.weapon, wm = A === 0 ? MT.stone : A === 1 ? MT.bronze : MT.steel;
   P.two = !!k.two;   // (a two-handed weapon: both arms swing)
+  P.style = k.anim || '';   // (a unique unit's own way of fighting: _animHuman)
   if (k.wpn) uWeapon(P, k, wm, cloth);
   else if (w === 'spear') { cy(P.armR, MT.wood, .014, 1.2, 0, -.9, .03); cn(P.armR, wm, .03, .14, 0, -.9, .03).rotation.x = PI; if (A >= 3) bx(P.armR, cloth, .02, .08, .1, 0, -.72, .08); }
   else if (w === 'sword') { bx(P.armR, wm, A === 0 ? .04 : .025, .05, A === 0 ? .36 : .46, 0, -.36, A === 0 ? .22 : .27); bx(P.armR, A === 0 ? MT.wood : A >= 3 ? MT.gold : MT.bronze, .12, .03, .03, 0, -.35, .05); }
@@ -2334,9 +2335,62 @@ export class EntityView {
       if (P.two) { ra = -.55 + Math.sin(t * 1.3) * .04; la = ra; }   // (the axe held across the body)
     }
     if (P.two && a === 'walk') la = ra = -.6;
+    // Unique units fight their own way (kit.anim). On top of the standard pose: the arms may also swing sideways (rz / lz),
+    // the body may turn (ty). k: seconds since the blow started; hit(w): 0..1 through a blow of w seconds, -1 outside it;
+    // odd: alternates between blows (left / right cuts).
+    let rz = 0, lz = 0, ty = 0;
+    const st = P.style;
+    if (st) {
+      const atk = a === 'attack', k = atk ? gt - (e.attackT == null ? -9 : e.attackT) : -1, hit = (w) => (k >= 0 && k < w ? k / w : -1);
+      const odd = atk && e.attackT != null ? (Math.floor(e.attackT * 7) & 1) : 0, sd = odd ? 1 : -1, idle = !atk && a !== 'walk';
+      if (st === 'slash') {            // samurai: level cuts from alternate sides, both hands on the hilt
+        if (atk) { const p = hit(.4); if (p >= 0) { ra = -1.35; rz = sd * (1.1 - p * 2.1); ty = -sd * (.55 - p * 1.1); lean = Math.sin(p * PI) * .2; la = -1.2; lz = -.5; } else { ra = -1.15; la = -1.0; rz = -.2; lz = -.45; } }
+        else if (idle) { ra = -.75 + Math.sin(t * 1.3) * .03; la = -.7; lz = -.4; } else ra = -.5;
+      } else if (st === 'stab') {      // legionary: the shield stays up, the short sword darts out from beside it
+        la = atk ? -1.25 : -.95;
+        if (atk) { const p = hit(.3); if (p >= 0) { thrust = Math.sin(p * PI) * 1.1; ra = -1.25; lean = thrust * .16; } else { ra = -.45; thrust = 0; } }
+        else if (idle) ra = -.3;
+      } else if (st === 'wild') {      // jaguar warrior: leaping diagonal blows from either side
+        if (atk) { const p = hit(.42); la = -1.0; if (p >= 0) { ra = -2.7 + p * 2.5; rz = sd * .65 * (1 - p); ty = -sd * .4 * (1 - 2 * p); lean = Math.sin(p * PI) * .45; bob = Math.sin(p * PI) * .07; } else ra = -1.3 + Math.sin(t * 5) * .1; }
+        else if (idle) la = -.8;
+      } else if (st === 'chop') {      // druzhina: a heavy overhead chop from behind the shield
+        la = atk ? -1.1 : -.85;
+        if (atk) { const p = hit(.45); if (p >= 0) { ra = -2.85 + p * 2.75; lean = Math.sin(p * PI) * .5; } else ra = -1.25; }
+      } else if (st === 'raid') {      // almogavar: two quick cuts, one each way
+        if (atk) { const p = hit(.46); if (p >= 0) { const q = (p * 2) % 1, first = p < .5; ra = -2.3 + q * 2.0; rz = (first ? -.55 : .6) * (1 - q); ty = first ? .35 : -.35; lean = .2; la = -.3 + q * .3; } else { ra = -1.0; la = -.4; } }
+      } else if (st === 'phalanx') {   // hoplite: shield high, the long spear levelled at the shoulder
+        la = atk ? -1.2 : idle ? -.95 : -.8; thrust = 0;
+        if (atk) { ra = -1.55; const p = hit(.36); if (p >= 0) { thrust = Math.sin(p * PI) * 1.5; lean = thrust * .1; } }
+        else if (idle) ra = -.08;
+      } else if (st === 'guard') {     // immortal: a low thrust from behind the tall shield
+        la = atk ? -1.05 : -.9; thrust = 0;
+        if (atk) { ra = -1.15; const p = hit(.36); if (p >= 0) { thrust = Math.sin(p * PI) * 1.3; lean = thrust * .22; } }
+      } else if (st === 'jab') {       // Mandinka: two fast jabs
+        la = atk ? -1.0 : -.8; thrust = 0;
+        if (atk) { ra = -1.4; const p = hit(.44); if (p >= 0) { thrust = Math.sin(((p * 2) % 1) * PI) * .9; lean = thrust * .2; } }
+      } else if (st === 'bowlong') {   // longbowman: side on, leaning back into a long draw
+        if (atk) { la = -1.6; ra -= .2; ty = .5; lean = -.14; }
+      } else if (st === 'bowhigh') {   // hwarang: aims high, an arching shot
+        if (atk) { la = -1.95; ra -= .45; lean = -.28; }
+      } else if (st === 'bowquick') {  // Nubian: crouched, side on, quick shots
+        if (atk) { ty = .4; lean = .14; bob = -.03; }
+      } else if (st === 'pump') {      // repeating crossbow: the lever is worked for every bolt
+        if (atk && k >= 0 && k < .6) { ra = -1.5 + Math.sin(k * 38) * .24; lean = -.05; }
+      } else if (st === 'couch') {     // lancer: the lance comes down level on the move, a long thrust in the charge
+        thrust = 0;
+        if (atk) { ra = -1.45; la = -.8; const p = hit(.4); if (p >= 0) { thrust = Math.sin(p * PI) * 1.4; lean = thrust * .2; } }
+        else if (idle) ra = -.12; else ra = -1.4;
+      } else if (st === 'parthian') {  // mounted archer: turns in the saddle to shoot
+        if (atk) { ty = Math.sin(t * 1.1) * .7; lean = -.06; } else if (!idle) la = -.9;
+      } else if (st === 'throw') {     // javelin man: the arm goes back, then whips forward
+        thrust = 0;
+        if (atk) { const p = hit(.36); if (p >= 0) { ra = -3.0 + p * 2.2; lean = -.25 + p * .6; ty = .4 - p * .8; } else { ra = -2.6; lean = -.12; ty = .3; } }
+      }
+    }
     if (!riding) { P.legL.rotation.x = ll; P.legR.rotation.x = rl; P.torso.position.y = .38 + bob; }
     P.armL.rotation.x = la; P.armR.rotation.x = ra; P.torso.rotation.x = lean; P.head.rotation.y = hy;
-    if (P.spear) { if (v.az0 === undefined) v.az0 = P.armR.position.z; P.armR.position.z = v.az0 + thrust * .3; }
+    if (st) { P.armR.rotation.z = rz; P.armL.rotation.z = lz; P.torso.rotation.y = ty; }
+    if (P.spear || st) { if (v.az0 === undefined) v.az0 = P.armR.position.z; P.armR.position.z = v.az0 + thrust * .3; }
     if (P.tools) {
       if (tool !== v.tool) { if (v.tool) P.tools[v.tool].visible = false; if (tool) P.tools[tool].visible = true; v.tool = tool; }
       const c = e.carry && e.carry.amount > 0 ? e.carry.type : '';
