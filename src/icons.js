@@ -43,7 +43,7 @@ export const NATURE_ICONS = { tree: ico('n-tree'), stone: ico('r-stone', 'res-st
 let applied = false;
 export function applyIcons() {
   if (applied) return; applied = true;
-  for (const [k, d] of Object.entries(UNITS)) d.icon = ico('u-' + (d.base || k));   // (a civilization's unique unit: its base unit's icon)
-  for (const [k, d] of Object.entries(BUILDINGS)) d.icon = ico('b-' + k);
+  for (const [k, d] of Object.entries(UNITS)) d.icon = ico('u-' + (d.base || d.kitBase || k));   // (a civilization's unique unit / hero: its base unit's icon)
+  for (const [k, d] of Object.entries(BUILDINGS)) if (!d.landmark) d.icon = ico('b-' + k);   // (age-up buildings keep their own emoji: the two choices must look different)
   for (const [k, d] of Object.entries(TECHS)) d.icon = ico('t-' + k);
 }

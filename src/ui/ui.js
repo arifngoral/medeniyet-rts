@@ -1,6 +1,7 @@
 // Aevum UI: main menu, HUD, minimap, tooltips, overlays. DOM only, no three.js.
 import { AGES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS } from '../data.js';
 import { CIVS, CIV_IDS, civLines, civLabel, civUnit } from '../civs.js';
+import { landmarkLines } from '../landmarks.js';
 import { ACCOUNTS } from '../cloud/config.js';
 import { VERSIONS, VERSION } from '../versions.js';
 import { AI_STYLES, civStyle } from '../civ-ai.js';
@@ -178,6 +179,7 @@ export class UI {
     this.ageBtn.onclick = () => {
       this._click();
       const g = this.game, me = this._me();
+      if (safe(() => g.lmCiv(me), false)) { this._ageBuildMenu(); return; }   // (ages up by building: pick one of the two)
       const tcs = (safe(() => g.buildingsOf(me), []) || []).filter((b) => b.type === 'towncenter' && b.done && !b.dead);
       if (tcs.some((b) => safe(() => g.ageUp(b.id), false))) { this.cardSig = null; return; }
       const r = safe(() => g.canAgeUp(me), null);
@@ -185,6 +187,8 @@ export class UI {
     };
     this._tip(this.ageBtn, () => {
       const g = this.game, p = g && g.players[this._me()], na = p && AGES[p.age + 1]; if (!na) return { name: 'Çağ Atla', desc: 'Son çağdasın.' };
+      const st = safe(() => g.landmarkState(this._me()), null);
+      if (st) return { name: 'Çağ Binası: ' + na.name, desc: (st.site ? BUILDINGS[st.site.type].name + ' kuruluyor (%' + Math.round(st.site.progress * 100) + '). ' : 'Tıkla: köylüler seçilir, iki binadan birini seçip yerleştir: ' + st.opts.map((id) => BUILDINGS[id].name).join(' ya da ') + '. ') + 'Açılanlar: ' + ((na.unlockText || []).join(', ') || '-') };
       const r = safe(() => g.canAgeUp(this._me()), { ok: false, reason: '' }) || { ok: false, reason: '' };
       return { name: 'Çağ Atla: ' + na.name, desc: (r.ok ? 'Hazır: tıkla.' : r.reason) + ' Açılanlar: ' + ((na.unlockText || []).join(', ') || '-') };
     });
@@ -838,32 +842,35 @@ export class UI {
     for (const b of blds) if (b.done && !b.dead && !['house', 'wall', 'gate', 'towncenter'].includes(b.type)) types.add(b.type);
     let aging = null;
     for (const b of blds) { const q = b.queue?.[0]; if (q && q.kind === 'age') { aging = q; break; } }
+    // ages up by building (landmarks.js): no building-type needs; "aging" = the next age's building going up
+    const lmSt = safe(() => g.landmarkState(p.id), null), lmc = !!lmSt, reqB = lmc ? 0 : (reqB || 0), reqT = lmc ? [] : reqT;
+    if (lmSt && lmSt.site) { if (!this._lmQ || this._lmQ.id !== lmSt.site.id) this._lmQ = { id: lmSt.site.id, t: 0, total: 1 }; this._lmQ.t = lmSt.site.progress || 0; aging = this._lmQ; }
     const parts = [], miss = [];
     for (const r in next.cost) {
       const need = next.cost[r], have = Math.floor(p.res[r] || 0);
       parts.push(Math.min(1, have / need));
       if (have < need) miss.push(`${RES_ICON[r] || r} ${need - have}`);
     }
-    if (next.reqBuildings > 0) {
-      parts.push(Math.min(1, types.size / next.reqBuildings));
-      if (types.size < next.reqBuildings) miss.push(`${ico('x-buildings')} ${next.reqBuildings - types.size} farklı bina türü`);
+    if (reqB > 0) {
+      parts.push(Math.min(1, types.size / reqB));
+      if (types.size < reqB) miss.push(`${ico('x-buildings')} ${reqB - types.size} farklı bina türü`);
     }
     // named buildings the next age needs, and the minimum stay in this age (game.ageMissingTypes / ageWait)
-    const needT = (next.reqTypes || []).filter((t) => !blds.some((b) => b.type === t && b.done && !b.dead));
-    if (next.reqTypes) parts.push(1 - needT.length / next.reqTypes.length);
+    const needT = reqT.filter((t) => !blds.some((b) => b.type === t && b.done && !b.dead));
+    if (reqT.length) parts.push(1 - needT.length / reqT.length);
     for (const t of needT) miss.push(`${ico('x-buildings')} ${BUILDINGS[t] ? BUILDINGS[t].name : t}`);
     const wait = g.ageWait ? g.ageWait(p.id) : 0;
     if (wait > 0) miss.push(`⏳ ${Math.floor(wait / 60)}:${String(Math.floor(wait % 60)).padStart(2, '0')}`);
     const frac = aging ? this._qprog(aging) : (parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : 1);
     const costTxt = RES_LIST.filter((r) => next.cost[r]).map((r) => `${RES_ICON[r]} ${next.cost[r]}`).join(' ');
-    const mtxt = aging ? 'Çağ atlanıyor…' : miss.length ? 'Eksik: ' + miss.join(' · ') : 'Hazır! Şehir Merkezi\'nden çağ atla';
+    const mtxt = aging ? (lmc ? BUILDINGS[lmSt.site.type].name + ' kuruluyor…' : 'Çağ atlanıyor…') : miss.length ? 'Eksik: ' + miss.join(' · ') : (lmc ? 'Hazır! Köylülerle bir çağ binası kur' : 'Hazır! Şehir Merkezi\'nden çağ atla');
     this.objEl.classList.toggle('hidden', !steps.length);
     // the age strip: one chip per need, green when it is met; no words (the hover text names it)
     {
       const chip = (ok, icon, txt, title) => `<span class="ar-c ${ok ? 'ok' : 'no'}" title="${esc(title)}">${icon}${txt != null ? '<b>' + esc(String(txt)) + '</b>' : ''}</span>`;
       const chips = [];
       for (const r of RES_LIST) { const need = next.cost[r]; if (!need) continue; const have = Math.floor(p.res[r] || 0); chips.push(chip(have >= need, RES_ICON[r], need, `${RES_NAME[r]}: ${have} / ${need}`)); }
-      if (next.reqBuildings > 0) chips.push(chip(types.size >= next.reqBuildings, ico('x-buildings'), Math.min(types.size, next.reqBuildings) + '/' + next.reqBuildings, 'Farklı bina türü (ev, sur, kapı ve şehir merkezi sayılmaz)'));
+      if (reqB > 0) chips.push(chip(types.size >= reqB, ico('x-buildings'), Math.min(types.size, reqB) + '/' + reqB, 'Farklı bina türü (ev, sur, kapı ve şehir merkezi sayılmaz)'));
       for (const t of next.reqTypes || []) { const okT = !needT.includes(t), bd = BUILDINGS[t]; chips.push(chip(okT, bd ? bd.icon : ico('x-buildings'), null, (bd ? bd.name : t) + (okT ? ' var' : ' gerekli'))); }
       if (wait > 0) chips.push(chip(false, '⏳', `${Math.floor(wait / 60)}:${String(Math.floor(wait % 60)).padStart(2, '0')}`, 'Bu çağda kalman gereken süre'));
       const ready = !aging && !miss.length, html = aging ? '' : chips.join('');   // (paid and under way: nothing left to need)
@@ -877,7 +884,7 @@ export class UI {
     if (sig === this.objSig) return;
     this.objSig = sig;
     this.objEl.querySelector('.osteps').innerHTML = steps.map((s, i) => `<span class="${s[1] ? 'done' : i === cur ? 'cur' : ''}">${s[1] ? '✔ ' : ''}${esc(s[0])}</span>`).join('<em>→</em>');
-    this.objEl.querySelector('.ot').innerHTML = keepIcons(esc(`${next.name} (${costTxt}${next.reqBuildings ? ' · ' + next.reqBuildings + ' bina türü' : ''})`));
+    this.objEl.querySelector('.ot').innerHTML = keepIcons(esc(`${next.name} (${costTxt}${reqB ? ' · ' + reqB + ' bina türü' : ''})`));
     const om = this.objEl.querySelector('.om'); om.innerHTML = keepIcons(esc(mtxt)); om.classList.toggle('ready', !aging && !miss.length);
   }
 
@@ -989,6 +996,23 @@ export class UI {
     if (this.mmAcc >= 0.1) { this.mmAcc = 0; safe(() => this._drawMinimap()); }
   }
 
+  // the age button of a civilization that ages up by building: select villagers (the selected ones, else the idle ones,
+  // else the nearest few to the town center) and open the page with the next age's two buildings; while one is going up,
+  // show it instead
+  _ageBuildMenu() {
+    const g = this.game, me = this._me(), st = safe(() => g.landmarkState(me), null); if (!st) return;
+    if (st.site) { safe(() => this.app.select([st.site.id])); safe(() => this.app.focus?.(st.site.x, st.site.z)); this.cardSig = null; return; }
+    const sel = (this.app.selection || []).filter((id) => { const e = g.getEntity(id); return e && !e.dead && e.owner === me && e.type === 'villager'; });
+    let ids = sel;
+    if (!ids.length) {
+      const vs = (safe(() => g.unitsOf(me), []) || []).filter((u) => u.type === 'villager');
+      const idle = vs.filter((u) => !u.order);
+      const tc = (safe(() => g.buildingsOf(me), []) || []).find((b) => b.type === 'towncenter' && !b.dead);
+      ids = (idle.length ? idle : vs.slice().sort((a, b) => (tc ? Math.hypot(a.x - tc.x, a.z - tc.z) - Math.hypot(b.x - tc.x, b.z - tc.z) : 0))).slice(0, 5).map((u) => u.id);
+    }
+    if (!ids.length) { this.toast(ico('x-ageup') + ' Çağ binası kurmak için köylü gerekli', 'warn'); return; }
+    safe(() => this.app.select(ids)); this.page = 'cag'; this.cardSig = null;
+  }
   _qprog(q) {
     if (!q || !q.total) return 0;
     let d = this.qdir.get(q);
@@ -1191,6 +1215,24 @@ export class UI {
     };
     if (ents.every((e) => e.kind === 'unit')) {
       const hasVil = ents.some((e) => e.type === 'villager');
+      if (this.page === 'cag' && hasVil) {   // the next age's two buildings (landmarks.js)
+        const st = safe(() => g.landmarkState(this._me()), null);
+        for (const bid of (st && st.opts) || []) {
+          const b = BUILDINGS[bid];
+          put({
+            icon: b.icon, name: b.name, cost: b.cost, time: b.time * BUILD_TIME_MUL / sb, desc: b.desc + ' — ' + landmarkLines(bid).join(' · ') + ' · Bitince ' + AGES[b.landmark.to].name + ' başlar; efsane buradan basılır.',
+            check: () => {
+              const why = safe(() => g.landmarkWhy(this._me(), bid), '');
+              if (why) return { ok: false, reason: why };
+              if (!afford(b.cost)) return { ok: false, reason: 'Yetersiz kaynak' };
+              return { ok: true };
+            },
+            run: () => { this.app.startPlacement?.(bid); this.page = 'root'; return true; },
+          });
+        }
+        put({ icon: ico('x-back'), name: 'Geri', desc: 'Önceki menüye dön. (Sağ tık ya da Esc de döner.)', run: () => { this.page = 'root'; return true; } }, 14);
+        return slots;
+      }
       if (this.page !== 'root' && hasVil && BUILD_CATS[this.page]) {
         for (const bid of BUILD_CATS[this.page].list) {
           const b = BUILDINGS[bid]; if (!b) continue;
@@ -1214,6 +1256,10 @@ export class UI {
           if (!c.list.some((bid) => BUILDINGS[bid])) continue; // page whose buildings are not defined yet
           if (!c.list.some((bid) => BUILDINGS[bid] && !later(BUILDINGS[bid].age))) { put(false); continue; }   // (a later age's page)
           put({ icon: c.icon, name: 'İnşa: ' + c.name, desc: c.desc, run: () => { this.page = k; return true; } });
+        }
+        if (safe(() => g.lmCiv(this._me()), false) && p.age < AGES.length - 1) {
+          const na = AGES[p.age + 1];
+          put({ icon: ico('x-ageup'), name: 'Çağ Binası: ' + na.name, desc: 'Sonraki çağa geçmek için iki binadan birini seç ve kur. Bitince çağ atlarsın; her binanın kendi kalıcı etkisi var ve efsane karakterin oradan basılır.', run: () => { this.page = 'cag'; return true; } });
         }
       }
       // stances for soldiers (owner 2026-11-15): aggressive / defensive / hold ground; the active one is marked
@@ -1280,12 +1326,13 @@ export class UI {
       const uid = civUnit(p.civ, uid0), u = UNITS[uid]; if (!u) continue;   // (my civilization's unique unit in place of the standard one)
       if (later(u.age)) { put(false); continue; }
       put({
-        icon: u.icon || ico('x-unknown'), name: u.civ ? '★ ' + u.name : u.name, cost: u.cost, time: u.time * QUEUE_TIME_MUL / (sb * (1 + (p.mods?.train || 0) + (e.type === 'factory' ? (p.mods?.factory || 0) : 0))),
-        desc: (u.civ ? `Özel birlik (${UNITS[u.base].name} yerine). ` : '') + (u.desc || '') + ` — ${ico('x-atk')}${u.atk} ${ico('x-armor')}${u.armor} ${ico('x-hp')}${u.hp}${u.range ? ' ' + ico('x-range') + u.range : ''} ${ico('x-pop')}${u.pop ?? 1}` + (pool.length > 1 ? ` · ${pool.length} binada aynı anda` : '') + ' · Shift: 5 adet',
+        icon: u.icon || ico('x-unknown'), name: u.hero ? '👑 ' + u.name : u.civ ? '★ ' + u.name : u.name, cost: u.cost, time: u.time * QUEUE_TIME_MUL / (sb * (1 + (p.mods?.train || 0) + (e.type === 'factory' ? (p.mods?.factory || 0) : 0))),
+        desc: (u.hero ? 'Efsane: aynı anda yalnız bir tane olur, çağ atladıkça güçlenir, yanındaki askerlere +%15 saldırı ve +1 zırh verir. ' : u.civ ? `Özel birlik (${UNITS[u.base].name} yerine). ` : '') + (u.desc || '') + ` — ${ico('x-atk')}${u.atk} ${ico('x-armor')}${u.armor} ${ico('x-hp')}${u.hp}${u.range ? ' ' + ico('x-range') + u.range : ''} ${ico('x-pop')}${u.pop ?? 1}` + (pool.length > 1 ? ` · ${pool.length} binada aynı anda` : '') + ' · Shift: 5 adet',
         check: () => {
           if (!safe(() => g.isUnlocked(this._me(), 'unit', uid), true)) return { ok: false, locked: true, reason: 'Gerekli çağ: ' + (AGES[u.age]?.name || u.age) };
           if (!afford(u.cost)) return { ok: false, reason: 'Yetersiz kaynak' };
           if (p.pop + (u.pop ?? 1) > p.popCap) return { ok: false, reason: 'Nüfus sınırı dolu (1000)' };
+          if (u.hero) { const why = safe(() => g.heroBusy(this._me(), uid), ''); if (why) return { ok: false, reason: why }; }
           return { ok: true };
         },
         run: () => { let ok = false; for (let i = many(); i > 0; i--) for (const b of pool) if (safe(() => g.train(b.id, uid), false)) ok = true; return ok; },
@@ -1309,7 +1356,7 @@ export class UI {
         run: () => pool.some((b) => safe(() => g.research(b.id, tid), false)),
       });
     }
-    if (e.type === 'towncenter' && p.age < AGES.length - 1 && !pool.some((b) => (b.queue || []).some((q) => q.kind === 'age'))) {
+    if (e.type === 'towncenter' && p.age < AGES.length - 1 && !safe(() => g.lmCiv(this._me()), false) && !pool.some((b) => (b.queue || []).some((q) => q.kind === 'age'))) {
       const na = AGES[p.age + 1];
       put({
         icon: ico('x-ageup'), name: 'Çağ Atla: ' + na.name, cost: na.cost, time: na.time * QUEUE_TIME_MUL / sb,
@@ -1811,7 +1858,7 @@ export class UI {
     this.ageUpEl?.remove();
     const offered = new Set(); for (const k of Object.keys(BUILD_CATS)) for (const id of BUILD_CATS[k].list) offered.add(id);
     const pick = (defs, flt) => Object.keys(defs).filter((id) => (defs[id].age ?? 0) === age && (!flt || flt(id))).map((id) => defs[id]);
-    const rows = [['Yeni Binalar', pick(BUILDINGS, (id) => offered.has(id))], ['Yeni Birlikler', pick(UNITS)], ['Yeni Teknolojiler', pick(TECHS)]].filter((r) => r[1].length);
+    const rows = [['Yeni Binalar', pick(BUILDINGS, (id) => offered.has(id))], ['Yeni Birlikler', pick(UNITS, (id) => { const c = UNITS[id].civ; return !c || c === this.game?.players?.[this._me()]?.civ; })], ['Yeni Teknolojiler', pick(TECHS)]].filter((r) => r[1].length);
     let body = '';
     if (rows.length) {
       body = '<div class="aurows">' + rows.map(([lab, list], ri) => `<div class="aurow" style="animation-delay:${(1.0 + ri * 0.35).toFixed(2)}s"><div class="aul">${lab}</div><div class="aui">${list.slice(0, 14).map((d, di) => `<span class="auit" style="animation-delay:${(1.15 + ri * 0.35 + di * 0.05).toFixed(2)}s"><i>${d.icon || '✦'}</i><em>${esc(d.name)}</em></span>`).join('')}${list.length > 14 ? `<span class="aumore">+${list.length - 14}</span>` : ''}</div></div>`).join('') + '</div>';

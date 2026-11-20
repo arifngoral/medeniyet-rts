@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { UNITS, BUILDINGS, AGES } from './data.js';
 import { CIVS, CIV_IDS } from './civs.js';
+import { LANDMARKS, HEROES, landmarkLines } from './landmarks.js';
 import { VERSIONS, TAG_TR } from './versions.js';
 import { makeUnitModel, makeBuildingModel, poseUnitModel } from './render/entities.js';
 import { loadEra, glbVersion } from './render/glb-models.js';
@@ -23,22 +24,28 @@ const ver = VERSIONS.find((v) => v.v === qs.get('v')) || VERSIONS[0];
 const noteOf = new Map(); for (const v of VERSIONS) for (const s of v.showcase || []) if (!noteOf.has(s.id)) noteOf.set(s.id, { ...s, ver: v.v });
 const unitItem = (id) => {
   const u = UNITS[id], n = noteOf.get(id), civ = u.civ && CIVS[u.civ];
-  return { key: 'u:' + id, kind: 'unit', id, name: u.name, sub: civ ? `${civ.icon} ${civ.name.replace(/\s*\(.*\)$/, '')} · ${UNITS[u.base].name} yerine` : `${CLS_TR[u.cls] || u.cls} · ${AGES[u.age].name}`,
+  const cn = civ ? `${civ.icon} ${civ.name.replace(/\s*\(.*\)$/, '')}` : '';
+  return { key: 'u:' + id, kind: 'unit', id, name: u.name, sub: u.hero ? `${cn} · Efsane` : civ ? `${cn} · ${UNITS[u.base].name} yerine` : `${CLS_TR[u.cls] || u.cls} · ${AGES[u.age].name}`,
     note: n ? n.note : '', desc: u.desc || '', tags: n ? n.tags : [], minAge: u.age, color: civ ? parseInt(civ.color.slice(1), 16) : DEF_COLOR };
 };
 const buildItem = (id) => {
-  const b = BUILDINGS[id], n = noteOf.get(id);
-  return { key: 'b:' + id, kind: 'building', id, name: b.name, sub: `Yapı · ${AGES[b.age].name}`, note: n ? n.note : '', desc: b.desc || '', tags: n ? n.tags : [], minAge: b.age, color: DEF_COLOR };
+  const b = BUILDINGS[id], n = noteOf.get(id), lm = b.landmark, civ = lm && CIVS[lm.civ];
+  const sub = lm ? `${civ.icon} ${civ.name.replace(/\s*\(.*\)$/, '')} · ${AGES[lm.to].name} binası` : `Yapı · ${AGES[b.age].name}`;
+  return { key: 'b:' + id, kind: 'building', id, name: b.name, sub, note: n ? n.note : '', desc: (b.desc || '') + (lm ? ' — ' + landmarkLines(id).slice(0, -1).join(' · ') : ''), tags: n ? n.tags : [], minAge: b.age, color: civ ? parseInt(civ.color.slice(1), 16) : DEF_COLOR };
 };
 const TABS = {
   yeni: { label: 'Bu sürüm', lead: () => `<b>Sürüm ${esc(ver.v)} · ${esc(ver.title)}</b> ile gelen ya da değişen modeller. Her kartın altında neye bakacağın yazıyor; animasyonlar döngüde oynar.`,
     items: () => (ver.showcase || []).filter((s) => (s.kind === 'building' ? BUILDINGS[s.id] : UNITS[s.id])).map((s) => (s.kind === 'building' ? buildItem(s.id) : unitItem(s.id))) },
   ozel: { label: 'Özel birlikler', lead: () => 'Her medeniyetin iki özel birliği yan yana, medeniyet sırasıyla. Her biri bir standart birliğin yerine geçer; alttaki satır hangisinin yerine geçtiğini yazar.',
     items: () => CIV_IDS.flatMap((c) => CIVS[c].units || []).filter((id) => UNITS[id]).map(unitItem) },
+  efsane: { label: 'Efsaneler', lead: () => 'Medeniyetlerin efsane karakterleri: çağ binalarından basılır, aynı anda yalnız bir tane olur, çağ atladıkça güçlenir ve yanındaki askerlere saldırı ve zırh verir. Ayaklarının altındaki altın halka onları belli eder.',
+    items: () => Object.values(HEROES).filter((h) => UNITS[h.id]).map((h) => unitItem(h.id)) },
+  cag: { label: 'Çağ binaları', lead: () => 'AoE4 gibi çağ atlama: köylüler her çağ geçişi için iki binadan birini kurar, bitince çağ atlanır. Her binanın ayakta durduğu sürece işleyen kendi etkisi var. Şimdilik 5 medeniyette; sırayla her medeniyetin 8 binası.',
+    items: () => Object.keys(LANDMARKS).flatMap((c) => LANDMARKS[c].flat().map((l) => l.id)).filter((id) => BUILDINGS[id]).map(buildItem) },
   birlik: { label: 'Tüm birlikler', lead: () => 'Oyundaki bütün birlikler: standart olanlar ve medeniyetlerin özel birlikleri. Çağı değiştirince kıyafetleri de değişir.',
     items: () => Object.keys(UNITS).map(unitItem) },
   yapi: { label: 'Yapılar', lead: () => 'Oyundaki bütün yapılar, seçtiğin çağın görünümüyle. Yavaşça dönerler.',
-    items: () => Object.keys(BUILDINGS).filter((k) => !BUILDINGS[k].legacy).map(buildItem) },
+    items: () => Object.keys(BUILDINGS).filter((k) => !BUILDINGS[k].legacy && !BUILDINGS[k].landmark).map(buildItem) },
 };
 let tab = TABS[qs.get('tab')] ? qs.get('tab') : (ver.showcase || []).length ? 'yeni' : 'birlik';
 let age = 2;
@@ -66,8 +73,9 @@ function buildModel(c) {
     c.v = Object.assign(u, { tool: '', carry: '', az0: undefined, phase: 0 });
     root = u.root;
   } else {
-    try { loadEra(a); } catch (e) { /* the box model is drawn instead */ }
+    if (!BUILDINGS[it.id].landmark) try { loadEra(a); } catch (e) { /* the box model is drawn instead */ }
     root = makeBuildingModel(it.id, BUILDINGS[it.id].size, a, it.color, 0, 7);
+    if (root.userData && root.userData.scaf) root.userData.scaf.visible = false;   // (the scaffold is for a building going up)
     c.v = null;
   }
   scene.add(root);
@@ -144,7 +152,7 @@ function frame() {
   for (const c of cards) {
     const r = c.view.getBoundingClientRect();
     if (r.bottom < 0 || r.top > hgt || r.right < 0 || r.left > w || r.width < 4) continue;
-    if (c.built && c.item.kind === 'building' && c.glb !== gv) drop(c);   // (its real model arrived)
+    if (c.built && c.item.kind === 'building' && c.glb !== gv && !BUILDINGS[c.item.id].landmark) drop(c);   // (its real model arrived; age-up buildings have none)
     if (!c.built) { if (builds++ >= 3) continue; try { buildModel(c); } catch (err) { console.warn('[vitrin]', c.item.id, err); c.built = true; c.scene = null; } }
     if (!c.scene) continue;
     if (c.v && c.animated) {

@@ -4,6 +4,7 @@
 import { CIV_DATA } from './civ-data.js';
 import { UNITS } from './data.js';
 import { CIV_UNITS } from './civ-units.js';
+import { LANDMARKS, HEROES } from './landmarks.js';   // (also puts the age-up buildings and heroes into data.js's tables)
 
 export const CIVS = CIV_DATA;
 export const CIV_IDS = Object.keys(CIVS);   // order = the table's order (the same on every client)
@@ -73,6 +74,8 @@ export function civLines(id) {
   const out = [];
   for (const k in c.fx) out.push(...(LINE[k] ? LINE[k](c.fx[k]) : [k]));
   for (const id of c.units || []) if (UNITS[id]) out.push(`Özel birlik: ${UNITS[id].name} (${UNITS[UNITS[id].base].name} yerine)`);
+  if (LANDMARKS[id]) out.push('Çağ atlama: köylüler her çağ için iki binadan birini kurar (AoE4 gibi)');
+  if (HEROES[id] && UNITS[HEROES[id].id]) out.push(`Efsane: ${UNITS[HEROES[id].id].name} (çağ binalarından)`);
   return out;
 }
 export const civLabel = id => (CIVS[id] ? CIVS[id].icon + ' ' + CIVS[id].name : '');

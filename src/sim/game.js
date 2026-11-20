@@ -1,6 +1,7 @@
 // Aevum — headless simulation core (pure JS, no DOM/three)
 import { AGES, RES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS, FARM_SLOTS } from '../data.js';
 import { CIVS, resolveCiv, civUnit } from '../civs.js';
+import { LANDMARKS, HERO_AGE, HERO_AURA } from '../landmarks.js';
 // big farm: cells (x, z) of its 3x3 grid, ring order around the granary (1, 1); food / s of a farmer while his plot is ripe
 export const FARM_CELLS = [[0, 0], [1, 0], [2, 0], [2, 1], [2, 2], [1, 2], [0, 2], [0, 1]];
 const FARM_RATE = 16 / 9 * 0.85;
@@ -642,16 +643,53 @@ export class Game {
     // the civilization's passive bonuses: the same fx format as a tech, in effect from the start
     const cfx = !this.cfg.noCivFx && p.civ && CIVS[p.civ] && CIVS[p.civ].fx;
     if (cfx) for (const k in cfx) { const v = cfx[k]; if (typeof v === 'number') m[k] = (m[k] || 0) + v; else for (const c in v) (m[k] || (m[k] = {}))[c] = (m[k][c] || (k === 'gather' ? 1 : 0)) + v[c]; }
+    // the age-up buildings standing (landmarks.js): their effects last while they stand
+    for (const b of this.buildings || []) { if (b.owner !== p.id || !b.done || b.dead) continue; const lm = BUILDINGS[b.type].landmark, fx = lm && lm.fx; if (!fx) continue;
+      for (const k in fx) { const v = fx[k]; if (typeof v === 'number') m[k] = (m[k] || 0) + v; else for (const c in v) (m[k] || (m[k] = {}))[c] = (m[k][c] || (k === 'gather' ? 1 : 0)) + v[c]; } }
     p.mods = m;
   }
   _bMaxHp(type, owner) { const d = BUILDINGS[type], p = this.players[owner]; let h = d.hp * (1 + 0.15 * p.age) * (1 + p.mods.bhp); if (type === 'wall' || type === 'gate') h *= 1 + p.mods.wallhp; return Math.round(h); }
   _rescaleBuildings(p) { for (const b of this.buildings) if (b.owner === p.id) { const n = this._bMaxHp(b.type, p.id); b.hp = n > b.maxHp ? Math.min(n, b.hp + (n - b.maxHp)) : Math.max(1, Math.round(b.hp * n / b.maxHp)); b.maxHp = n; b.ageLook = p.age; } }
-  _uMaxHp(type, owner) { const d = UNITS[type], m = this.players[owner].mods; return Math.round(d.hp * (1 + (m.hp[d.cls] || 0) + (m.hp[type] || 0) + (type === 'villager' ? m.vhp : 0))); }   // (m.hp[type]: a civilization bonus for one unit type)
+  _uMaxHp(type, owner) { const d = UNITS[type], p = this.players[owner], m = p.mods; return Math.round(d.hp * (1 + (m.hp[d.cls] || 0) + (m.hp[type] || 0) + (type === 'villager' ? m.vhp : 0)) * (d.hero ? this._heroK(p) : 1)); }
+  // ---- landmarks and heroes (landmarks.js) ----
+  // a civilization that ages up by building (its villagers raise one of the next age's two buildings)
+  lmCiv(owner) { const p = this.players[owner]; return !!(p && p.civ && LANDMARKS[p.civ] && !this.cfg.noLandmarks); }
+  // the next age's two buildings of this player, the one being built (a foundation) and how far it is
+  landmarkState(owner) {
+    const p = this.players[owner]; if (!this.lmCiv(owner) || p.age >= 4) return null;
+    const opts = (LANDMARKS[p.civ][p.age] || []).map(l => l.id);
+    const site = this.buildings.find(b => b.owner === owner && !b.dead && !b.done && BUILDINGS[b.type].landmark && BUILDINGS[b.type].landmark.to === p.age + 1) || null;
+    return { to: p.age + 1, opts, site, progress: site ? site.progress : 0 };
+  }
+  // why a landmark cannot be placed now ('' = it can)
+  landmarkWhy(owner, type) {
+    const p = this.players[owner], lm = BUILDINGS[type] && BUILDINGS[type].landmark; if (!p || !lm) return 'Yok';
+    if (!this.lmCiv(owner) || lm.civ !== p.civ) return 'Başka bir medeniyetin';
+    if (p.age >= lm.to) return 'Bu çağa zaten geçtin';
+    if (p.age < lm.to - 1) return 'Önce ' + AGES[lm.to - 1].name + ' gerekli';
+    const b = this.buildings.find(x => x.owner === owner && !x.dead && BUILDINGS[x.type].landmark && BUILDINGS[x.type].landmark.to === lm.to);
+    if (b) return (b.type === type ? 'Kuruluyor' : BUILDINGS[b.type].name + ' seçildi');
+    return '';
+  }
+  _heroK(p) { return 1 + HERO_AGE * Math.max(0, p.age - 1); }
+  // is this unit near its own player's living hero (not the hero itself)? the hero's aura
+  _heroNear(e) {
+    const p = this.players[e.owner]; if (!p || !p.heroId || e.kind !== 'unit') return false;
+    const h = this.entities.get(p.heroId); if (!h || h.dead || h === e) return false;
+    const dx = h.x - e.x, dz = h.z - e.z; return dx * dx + dz * dz <= HERO_AURA.r * HERO_AURA.r;
+  }
+  // a hero is alive or in training already ('' = may be trained)
+  heroBusy(owner, type) {
+    if (this.units.some(u => u.owner === owner && u.type === type && !u.dead)) return 'Zaten sahada';
+    if (this.buildings.some(b => b.owner === owner && !b.dead && b.queue.some(q => q.kind === 'unit' && q.id === type))) return 'Zaten yetişiyor';
+    return '';
+  }   // (m.hp[type]: a civilization bonus for one unit type)
   _rescaleUnits(p) { for (const u of this.units) if (u.owner === p.id && !u.dead) { const n = this._uMaxHp(u.type, p.id); if (n !== u.maxHp) { u.hp = n > u.maxHp ? u.hp + (n - u.maxHp) : Math.max(1, Math.min(n, u.hp)); u.maxHp = n; } } }
   _addUnit(type, owner, x, z) {
     const d = UNITS[type], uh = this._uMaxHp(type, owner);
     const u = { id: this.nextId++, kind: 'unit', type, owner, x, z, rot: this.rand() * 6.283, hp: uh, maxHp: uh, dead: false, state: 'idle', anim: 'idle', carry: null, targetId: null, deathTime: 0, attackT: -99, order: null, queue: [], path: null, pi: 0, pk: null, rpT: 0, cd: 0, scanT: this.rand() * 0.5 };
     this.entities.set(u.id, u); this.units.push(u); this.players[owner].pop += d.pop;
+    if (d.hero) this.players[owner].heroId = u.id;
     if (type === 'tradecart') u.order = { type: 'trade', phase: 0 };
     if (d.naval) u.naval = true;
     this.events.emit('spawn', { e: u }); return u;
@@ -728,6 +766,8 @@ export class Game {
     const p = this.players[owner]; if (!p) return false;
     const d = kind === 'unit' ? UNITS[id] : kind === 'building' ? BUILDINGS[id] : TECHS[id];
     if (!d || d.age > p.age || d.legacy) return false;   // (legacy: the mill, kept for old saves only)
+    if (kind === 'building' && d.landmark) return !this.landmarkWhy(owner, id);
+    if (kind === 'unit' && d.hero && d.civ !== p.civ) return false;
     if (kind === 'tech' && p.techs.has(id)) return false;
     return true;
   }
@@ -1086,6 +1126,7 @@ export class Game {
     unitType = real;
     const d = UNITS[unitType];
     if ( !this.isUnlocked(b.owner, 'unit', unitType) || b.queue.length >= TRAIN_QUEUE_MAX || !this.canAfford(b.owner, d.cost)) return false;
+    if (d.hero && this.heroBusy(b.owner, unitType)) return false;   // (one hero at a time)
     this._pay(b.owner, d.cost); b.queue.push({ kind: 'unit', id: unitType, t: 0, total: d.time }); return true;
   }
   research(buildingId, techId) {
@@ -1097,18 +1138,19 @@ export class Game {
   }
   // the named buildings the next age still needs (finished ones count)
   ageMissingTypes(owner) {
-    const p = this.players[owner], a = p && AGES[p.age + 1]; if (!a || !a.reqTypes) return [];
+    const p = this.players[owner], a = p && AGES[p.age + 1]; if (!a || !a.reqTypes || this.lmCiv(owner)) return [];
     return a.reqTypes.filter(t => !this.buildings.some(b => b.owner === owner && b.type === t && b.done && !b.dead));
   }
   // seconds left before the next age-up may start (the minimum stay in the current age)
   ageWait(owner) {
-    const p = this.players[owner], a = p && AGES[p.age + 1]; if (!a || !a.minStay) return 0;
+    const p = this.players[owner], a = p && AGES[p.age + 1]; if (!a || !a.minStay || this.lmCiv(owner)) return 0;
     return Math.max(0, (p.ageAt || 0) + a.minStay - this.time);
   }
   _typesOwned(owner) { const s = new Set(); for (const b of this.buildings) if (b.owner === owner && b.done && !['house', 'wall', 'gate', 'towncenter'].includes(b.type)) s.add(b.type); return s.size; }
   canAgeUp(owner) {
     const p = this.players[owner]; if (!p) return { ok: false, reason: 'Oyuncu yok' };
     if (p.age >= 4) return { ok: false, reason: 'Zaten son çağdasın' };
+    if (this.lmCiv(owner)) return { ok: false, lm: true, reason: 'Köylülerinle bir çağ binası kur: bitince çağ atlarsın' };
     if (this.buildings.some(b => b.owner === owner && b.queue.some(q => q.kind === 'age'))) return { ok: false, reason: 'Çağ atlama sürüyor' };
     const a = AGES[p.age + 1];
     if (this._typesOwned(owner) < a.reqBuildings) return { ok: false, reason: `En az ${a.reqBuildings} farklı bina türü gerekli (ev ve sur hariç)` };
@@ -1161,7 +1203,13 @@ export class Game {
     if (best && want) ra.tid = best.id;
     return best;
   }
-  deleteEntity(id) { const e = this.entities.get(id); if (!e || e.dead || e.owner < 0) return false; if (e.kind === 'building') for (const q of e.queue.slice()) this._refundQ(e.owner, q); this._kill(e, null); return true; }
+  deleteEntity(id) {
+    const e = this.entities.get(id); if (!e || e.dead || e.owner < 0) return false;
+    if (e.kind === 'building') for (const q of e.queue.slice()) this._refundQ(e.owner, q);
+    // an unfinished age-up building gives back what was not built yet (it costs as much as the age)
+    if (e.kind === 'building' && !e.done && BUILDINGS[e.type].landmark) { const c = BUILDINGS[e.type].cost, k = 1 - Math.max(0, Math.min(1, e.progress || 0)), r = {}; for (const x in c) r[x] = Math.floor(c[x] * k); this._refund(e.owner, r); }
+    this._kill(e, null); return true;
+  }
 
   // ---------- pathfinding ----------
   _findPath(sx, sz, gx, gz, half, owner) {
@@ -1412,7 +1460,7 @@ export class Game {
   _dmg(atk, bonus, isSiege, target) {
     let mult, armor = 0;
     if (target.kind === 'building') { mult = bonus.building || (isSiege ? 1 : 0.4); }
-    else { const d = UNITS[target.type]; mult = bonus[d.cls] || 1; armor = d.armor + (this.players[target.owner].mods.armor[d.cls] || 0); }
+    else { const d = UNITS[target.type]; mult = bonus[d.cls] || 1; armor = d.armor + (this.players[target.owner].mods.armor[d.cls] || 0) + (this._heroNear(target) ? HERO_AURA.armor : 0); }
     return Math.max(1, Math.round(atk * mult - armor));
   }
   // Arrows are lobbed (2026-11-15, owner: "Empire Earth archers shoot up over the wall and the arrows drop on the
@@ -1521,6 +1569,7 @@ export class Game {
       p.stats.buildingsLost++; if (kp) kp.stats.razed++;
       this.events.emit('death', { e, killer: killer || null });
       this.entities.delete(e.id); this.events.emit('remove', { e }); this._popCap(p); if (e.type === 'rail' || e.type === 'station') this._railDirty = true;
+      if (BUILDINGS[e.type].landmark && e.done) { this._mods(p); this._rescaleUnits(p); this._rescaleBuildings(p); }   // (its effects end with it)
     } else {
       const N = this.map.size;
       if (e.type === 'deer') { const i = this.deer.indexOf(e); if (i >= 0) this.deer.splice(i, 1); }
@@ -1663,7 +1712,8 @@ export class Game {
       u.state = 'attack'; u.anim = 'attack'; u.rot = Math.atan2(t.x - u.x, t.z - u.z);
       if (u.cd <= 0) {
         u.cd = d.rof; u.attackT = this.time;
-        const atk = (d.atk + (m.atk[d.cls] || 0)) * (1 + (m.atkMul[d.cls] || 0));
+        let atk = (d.atk + (m.atk[d.cls] || 0)) * (1 + (m.atkMul[d.cls] || 0));
+        if (d.hero) atk *= this._heroK(this.players[u.owner]); else if (this._heroNear(u)) atk *= 1 + HERO_AURA.atk;   // (a hero, and the aura round it)
         const dmg = this._dmg(atk, d.bonus, d.cls === 'siege', t);
         this.events.emit('attack', { attacker: u, target: t, ranged: !!d.proj });
         if (d.proj) this._fire(u, t, dmg, d.proj); else this._applyDamage(t, dmg, u, null);
@@ -1860,6 +1910,20 @@ export class Game {
     if (b.type === 'rail' || b.type === 'station') this._railDirty = true;
     this.events.emit('buildComplete', { e: b });
     if (b.owner === this.me) this.events.emit('notify', { text: BUILDINGS[b.type].name + ' tamamlandı', type: 'good', x: b.x, z: b.z });
+    const lm = BUILDINGS[b.type].landmark;
+    if (lm) {   // an age-up building: the age comes now, its effects start
+      this._mods(p); this._rescaleUnits(p);
+      if (p.age < lm.to) this._ageReached(p, lm.to, b);
+    }
+  }
+  // a player reaches an age (town center queue or age-up building)
+  _ageReached(p, age, b) {
+    p.age = Math.min(4, age); p.ageProgress = 0; p.ageAt = this.time; this._rescaleBuildings(p); this._rescaleUnits(p);
+    this.events.emit('ageUp', { owner: p.id, age: p.age });
+    if (p.id === this.me) { const cnt = o => Object.values(o).filter(x => x.age === p.age && x.id !== 'house' && !x.landmark && !x.hero).length, nb = cnt(BUILDINGS), nu = cnt(UNITS), nt = cnt(TECHS);
+      this.events.emit('notify', { text: `Yeni çağ: ${nb} bina, ${nu} birlik ve ${nt} teknoloji açıldı. Tüm binaların güçlendi!`, type: 'good' }); }
+    const mine = p.id === this.me, ally = !mine && this.isAlly(p.id, this.me);
+    this.events.emit('notify', { text: mine ? AGES[p.age].name + ' başladı!' : (ally ? 'Bir müttefik ' : 'Bir rakip ') + AGES[p.age].name + ' seviyesine ulaştı', type: mine || ally ? 'good' : 'warn' });
   }
   _uTrade(u, o, dt) {
     let m = this.entities.get(o.m), tc = this.entities.get(o.tc);
@@ -1905,7 +1969,7 @@ export class Game {
       ps.acc = (ps.acc || 0) + dt * PASTURE_IDLE_RATE * ps.sheep * (1 + (p.mods.pasture || 0));
       if (ps.acc >= 1) { const n = ps.acc | 0; ps.acc -= n; this._credit(p, 'food', n); }
     }
-    if (b.type === 'temple') {
+    if (b.type === 'temple' || (d.landmark && d.landmark.heal)) {
       // heal own units within 7 tiles that have not been hit for 5 s: 1 hp/s, faster with techs
       b.healT = (b.healT || 0) + dt;
       if (b.healT >= 1) { b.healT -= 1; b.healAcc = (b.healAcc || 0) + 1 + p.mods.heal; const n = b.healAcc | 0; b.healAcc -= n;
@@ -1934,12 +1998,7 @@ export class Game {
       this.events.emit('researched', { owner: b.owner, tech: q.id });
       if (b.owner === this.me) this.events.emit('notify', { text: TECHS[q.id].name + ' araştırıldı', type: 'good' });
     } else if (q.kind === 'age') {
-      b.queue.shift(); p.age = Math.min(4, q.id); p.ageProgress = 0; p.ageAt = this.time; this._rescaleBuildings(p);
-      this.events.emit('ageUp', { owner: b.owner, age: p.age });
-      if (b.owner === this.me) { const cnt = o => Object.values(o).filter(x => x.age === p.age && x.id !== 'house').length, nb = cnt(BUILDINGS), nu = cnt(UNITS), nt = cnt(TECHS);
-        this.events.emit('notify', { text: `Yeni çağ: ${nb} bina, ${nu} birlik ve ${nt} teknoloji açıldı. Tüm binaların güçlendi!`, type: 'good' }); }
-      const mine = b.owner === this.me, ally = !mine && this.isAlly(b.owner, this.me);
-      this.events.emit('notify', { text: mine ? AGES[p.age].name + ' başladı!' : (ally ? 'Bir müttefik ' : 'Bir rakip ') + AGES[p.age].name + ' seviyesine ulaştı', type: mine || ally ? 'good' : 'warn' });
+      b.queue.shift(); this._ageReached(p, q.id, b);
     }
   }
 
@@ -2020,7 +2079,9 @@ export class Game {
     if (anyDead) this.units = units.filter(u => !u._rm);
     // banks: +1 gold per 3 s each (max 3 count), boosted by finance techs
     this._bankT = (this._bankT || 0) + dt;
-    if (this._bankT >= 3) { this._bankT -= 3; for (const p of this.players) { if (p.defeated) continue; let n = 0; for (const b of this.buildings) if (b.owner === p.id && b.type === 'bank' && b.done) n++; if (!n) continue; p.bankAcc = (p.bankAcc || 0) + Math.min(3, n) * (1 + p.mods.bank); const gd = p.bankAcc | 0; if (gd > 0) { p.bankAcc -= gd; this._credit(p, 'gold', gd); } } }
+    if (this._bankT >= 3) { this._bankT -= 3;
+      for (const b of this.buildings) { const lm = b.done && !b.dead && BUILDINGS[b.type].landmark; if (!lm || !lm.trickle) continue; const p = this.players[b.owner]; if (p.defeated) continue; for (const r in lm.trickle) this._credit(p, r, lm.trickle[r]); }   // (age-up buildings: landmarks.js trickle)
+      for (const p of this.players) { if (p.defeated) continue; let n = 0; for (const b of this.buildings) if (b.owner === p.id && b.type === 'bank' && b.done) n++; if (!n) continue; p.bankAcc = (p.bankAcc || 0) + Math.min(3, n) * (1 + p.mods.bank); const gd = p.bankAcc | 0; if (gd > 0) { p.bankAcc -= gd; this._credit(p, 'gold', gd); } } }
     this._fogT -= dt; if (this._fogT <= 0) { this._fogT = 0.25; this._updateFog(); }
     for (const ai of this.ais) { if (this.players[ai.playerId !== undefined ? ai.playerId : -1] && this.players[ai.playerId].defeated) continue; try { ai.update(dt); } catch (err) { if (!this._aiErr) { this._aiErr = true; console.error('AI update', err); } } }
     try { this._railUpdate(dt); } catch (err) { if (!this._railErr) { this._railErr = true; console.error('Rail update', err); } }
@@ -2543,6 +2604,8 @@ export class Game {
         const k = z * N + x, v = blocked[k]; if (v === 1 || v >= 10) blocked[k] = 2;
       }
     }
+    // (the players' mods were made before the buildings were back: the age-up buildings' effects come now)
+    if (this.buildings.some(b => BUILDINGS[b.type] && BUILDINGS[b.type].landmark)) for (const p of this.players) this._mods(p);
     this.projectiles = s.projectiles || [];
     const sim = s.sim;
     if (sim && typeof sim === 'object') {

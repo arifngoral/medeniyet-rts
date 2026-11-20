@@ -7,7 +7,8 @@
 // follows its plan, counter quality, how often it leaves villagers idle, attack timing / sizes).
 import { UNITS, BUILDINGS, TECHS, AGES, FARM_SLOTS } from '../data.js';
 import { QUEUE_TIME_MUL, unitLos, buildingLos, forDisc } from './game.js';
-import { tuneDiff, civRoleBias } from '../civ-ai.js';
+import { tuneDiff, civRoleBias, civStyle } from '../civ-ai.js';
+import { HEROES } from '../landmarks.js';
 
 const MIN = 60;
 const DIFF = {
@@ -330,15 +331,17 @@ export class AIController {
     const g = this.game, me = c.me, d = this.d, age = me.age;
     this._homeX = c.home.x; this._homeZ = c.home.z;
     c.age = age;
-    c.researching = c.tcs.some(b => (b.queue || []).some(q => q.kind === 'age'));
+    c.lm = g.lmCiv ? g.lmCiv(this.pid) : false;   // (ages up by building: landmarks.js)
+    c.lmSite = c.lm ? (g.landmarkState(this.pid) || {}).site || null : null;
+    c.researching = c.tcs.some(b => (b.queue || []).some(q => q.kind === 'age')) || !!c.lmSite;
     const enemyAge = Math.max(0, ...this.enemyPlayers().map(p => p.age || 0)); // age-ups are announced to everyone
     c.behind = enemyAge > age;
     const types = new Set(), typesDone = new Set();
     for (const b of c.blds) if (!NOT_TYPE[b.type]) { types.add(b.type); if (b.done) typesDone.add(b.type); }
     c.types = types; c.typesDone = typesDone;
     const next = AGES[age + 1];
-    c.reqMissing = next && next.reqTypes ? next.reqTypes.filter(t => !typesDone.has(t)) : [];
-    c.typesMissing = next ? Math.max(0, (next.reqBuildings || 0) - types.size, c.reqMissing.filter(t => !types.has(t)).length) : 0;
+    c.reqMissing = next && next.reqTypes && !c.lm ? next.reqTypes.filter(t => !typesDone.has(t)) : [];
+    c.typesMissing = next && !c.lm ? Math.max(0, (next.reqBuildings || 0) - types.size, c.reqMissing.filter(t => !types.has(t)).length) : 0;
     c.villTarget = this.villTargetFor(c.researching ? age + 1 : age);
     const effTarget = Math.round(c.villTarget * (c.behind ? 0.8 : 1));
     const min = this.minutes();
@@ -414,6 +417,40 @@ export class AIController {
     c.shop = s; this._prevShop = s;
   }
 
+  // Age-up by building (landmarks.js): when the age is due, raise one of the two buildings near home with a few
+  // villagers and keep at least LM_BUILDERS on it; the choice follows the play style (deterministic). Then the hero.
+  _landmark(c, block) {
+    const g = this.game, d = this.d, st = g.landmarkState(this.pid);
+    if (st && st.site) {   // keep builders on it
+      const on = c.vills.filter(v => v.order && v.order.type === 'build' && v.order.targetId === st.site.id).length;
+      if (on < 3 && g.time >= (this._lmAssignT || 0)) {
+        this._lmAssignT = g.time + 4;
+        const work = c.work || { list: { food: [], wood: [], gold: [], stone: [] }, idle: [], cnt: {} };
+        const v = this._nearestVill(c, st.site.x, st.site.z, work, true);
+        if (v) { g.cmdBuild([v.id], st.site.id); if (c.work) this._release(c.work, v); this.assignT.set(v.id, g.time); }
+      }
+    } else if (st && c.phase === 'save') {
+      const style = civStyle(g.players[this.pid].civ), odd = (c.age & 1) === 1;
+      let pick = style === 'ekonomist' ? 0 : style === 'baskinci' ? 1 : odd ? 1 : 0;
+      const naval = (t) => /ship/.test(JSON.stringify(BUILDINGS[t].landmark.fx || {}));   // (a shipyard is no use on most maps)
+      if (st.opts[pick] && naval(st.opts[pick])) pick = 1 - pick;
+      const type = st.opts[pick] || st.opts[0], cost = BUILDINGS[type].cost;
+      if (!g.canAfford(this.pid, cost)) block(cost, 'age');
+      else {
+        if (this._affT == null) this._affT = g.time;
+        if (g.time - this._affT >= d.ageDelay[c.age]) {
+          if (this.tryBuild(c, type, 6, 18, c.home, 4)) { this._ageClickT = g.time; this._affT = null; }
+          else if (this.tryBuild(c, st.opts[1 - pick] || type, 6, 22, c.home, 4)) { this._ageClickT = g.time; this._affT = null; }
+        } else block(cost, 'ageWait');
+      }
+    }
+    // the hero, from a finished age-up building, when there is none
+    const h = HEROES[g.players[this.pid].civ];
+    if (h && c.age >= 1 && g.canAfford(this.pid, UNITS[h.id].cost) && !g.heroBusy(this.pid, h.id)) {
+      const lmB = c.blds.find(b => b.done && !b.dead && BUILDINGS[b.type].landmark && !(b.queue || []).length);
+      if (lmB) g.train(lmB.id, h.id);
+    }
+  }
   // the civilization's play style (the difficulty row re-weighted) and its taste in units (civ-ai.js); nothing without one
   _civTune() {
     const p = this.game && this.game.players && this.game.players[this.pid], civ = p && !(this.game.cfg && this.game.cfg.noCivAi) ? p.civ : null;
@@ -731,7 +768,8 @@ export class AIController {
     if (c.mil.length < c.minDef && (c.age > 0 || c.vills.length >= d.barracksAt)) this._trainMilitary(c, true, c.minDef);
     if (c.threatened && c.mil.length < c.armyTarget) this._trainMilitary(c, true);
     // 5) age up
-    if (c.phase === 'save' && c.tcs.some(b => b.done)) {
+    if (c.lm) this._landmark(c, block);
+    else if (c.phase === 'save' && c.tcs.some(b => b.done)) {
       const r = this.safe(() => g.canAgeUp(this.pid));
       c.ageReason = r ? (r.ok ? 'ok' : r.reason) : 'err';
       if (r && r.ok) {
@@ -1313,7 +1351,7 @@ export class AIController {
     const g = this.game, def = BUILDINGS[type];
     if (!def || !this.unlocked('building', type) || !g.canAfford(this.pid, def.cost)) return false;
     const small = type === 'farm' || type === 'pasture';
-    if (!small && type !== 'towncenter' && c.work && c.work.build >= Math.max(3, Math.ceil(c.vills.length * 0.16))) return false;
+    if (!small && type !== 'towncenter' && !def.landmark && c.work && c.work.build >= Math.max(3, Math.ceil(c.vills.length * 0.16))) return false;
     const ctr = at || c.home;
     const key = type + ':' + Math.round(ctr.x / 4) + ':' + Math.round(ctr.z / 4);
     if (this.failPlace[key] && g.time - this.failPlace[key] < 20) return false;

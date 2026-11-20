@@ -1062,6 +1062,364 @@ function towerH1() {
   }
   return TOWER_H1;
 }
+// ---------- age-up buildings (landmarks.js): one model per building, keyed by its look ----------
+// Drawn at the design size LM_BASE (4: the footprint is about -1.9..1.9), scaled to the 6-tile footprint like the
+// castle. The same in every age (a landmark keeps the look it was built with); the player's colour on its banners.
+const LMM = {
+  marble: mat(0xece6d6, .7), sand: mat(0xd9bc84, .9), sandD: mat(0xb89a64, .9), mud: mat(0xb08a5a, .95), lacq: mat(0xa8322a, .6), dtile: mat(0x3a3f48, .7),
+  lead: mat(0x8a929c, .5, .3), turf: mat(0x5f7a3a, 1), white: mat(0xf4f1ea, .8), blue: mat(0x2f5fa8, .6), water: mat(0x3f6f9f, .3, .1), bronze: mat(0x9a6a2a, .45, .7),
+  redb: mat(0x8e3a2c, .9), black: mat(0x232326, .8), goldm: mat(0xe0aa30, .42, .25),   // (goldm: a gilded surface that stays bright without reflections)
+  pine: mat(0x2f5a2a, .95), bark: mat(0x5a4028, .95), sail1: mat(0xb8322a, .9),
+};
+const lmFlag = (c, x, z, h) => { cy(c.body, MT.dwood, .025, h, x, 0, z); bx(c.body, c.cm, .02, .3, .45, x, h - .32, z + .23); };
+const lmDome = (c, m, r, x, y, z, k = 1) => mk(G.dome, c.roof, m, r * 2, r * 2 * k, r * 2, x, y, z);
+const lmGable = (c, m, w, h, d, x, y, z, ry = 0) => { const o = mk(G.prism, c.roof, m, w, h, d, x, y, z); o.rotation.y = ry; return o; };
+function lmMinaret(c, x, z, h, m = LMM.white, cap = LMM.lead) {
+  cy(c.body, m, .11, h, x, 0, z); cy(c.body, m, .16, .05, x, h * .7, z); cy(c.body, m, .15, .05, x, h * .88, z); cn(c.roof, cap, .12, .55, x, h, z); sp(c.roof, MT.gold, .03, x, h + .58, z);
+}
+function lmCols(c, n, x0, x1, z, h, m, r = .08, y = 0, alongZ = false) { for (let i = 0; i < n; i++) { const t = n > 1 ? i / (n - 1) : 0, a = x0 + (x1 - x0) * t; cy(c.body, m, r, h, alongZ ? z : a, y, alongZ ? a : z); } }
+function lmCren(c, m, w, d, y, x = 0, z = 0, s = .14) {
+  const nx = Math.max(2, Math.round(w / .3)), nz = Math.max(2, Math.round(d / .3));
+  for (let i = 0; i < nx; i += 2) for (const sz of [-1, 1]) bx(c.body, m, s, s, s, x - w / 2 + (i + .5) * w / nx, y, z + sz * (d / 2 - s / 2));
+  for (let i = 0; i < nz; i += 2) for (const sx of [-1, 1]) bx(c.body, m, s, s, s, x + sx * (w / 2 - s / 2), y, z - d / 2 + (i + .5) * d / nz);
+}
+function lmTower(c, x, z, w, h, m, top = 'cren', topM) {
+  bx(c.body, m, w, h, w, x, 0, z);
+  if (top === 'cren') { bx(c.body, m, w * 1.15, .08, w * 1.15, x, h, z); lmCren(c, m, w * 1.15, w * 1.15, h + .08, x, z, .11); }
+  else if (top === 'cone') cn(c.roof, topM || MT.tile, w * .78, w * 1.3, x, h, z);
+  else py(c.roof, topM || MT.tile, w * 1.3, w * .8, w * 1.3, x, h, z);
+}
+function lmWall(c, m, a, b, h, t = .28) { const dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); bx(c.body, m, t, h, L, (a[0] + b[0]) / 2, 0, (a[1] + b[1]) / 2).rotation.y = Math.atan2(dx, dz); }
+function lmPagoda(c, x, z, w, tiers, wallM, roofM, th = .5, y0 = 0) {
+  let y = y0, ww = w;
+  for (let i = 0; i < tiers; i++) { bx(c.body, wallM, ww, th, ww, x, y, z); py(c.roof, roofM, ww * 1.6, th * .55, ww * 1.6, x, y + th, z); y += th * 1.15; ww *= .76; }
+  cy(c.roof, MT.gold, .025, .45, x, y, z); return y;
+}
+function lmSteps(c, m, w, d, n, h, x = 0, z = 0, k = .22) { for (let i = 0; i < n; i++) bx(c.body, m, w - i * k, h, d - i * k, x, i * h, z); return n * h; }
+function lmArch(c, m, x, z, w, h, d, ry = 0) {   // a gateway: two piers, a lintel, the dark opening
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; c.body.add(g);
+  bx(g, m, w * .3, h, d, -w * .35, 0, 0); bx(g, m, w * .3, h, d, w * .35, 0, 0); bx(g, m, w, h * .3, d, 0, h * .7, 0); bx(g, MT.black, w * .4, h * .7, d * .5, 0, 0, 0);
+  return g;
+}
+function lmShip(c, x, z, ry, L = 2.2) {   // a longship: hull, dragon head, mast and a striped sail
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; c.body.add(g);
+  bx(g, MT.dwood, .5, .22, L, 0, .12, 0); bx(g, MT.dwood, .36, .12, L * .9, 0, .02, 0);
+  for (const s of [1, -1]) { const p = bx(g, MT.dwood, .1, .5, .12, 0, .2, s * L * .52); p.rotation.x = -s * .5; }
+  sp(g, MT.gold, .06, 0, .7, L * .6); cy(g, MT.wood, .03, 1.5, 0, .3, 0);
+  for (let i = 0; i < 4; i++) bx(g, i & 1 ? MT.white : LMM.sail1, .9, .2, .02, 0, 1.0 + i * .2, .03);
+  for (let i = 0; i < 5; i++) for (const s of [1, -1]) mk(G.wheel, g, i & 1 ? c.cm : LMM.sail1, .03, .16, .16, s * .26, .3, -L * .35 + i * L * .16);
+  return g;
+}
+const LM_BUILD = {
+  // ---- Türkler ----
+  kervansaray(c) {
+    const M = LMM.sand;
+    for (const s of [-1, 1]) { bx(c.body, M, 3.4, 1.0, .35, 0, 0, s * 1.5); bx(c.body, M, .35, 1.0, 3.4, s * 1.5, 0, 0); }
+    bx(c.body, LMM.sandD, 1.1, 1.7, .55, 0, 0, 1.55); bx(c.body, MT.black, .5, .85, .04, 0, 0, 1.84); bx(c.body, c.cm, 1.12, .12, .57, 0, 1.45, 1.55);
+    for (const [x, z] of [[-1.5, -1.5], [1.5, -1.5], [-1.5, 1.5], [1.5, 1.5]]) { cy(c.body, M, .3, 1.25, x, 0, z); lmDome(c, LMM.lead, .3, x, 1.25, z); }
+    bx(c.body, M, 1.0, .75, 1.0, 0, 0, -.4); lmDome(c, LMM.lead, .48, 0, .75, -.4); sp(c.roof, MT.gold, .05, 0, 1.25, -.4);
+    for (let i = 0; i < 3; i++) bx(c.body, MT.canvas, .28, .24, .24, -.9 + i * .3, 0, .7);
+    lmFlag(c, .9, .9, 1.9);
+  },
+  ocak(c) {
+    for (let i = 0; i < 18; i++) { const a = i / 18 * PI * 2; if (i === 4) continue; cy(c.body, MT.dwood, .09, .95 + (i % 3) * .08, Math.cos(a) * 1.75, 0, Math.sin(a) * 1.75); }
+    for (const [x, z, r] of [[-.75, -.55, .55], [.7, -.6, .5], [-.2, .75, .6]]) { cy(c.body, MT.canvas, r, .45, x, 0, z); cn(c.roof, MT.canvas, r * 1.05, .7, x, .45, z); bx(c.roof, c.cm, r * .3, .06, r * .3, x, 1.1, z); }
+    for (let i = 0; i < 3; i++) { cy(c.body, MT.dwood, .03, .7, .9 + i * .3, 0, .7); } bx(c.body, MT.dwood, 1.0, .05, .05, 1.2, .62, .7);
+    cy(c.body, MT.dwood, .035, 2.8, .4, 0, .1); sp(c.roof, MT.gold, .08, .4, 2.85, .1); cy(c.roof, mat(0x2a2420, 1), .11, .5, .4, 2.3, .1); cy(c.roof, c.cm, .12, .08, .4, 2.25, .1);
+  },
+  cami(c) {   // Bursa Ulu Camii: a hall under a grid of domes, one tall minaret
+    const W = LMM.white;
+    bx(c.body, W, 3.1, 1.25, 3.1, 0, 0, -.1); bx(c.body, MT.gold, 3.12, .06, 3.12, 0, 1.2, -.1);
+    for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) { cy(c.body, W, .38, .12, i * .98, 1.25, j * .98 - .1); lmDome(c, LMM.lead, .4, i * .98, 1.37, j * .98 - .1); sp(c.roof, MT.gold, .03, i * .98, 1.8, j * .98 - .1); }
+    bx(c.body, MT.black, .45, .75, .04, 0, 0, 1.47); bx(c.body, c.cm, .7, .1, .05, 0, .85, 1.48);
+    lmMinaret(c, 1.7, 1.55, 3.4);
+  },
+  hisar(c) {   // Rumeli Hisarı: three great round towers and the walls between them
+    const S = MT.stone, T = [[-1.15, -1.05, .62, 2.5], [1.25, -.85, .5, 2.1], [0, 1.2, .68, 2.9]];
+    for (const [x, z, r, h] of T) { cy(c.body, S, r, h, x, 0, z); cy(c.body, MT.dstone, r * 1.08, .12, x, h, z); cn(c.roof, LMM.lead, r * 1.06, r * 1.5, x, h + .12, z); for (let i = 0; i < 3; i++) bx(c.body, MT.black, .1, .22, .04, x + Math.sin(i * 2.1) * r, h * .6, z + Math.cos(i * 2.1) * r); }
+    lmWall(c, S, T[0], T[1], 1.3, .32); lmWall(c, S, T[1], T[2], 1.3, .32); lmWall(c, S, T[2], T[0], 1.3, .32);
+    bx(c.body, MT.black, .4, .6, .1, .6, 0, .2).rotation.y = .7;
+    cy(c.body, MT.dwood, .025, .9, 0, 3.6, 1.2); bx(c.body, c.cm, .02, .3, .45, 0, 4.18, 1.43);
+  },
+  kulliye(c) {   // Süleymaniye: a great lead dome on half domes, four minarets, low medrese rows
+    const W = LMM.white;
+    bx(c.body, W, 2.3, 1.5, 2.3, 0, 0, -.2); cy(c.body, W, .9, .4, 0, 1.5, -.2); lmDome(c, LMM.lead, 1.05, 0, 1.9, -.2); cy(c.roof, MT.gold, .02, .3, 0, 2.95, -.2); sp(c.roof, MT.gold, .06, 0, 3.25, -.2);
+    for (const s of [-1, 1]) { lmDome(c, LMM.lead, .62, 0, 1.5, -.2 + s * .95, .8); lmDome(c, LMM.lead, .4, s * .95, 1.5, -.2, .8); }
+    for (const s of [-1, 1]) { bx(c.body, W, .5, .7, 3.4, s * 1.6, 0, 0); for (let i = 0; i < 4; i++) lmDome(c, LMM.lead, .2, s * 1.6, .7, -1.2 + i * .8); }
+    for (const [x, z, h] of [[-1.25, -1.45, 3.4], [1.25, -1.45, 3.4], [-1.25, 1.05, 4.0], [1.25, 1.05, 4.0]]) lmMinaret(c, x, z, h);
+    bx(c.body, MT.black, .45, .8, .04, 0, 0, .96); lmFlag(c, 0, 1.75, 1.6);
+  },
+  tophane(c) {   // the cannon foundry: a brick hall, two tall chimneys, cannons outside
+    bx(c.body, MT.brick, 3.1, 1.3, 1.8, 0, 0, -.6); lmGable(c, LMM.lead, 2.0, .7, 3.3, 0, 1.3, -.6, PI / 2);
+    for (const x of [-1, 1]) { cy(c.body, MT.brick, .2, 2.6, x, 0, -1.25); cy(c.body, MT.dstone, .23, .1, x, 2.6, -1.25); c.chim.push(x, 2.75, -1.25); }
+    for (let i = 0; i < 3; i++) bx(c.body, MT.glow, .3, .4, .04, -.9 + i * .9, .15, .31);
+    for (const x of [-.9, 0, .9]) { const o = cy(c.body, MT.black, .11, 1.0, x, .2, .55); o.rotation.x = PI / 2; mk(G.wheel, c.body, MT.dwood, .06, .3, .3, x - .16, .15, .7); mk(G.wheel, c.body, MT.dwood, .06, .3, .3, x + .16, .15, .7); }
+    lmFlag(c, 1.55, 1.2, 2.0);
+  },
+  saray(c) {   // Dolmabahçe: a long white palace front, columns, a clock tower on the quay
+    const W = LMM.white;
+    bx(c.body, W, 3.6, 1.3, 1.6, 0, 0, -.5); bx(c.body, W, 1.3, 1.9, 1.8, 0, 0, -.5); bx(c.roof, LMM.lead, 3.7, .08, 1.7, 0, 1.3, -.5); bx(c.roof, LMM.lead, 1.4, .08, 1.9, 0, 1.9, -.5);
+    lmCols(c, 9, -1.65, 1.65, .32, 1.2, W, .06); bx(c.body, MT.gold, 3.6, .06, .06, 0, 1.2, .33); lmGable(c, W, 1.4, .4, .3, 0, 1.98, .3);
+    for (let i = 0; i < 7; i++) bx(c.body, MT.glass, .18, .35, .04, -1.5 + i * .5, .55, .31);
+    bx(c.body, W, .45, 2.5, .45, 1.45, 0, 1.3); bx(c.body, MT.gold, .3, .3, .04, 1.45, 2.0, 1.53); py(c.roof, LMM.lead, .55, .5, .55, 1.45, 2.5, 1.3);
+    bx(c.body, LMM.water, 3.8, .04, .5, 0, 0, 1.65); lmFlag(c, 0, -.5, 2.8);
+  },
+  harbiye(c) {   // the officers' school: a U-shaped block round a parade ground, a gate tower
+    const W = mat(0xe8dcc0, .85);
+    bx(c.body, W, 3.4, 1.4, .8, 0, 0, -1.3); for (const s of [-1, 1]) bx(c.body, W, .8, 1.4, 2.2, s * 1.3, 0, .1);
+    bx(c.roof, MT.tile, 3.5, .1, .9, 0, 1.4, -1.3); for (const s of [-1, 1]) bx(c.roof, MT.tile, .9, .1, 2.3, s * 1.3, 1.4, .1);
+    bx(c.body, W, .9, 2.1, .9, 0, 0, -1.3); py(c.roof, MT.tile, 1.0, .6, 1.0, 0, 2.1, -1.3); bx(c.body, MT.black, .35, .7, .04, 0, 0, -.84);
+    for (let r = 0; r < 2; r++) for (let i = 0; i < 6; i++) bx(c.body, MT.glass, .16, .28, .04, -1.45 + i * .58, .35 + r * .55, -.89);
+    for (const x of [-.4, .4]) { const o = cy(c.body, MT.black, .09, .8, x, .16, .9); o.rotation.x = PI / 2; }
+    cy(c.body, MT.dwood, .03, 2.6, 0, 0, .3); bx(c.body, c.cm, .02, .35, .55, 0, 2.2, .58);
+  },
+  // ---- Romalılar ----
+  forum(c) {   // a paved square, colonnades on three sides, a temple at the back, a statue
+    const W = LMM.marble;
+    bx(c.body, MT.stone, 3.6, .08, 3.6, 0, 0, 0);
+    for (const s of [-1, 1]) { lmCols(c, 6, -1.4, 1.2, s * 1.55, 1.0, W, .07, .08, true); bx(c.roof, MT.tile, .5, .1, 3.0, s * 1.55, 1.08, -.1); }
+    lmSteps(c, W, 1.8, 1.4, 3, .1, 0, -1.2); bx(c.body, W, 1.2, 1.2, 1.0, 0, .3, -1.3); lmCols(c, 4, -.55, .55, -.7, 1.2, W, .07, .3);
+    lmGable(c, MT.tile, 1.4, .45, 1.4, 0, 1.5, -1.2); lmGable(c, W, 1.3, .35, .1, 0, 1.5, -.52);
+    bx(c.body, W, .4, .5, .4, 0, .08, .7); bx(c.body, MT.bronze, .16, .55, .14, 0, .58, .7); sp(c.body, MT.bronze, .07, 0, 1.2, .7);
+    lmFlag(c, 1.3, 1.3, 1.9);
+  },
+  castra(c) {   // a legion camp: earth and stake wall, corner towers, rows of tents, the general's tent
+    for (const s of [-1, 1]) { bx(c.body, MT.soil2, 3.6, .35, .4, 0, 0, s * 1.6); bx(c.body, MT.soil2, .4, .35, 3.6, s * 1.6, 0, 0); }
+    for (const s of [-1, 1]) for (let i = 0; i < 7; i++) { const a = -1.5 + i * .5; if (s > 0 && i === 3) continue; cy(c.body, MT.dwood, .05, .9, a, .3, s * 1.6); cy(c.body, MT.dwood, .05, .9, s * 1.6, .3, a); }
+    for (const [x, z] of [[-1.6, -1.6], [1.6, -1.6], [-1.6, 1.6], [1.6, 1.6]]) { for (const dx of [-.15, .15]) for (const dz of [-.15, .15]) cy(c.body, MT.dwood, .04, 1.5, x + dx, 0, z + dz); bx(c.body, MT.wood, .45, .06, .45, x, 1.5, z); }
+    for (let r = 0; r < 2; r++) for (let i = 0; i < 3; i++) lmGable(c, MT.canvas, .5, .5, .7, -.9 + i * .6, 0, -.8 + r * .8);
+    lmGable(c, LMM.redb, .9, .8, 1.0, .9, 0, .5); bx(c.body, c.cm, .05, .4, .05, .9, .8, .5);
+    lmArch(c, MT.wood, 0, 1.6, .9, 1.0, .3); cy(c.body, MT.dwood, .03, 2.2, .5, 0, -.2); sp(c.roof, MT.gold, .1, .5, 2.25, -.2); bx(c.body, c.cm, .4, .5, .03, .5, 1.6, -.2);
+  },
+  pantheon(c) {   // a rotunda under a great dome, a columned porch with a pediment
+    const W = LMM.marble;
+    cy(c.body, W, 1.45, 1.5, 0, 0, -.35); cy(c.body, W, 1.5, .12, 0, 1.5, -.35); lmDome(c, mat(0xa8a49a, .6), 1.4, 0, 1.62, -.35, .75); cy(c.roof, W, .25, .05, 0, 2.66, -.35);
+    bx(c.body, W, 1.9, 1.6, .6, 0, 0, 1.1); bx(c.body, W, 2.1, .25, 1.4, 0, 1.4, 1.25); lmCols(c, 6, -.9, .9, 1.75, 1.4, W, .09);
+    lmGable(c, W, 2.15, .55, 1.4, 0, 1.65, 1.25); bx(c.body, MT.gold, 1.0, .08, .02, 0, 1.45, 1.96); lmFlag(c, 1.6, -1.4, 2.4);
+  },
+  sur(c) {   // a frontier fort: a square of crenellated walls, four towers, a double gate, a barrack inside
+    const S = MT.stone;
+    for (const s of [-1, 1]) { bx(c.body, S, 3.4, 1.2, .3, 0, 0, s * 1.55); bx(c.body, S, .3, 1.2, 3.4, s * 1.55, 0, 0); lmCren(c, S, 3.4, .3, 1.2, 0, s * 1.55, .12); lmCren(c, S, .3, 3.4, 1.2, s * 1.55, 0, .12); }
+    for (const [x, z] of [[-1.55, -1.55], [1.55, -1.55], [-1.55, 1.55], [1.55, 1.55]]) lmTower(c, x, z, .6, 1.8, S);
+    for (const x of [-.5, .5]) lmTower(c, x, 1.6, .55, 1.6, S, 'pyr', MT.tile);
+    bx(c.body, MT.black, .5, .8, .1, 0, 0, 1.66); bx(c.body, MT.plaster, 1.8, .8, .8, 0, 0, -.6); lmGable(c, MT.tile, .9, .4, 1.9, 0, .8, -.6, PI / 2);
+    lmFlag(c, 0, .3, 2.2);
+  },
+  kolezyum(c) {   // an oval arena: three rings of arches round the sand
+    const W = mat(0xd8cba8, .9), N = 22;
+    for (let r = 0; r < 3; r++) for (let i = 0; i < N; i++) {
+      const a = i / N * PI * 2, x = Math.cos(a) * 1.75, z = Math.sin(a) * 1.4, o = bx(c.body, W, .48, .62, .2, x, r * .62, z); o.rotation.y = -a + PI / 2;
+      const h = bx(c.body, MT.black, .24, .38, .22, x * 1.005, r * .62 + .04, z * 1.005); h.rotation.y = -a + PI / 2;
+    }
+    for (let i = 0; i < N; i++) { const a = i / N * PI * 2, x = Math.cos(a) * 1.75, z = Math.sin(a) * 1.4, o = bx(c.body, W, .48, .3, .2, x, 1.86, z); o.rotation.y = -a + PI / 2; }
+    mk(G.cyl, c.body, mat(0xd9c08a, 1), 2.9, .06, 2.3, 0, 0, 0); for (let i = 0; i < 3; i++) mk(G.cyl, c.body, W, 3.1 - i * .3, .25 + i * .25, 2.5 - i * .25, 0, 0, 0).scale.y = .2;
+    lmFlag(c, 0, -1.4, 2.8);
+  },
+  sukemeri(c) {   // an aqueduct: two tiers of arches across the ground, the water channel on top, a water tower
+    const S = mat(0xc9b590, .9);
+    for (let i = 0; i < 5; i++) { const x = -1.6 + i * .8; bx(c.body, S, .22, 1.3, .4, x, 0, .2); bx(c.body, S, .2, .9, .34, x, 1.5, .2); }
+    bx(c.body, S, 3.6, .2, .4, 0, 1.3, .2); bx(c.body, S, 3.6, .25, .36, 0, 2.4, .2); bx(c.body, LMM.water, 3.5, .03, .2, 0, 2.62, .2);
+    for (let i = 0; i < 4; i++) bx(c.body, S, .2, .2, .4, -1.2 + i * .8, 1.1, .2);
+    cy(c.body, S, .55, 1.4, 1.0, 0, -1.2); cy(c.body, LMM.water, .45, .04, 1.0, 1.4, -1.2); bx(c.body, MT.tile, 1.0, .3, .3, -.8, 0, -1.3);
+    lmFlag(c, -1.6, -1.2, 1.9);
+  },
+  senato(c) {   // the curia: a tall brick hall, a columned porch, broad steps
+    lmSteps(c, LMM.marble, 2.6, 1.2, 3, .12, 0, 1.2, .16);
+    bx(c.body, MT.brick, 2.4, 2.0, 2.2, 0, 0, -.6); bx(c.body, LMM.marble, 2.5, .15, 2.3, 0, 2.0, -.6); lmGable(c, MT.tile, 2.5, .7, 2.3, 0, 2.15, -.6);
+    lmCols(c, 6, -1.0, 1.0, .65, 1.8, LMM.marble, .09, .36); bx(c.roof, LMM.marble, 2.4, .2, .5, 0, 2.15, .65); lmGable(c, LMM.marble, 2.4, .5, .5, 0, 2.35, .65);
+    bx(c.body, MT.bronze, .7, 1.0, .04, 0, .36, .51); lmFlag(c, 1.5, -1.6, 3.0); lmFlag(c, -1.5, -1.6, 3.0);
+  },
+  zafer(c) {   // a triumphal arch, a bronze four-horse chariot on top
+    const W = LMM.marble;
+    bx(c.body, W, 3.2, .1, 1.4, 0, 0, 0); bx(c.body, W, 1.0, 2.2, 1.1, -1.0, .1, 0); bx(c.body, W, 1.0, 2.2, 1.1, 1.0, .1, 0); bx(c.body, W, 3.0, .8, 1.1, 0, 2.3, 0);
+    for (const x of [-1.3, -.7, .7, 1.3]) cy(c.body, W, .08, 2.0, x, .1, .58); bx(c.body, MT.gold, 1.6, .25, .02, 0, 2.6, .56);
+    for (let i = 0; i < 4; i++) { const x = -.6 + i * .4; bx(c.body, MT.bronze, .12, .3, .5, x, 3.25, .05); bx(c.body, MT.bronze, .1, .2, .14, x, 3.48, .3); for (const s of [-1, 1]) bx(c.body, MT.bronze, .04, .25, .04, x, 3.1, s * .18); }
+    bx(c.body, MT.bronze, .5, .35, .4, 0, 3.1, -.35); bx(c.body, MT.bronze, .14, .45, .14, 0, 3.45, -.35); bx(c.body, MT.black, .1, .3, .04, -.5, 1.0, .62);
+    lmFlag(c, -1.5, 1.2, 2.0); lmFlag(c, 1.5, 1.2, 2.0);
+  },
+  // ---- Japonlar ----
+  kura(c) {   // rice storehouses: white plaster on a dark base, heavy tiled roofs, rice bales
+    for (const [x, z, w, d] of [[-.7, -.5, 1.5, 2.2], [1.0, .1, 1.2, 1.6]]) {
+      bx(c.body, LMM.black, w, .4, d, x, 0, z); bx(c.body, MT.plaster, w, 1.2, d, x, .4, z); lmGable(c, LMM.dtile, w * 1.25, .7, d * 1.12, x, 1.6, z);
+      bx(c.body, MT.black, .35, .55, .04, x, .3, z + d / 2 + .01); for (const sx of [-1, 1]) for (const sz of [-1, 1]) bx(c.body, LMM.black, .07, 1.2, .07, x + sx * w / 2, .4, z + sz * d / 2);
+    }
+    for (let i = 0; i < 6; i++) { const o = cy(c.body, MT.hay, .16, .4, -.9 + (i % 3) * .36, .16 + (i / 3 | 0) * .3, 1.2); o.rotation.z = PI / 2; }
+    lmFlag(c, 1.6, 1.4, 2.0);
+  },
+  dojo(c) {   // a raised wooden hall with a deep hip-gable roof and a veranda
+    lmSteps(c, MT.stone, 3.4, 2.8, 1, .25, 0, 0);
+    for (let i = 0; i < 6; i++) for (const s of [-1, 1]) cy(c.body, MT.dwood, .07, 1.2, -1.4 + i * .56, .25, s * 1.15);
+    bx(c.body, MT.wood, 3.2, .1, 2.6, 0, .35, 0); bx(c.body, MT.plaster, 2.4, 1.0, 1.8, 0, .45, 0); for (let i = 0; i < 5; i++) bx(c.body, MT.dwood, .05, 1.0, 1.82, -1.0 + i * .5, .45, 0);
+    py(c.roof, LMM.dtile, 3.8, .9, 3.2, 0, 1.45, 0); lmGable(c, LMM.dtile, 1.6, .6, 2.2, 0, 1.9, 0); bx(c.roof, MT.gold, .05, .2, 1.2, 0, 2.5, 0);
+    bx(c.body, c.cm, .5, .7, .02, 0, .7, .91);
+  },
+  kinkaku(c) {   // the Golden Pavilion: three gilded storeys by a pond, a phoenix on top
+    bx(c.body, LMM.water, 3.6, .04, 3.6, 0, 0, 0); for (const [x, z] of [[-1.3, 1.2], [1.4, -1.3]]) { sp(c.body, LMM.pine, .35, x, .4, z); cy(c.body, LMM.bark, .05, .3, x, 0, z); }
+    bx(c.body, MT.stone, 2.0, .2, 1.8, 0, 0, -.2);
+    bx(c.body, MT.wood, 1.7, .8, 1.5, 0, .2, -.2); py(c.roof, LMM.dtile, 2.3, .3, 2.1, 0, 1.0, -.2);
+    bx(c.body, LMM.goldm, 1.5, .7, 1.3, 0, 1.25, -.2); py(c.roof, LMM.dtile, 2.0, .3, 1.8, 0, 1.95, -.2);
+    bx(c.body, LMM.goldm, 1.0, .55, .9, 0, 2.2, -.2); py(c.roof, LMM.dtile, 1.5, .55, 1.4, 0, 2.75, -.2);
+    sp(c.roof, MT.gold, .1, 0, 3.4, -.2); bx(c.roof, MT.gold, .3, .06, .1, 0, 3.4, -.2); lmFlag(c, 1.6, 1.6, 1.6);
+  },
+  himeji(c) {   // the White Heron castle: a sloped stone base, a white keep of five roofs
+    const S = MT.stone; lmSteps(c, S, 3.4, 3.0, 4, .25, 0, -.1, .16);
+    const top = lmPagoda(c, 0, -.1, 2.1, 5, LMM.white, LMM.dtile, .5, 1.0);
+    for (const s of [-1, 1]) lmGable(c, LMM.dtile, .6, .35, .4, s * .55, 1.55, .9);
+    bx(c.body, LMM.white, .9, .8, .8, 1.2, 1.0, 1.0); py(c.roof, LMM.dtile, 1.3, .35, 1.2, 1.2, 1.8, 1.0);
+    for (let i = 0; i < 6; i++) bx(c.body, LMM.black, .1, .14, .02, -.75 + i * .3, 1.25, .97);
+    sp(c.roof, MT.gold, .07, -.2, top, -.1); sp(c.roof, MT.gold, .07, .2, top, -.1); lmFlag(c, -1.5, 1.3, 2.2);
+  },
+  torii(c) {   // Fushimi: a path of vermilion torii gates up to a shrine
+    for (let i = 0; i < 5; i++) {
+      const z = 1.6 - i * .55, g = new THREE.Group(); g.position.set(-.2 + i * .05, 0, z); c.body.add(g);
+      for (const s of [-1, 1]) cy(g, LMM.lacq, .06, 1.4, s * .5, 0, 0); bx(g, LMM.black, 1.4, .1, .14, 0, 1.4, 0); bx(g, LMM.lacq, 1.15, .07, .1, 0, 1.18, 0);
+    }
+    bx(c.body, MT.stone, 1.6, .2, 1.2, .2, 0, -1.3); bx(c.body, MT.wood, 1.2, .8, .9, .2, .2, -1.3); lmGable(c, mat(0x5a7a5a, .8), 1.6, .6, 1.4, .2, 1.0, -1.3, PI / 2);
+    bx(c.body, LMM.lacq, 1.2, .08, .9, .2, .95, -1.3); for (const s of [-1, 1]) { bx(c.body, MT.stone, .25, .35, .25, s * .9 + .2, 0, -.3); sp(c.body, MT.stone, .14, s * .9 + .2, .5, -.3); }
+    bx(c.body, c.cm, .4, .08, .3, .2, 1.65, -1.3);
+  },
+  kisla(c) {   // the gun barracks: a long white hall, a two-roof watchtower, racks of guns
+    bx(c.body, LMM.black, 3.2, .35, 1.3, 0, 0, -.8); bx(c.body, MT.plaster, 3.2, .8, 1.3, 0, .35, -.8); py(c.roof, LMM.dtile, 3.7, .55, 1.8, 0, 1.15, -.8);
+    for (let i = 0; i < 6; i++) bx(c.body, MT.dwood, .2, .25, .02, -1.3 + i * .52, .7, -.14);
+    bx(c.body, LMM.white, .9, 1.0, .9, 1.1, 0, .9); py(c.roof, LMM.dtile, 1.3, .35, 1.3, 1.1, 1.0, .9); bx(c.body, LMM.white, .6, .6, .6, 1.1, 1.3, .9); py(c.roof, LMM.dtile, 1.0, .45, 1.0, 1.1, 1.9, .9);
+    for (let i = 0; i < 5; i++) { const o = bx(c.body, MT.black, .03, .9, .03, -1.2 + i * .14, 0, .5); o.rotation.x = -.2; } bx(c.body, MT.dwood, .8, .05, .1, -.92, .55, .45);
+    lmFlag(c, -.2, .9, 2.0);
+  },
+  dejima(c) {   // a fan-shaped trading island: warehouses, a flag pole, a quay with a ship
+    bx(c.body, LMM.water, 3.8, .03, 1.3, 0, 0, 1.25); bx(c.body, MT.stone, 3.6, .25, 2.5, 0, 0, -.6);
+    for (const [x, w] of [[-1.0, 1.3], [.8, 1.6]]) { bx(c.body, MT.plaster, w, .9, 1.0, x, .25, -1.0); lmGable(c, LMM.dtile, w * 1.1, .5, 1.2, x, 1.15, -1.0, PI / 2); }
+    bx(c.body, MT.wood, .9, .7, .7, 1.3, .25, .2); py(c.roof, MT.tile, 1.0, .4, .8, 1.3, .95, .2);
+    cy(c.body, MT.white, .04, 2.6, -.4, .25, .2); for (let i = 0; i < 3; i++) bx(c.body, [MT.red, MT.white, LMM.blue][i], .02, .15, .5, -.4, 2.5 - i * .15, .45);
+    const s = lmShip(c, -.6, 1.3, PI / 2, 1.6); s.position.y = -.05;
+  },
+  dokum(c) {   // the foundry: brick halls, chimneys, the forge glowing through the doors
+    bx(c.body, MT.brick, 2.4, 1.5, 1.6, -.5, 0, -.5); lmGable(c, LMM.dtile, 1.8, .6, 2.6, -.5, 1.5, -.5, PI / 2);
+    bx(c.body, MT.brick, 1.2, 1.0, 1.4, 1.2, 0, .6); py(c.roof, LMM.dtile, 1.5, .4, 1.6, 1.2, 1.0, .6);
+    for (const [x, z, h] of [[-1.3, -1.1, 3.0], [.3, -1.1, 2.6], [1.5, .2, 2.2]]) { cy(c.body, MT.brick, .17, h, x, 0, z); c.chim.push(x, h + .1, z); }
+    bx(c.body, MT.glow, .5, .7, .04, -.5, 0, .31); bx(c.body, MT.glow, .3, .4, .04, 1.2, 0, 1.31);
+    for (let i = 0; i < 3; i++) { const o = cy(c.body, MT.iron, .09, .7, -1.2 + i * .35, .1, 1.1); o.rotation.z = PI / 2; } lmFlag(c, -1.6, 1.4, 2.0);
+  },
+  // ---- Mısırlılar ----
+  ambar(c) {   // granaries: beehive silos of mud brick inside a wall
+    const M = LMM.mud;
+    for (const s of [-1, 1]) { bx(c.body, M, 3.4, .6, .2, 0, 0, s * 1.6); bx(c.body, M, .2, .6, 3.4, s * 1.6, 0, 0); }
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) { const x = -1 + i, z = -.7 + j * 1.0; cy(c.body, M, .4, .8, x, 0, z); lmDome(c, M, .4, x, .8, z, 1.3); bx(c.body, MT.black, .14, .14, .02, x, .95, z + .39); }
+    for (let i = 0; i < 4; i++) bx(c.body, MT.hay, .3, .22, .3, -1.2 + i * .35, 0, 1.2);
+    bx(c.body, M, .6, 1.0, .5, 0, 0, 1.6); lmFlag(c, 1.4, 1.3, 1.9);
+  },
+  ahir(c) {   // the chariot stables: mud-brick stalls under palm-trunk beams, chariots outside
+    const M = LMM.mud;
+    bx(c.body, M, 3.4, 1.0, 1.3, 0, 0, -1.0); for (let i = 0; i < 10; i++) cy(c.body, LMM.bark, .05, 1.0, -1.6 + i * .36, 1.0, -.35).rotation.z = PI / 2;
+    bx(c.roof, MT.thatch, 3.6, .12, 1.6, 0, 1.0, -.9); for (let i = 0; i < 5; i++) bx(c.body, MT.black, .4, .7, .04, -1.3 + i * .65, 0, -.34);
+    for (const x of [-.8, .8]) { bx(c.body, MT.wood, .5, .3, .35, x, .25, .9); bx(c.body, LMM.blue, .5, .2, .04, x, .35, 1.08); for (const s of [-1, 1]) mk(G.wheel, c.body, MT.dwood, .04, .4, .4, x + s * .3, .2, .9); bx(c.body, MT.dwood, .04, .04, .7, x, .3, 1.4); }
+    cy(c.body, LMM.bark, .07, 2.2, 1.6, 0, 1.4); for (let i = 0; i < 5; i++) bx(c.roof, LMM.pine, .7, .04, .15, 1.6 + Math.cos(i * 1.25) * .3, 2.2, 1.4 + Math.sin(i * 1.25) * .3).rotation.y = -i * 1.25;
+    lmFlag(c, -1.6, 1.4, 1.8);
+  },
+  karnak(c) {   // a pylon gateway, a hall of fat lotus columns, obelisks before the gate
+    const S = LMM.sand;
+    for (const s of [-1, 1]) { bx(c.body, S, 1.3, 1.9, .65, s * .95, 0, 1.2); bx(c.body, LMM.sandD, 1.35, .12, .7, s * .95, 1.9, 1.2); }
+    bx(c.body, S, .6, 1.5, .5, 0, 0, 1.2); bx(c.body, MT.black, .35, 1.1, .04, 0, 0, 1.46); bx(c.body, LMM.blue, 1.0, .15, .02, 0, 1.7, 1.53);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) { const x = -1.2 + i * .8, z = -1.3 + j * .7; cy(c.body, S, .2, 1.5, x, 0, z); cn(c.body, LMM.sandD, .28, .25, x, 1.5, z).rotation.x = PI; }
+    bx(c.roof, S, 3.0, .15, 2.1, 0, 1.6, -.6);
+    for (const x of [-1.6, 1.6]) { bx(c.body, LMM.redb, .2, 2.4, .2, x, 0, 1.7); py(c.roof, MT.gold, .2, .25, .2, x, 2.4, 1.7); }
+    for (const s of [-1, 1]) lmFlag(c, s * .5, 1.55, 2.6);
+  },
+  sfenks(c) {   // the Great Sphinx: a lion's body, paws forward, a royal head, a small pyramid behind
+    const S = mat(0xd9b77a, .95);
+    bx(c.body, LMM.sandD, 3.4, .15, 3.0, 0, 0, 0);
+    bx(c.body, S, 1.2, .9, 2.6, 0, .15, -.4); bx(c.body, S, 1.1, .5, 1.0, 0, .15, -1.1).scale.y = 1;
+    for (const s of [-1, 1]) bx(c.body, S, .32, .3, 1.2, s * .4, .15, 1.2);
+    bx(c.body, S, .8, 1.0, .7, 0, 1.0, .75); bx(c.body, S, .6, .65, .4, 0, 1.15, 1.05);
+    for (const s of [-1, 1]) { bx(c.body, LMM.blue, .14, .7, .5, s * .44, .85, .8); bx(c.body, MT.gold, .15, .06, .5, s * .44, 1.4, .8); }
+    bx(c.body, LMM.blue, .9, .15, .8, 0, 1.95, .75); bx(c.body, MT.gold, .08, .2, .06, 0, 1.75, 1.28); bx(c.body, S, .18, .3, .12, 0, .9, 1.25);
+    bx(c.body, S, .2, .35, .3, .5, .15, -1.75).rotation.y = .4;
+    py(c.roof, LMM.sand, 1.4, 1.2, 1.4, 1.2, 0, -1.2); lmFlag(c, -1.5, 1.4, 1.9);
+  },
+  piramit(c) {   // the Great Pyramid with its gold cap, a small temple and a causeway
+    py(c.body, LMM.sand, 3.2, 2.8, 3.2, 0, 0, -.3); py(c.roof, MT.gold, .45, .4, .45, 0, 2.4, -.3);
+    for (let i = 1; i < 6; i++) { const w = 3.2 * (1 - i / 6.6); bx(c.body, LMM.sandD, w * .99, .03, w * .99, 0, i * .4, -.3); }
+    bx(c.body, LMM.sand, 1.0, .6, .6, 0, 0, 1.5); lmCols(c, 3, -.35, .35, 1.82, .55, LMM.sand, .07); bx(c.body, MT.stone, .4, .04, 1.2, 0, 0, .8);
+    bx(c.body, MT.black, .3, .4, .04, 0, 0, 1.81); lmFlag(c, 1.5, 1.5, 1.7);
+  },
+  abusimbel(c) {   // a temple cut into the rock: four seated colossi on the cliff face
+    const S = mat(0xc9a06a, .95);
+    bx(c.body, S, 3.6, 2.6, 1.6, 0, 0, -1.0); bx(c.body, LMM.sandD, 3.4, .5, .5, 0, 2.6, -1.2); bx(c.body, MT.black, .45, .9, .04, 0, 0, -.19);
+    for (const x of [-1.35, -.55, .55, 1.35]) {
+      bx(c.body, S, .55, .7, .7, x, 0, -.05); bx(c.body, S, .5, .9, .4, x, .7, -.2); bx(c.body, S, .3, .3, .3, x, 1.6, -.15); bx(c.body, LMM.blue, .36, .38, .34, x, 1.7, -.18); bx(c.body, MT.gold, .1, .14, .04, x, 1.84, 0);
+      for (const s of [-1, 1]) bx(c.body, S, .15, .55, .2, x + s * .17, 0, .3);
+    }
+    bx(c.body, MT.gold, .3, .4, .04, 0, 1.4, -.19); lmFlag(c, 1.7, 1.2, 1.9);
+  },
+  kutuphane(c) {   // the Library of Alexandria: a columned hall round a court, a domed reading room, scroll shelves
+    const W = LMM.marble;
+    lmSteps(c, W, 3.6, 3.0, 2, .1, 0, -.1); bx(c.body, W, 3.0, 1.3, 2.2, 0, .2, -.5);
+    lmCols(c, 8, -1.4, 1.4, .72, 1.3, W, .07, .2); bx(c.roof, W, 3.2, .18, 2.5, 0, 1.5, -.4); lmGable(c, MT.tile, 3.2, .45, 2.4, 0, 1.68, -.4, PI / 2);
+    cy(c.body, W, .55, .5, 0, 1.68, -.5); lmDome(c, XM.copper, .58, 0, 2.18, -.5);
+    for (let i = 0; i < 4; i++) bx(c.body, MT.wood, .5, .6, .15, -1.1 + i * .73, .2, .76); for (let i = 0; i < 8; i++) cy(c.body, MT.canvas, .03, .3, -1.2 + i * .33, .45, .82).rotation.z = PI / 2;
+    lmFlag(c, 1.6, 1.4, 2.0);
+  },
+  fener(c) {   // the Pharos: a square base, an octagonal storey, a round lantern with the fire, a statue on top
+    const W = LMM.white;
+    bx(c.body, MT.stone, 3.0, .4, 3.0, 0, 0, 0); bx(c.body, W, 1.6, 2.0, 1.6, 0, .4, 0); lmCren(c, W, 1.7, 1.7, 2.4, 0, 0, .12);
+    cy(c.body, W, .6, 1.3, 0, 2.4, 0); cy(c.body, W, .38, .8, 0, 3.7, 0); for (let i = 0; i < 6; i++) bx(c.body, MT.black, .1, .3, .04, Math.sin(i) * .38, 4.0, Math.cos(i) * .38).rotation.y = i;
+    sp(c.body, MT.glow, .2, 0, 4.25, 0); c.chim.push(0, 4.4, 0); cy(c.roof, W, .26, .08, 0, 4.5, 0); bx(c.roof, MT.bronze, .12, .4, .1, 0, 4.58, 0);
+    for (let i = 0; i < 4; i++) bx(c.body, MT.glass, .16, .3, .04, -.5 + i * .33, 1.2, .81); lmFlag(c, 1.3, 1.3, 1.7);
+  },
+  // ---- Vikingler ----
+  uzunev(c) {   // the chieftain's long house: low walls, a curved turf roof, dragon heads on the gables
+    bx(c.body, MT.dwood, 1.4, .6, 3.4, 0, 0, 0); for (let i = 0; i < 9; i++) for (const s of [-1, 1]) bx(c.body, MT.wood, .08, .6, .2, s * .74, 0, -1.6 + i * .4);
+    lmGable(c, LMM.turf, 2.0, 1.1, 3.6, 0, .6, 0); lmGable(c, MT.thatch, 2.05, .2, 3.62, 0, .6, 0);
+    for (const s of [-1, 1]) { const o = bx(c.roof, MT.dwood, .08, .5, .08, 0, 1.4, s * 1.8); o.rotation.x = s * .5; sp(c.roof, MT.dwood, .07, 0, 1.85, s * 2.0); }
+    bx(c.body, MT.black, .35, .45, .04, 0, 0, 1.71); c.chim.push(0, 1.8, -.4); bx(c.body, MT.wood, .6, .3, .3, 1.1, 0, 1.2); lmFlag(c, -1.2, 1.4, 1.9);
+  },
+  hof(c) {   // a stave temple: stacked steep shingled roofs, dragon heads at the gable ends
+    bx(c.body, MT.stone, 2.4, .15, 2.4, 0, 0, 0); bx(c.body, MT.dwood, 1.8, 1.0, 1.8, 0, .15, 0);
+    for (const [w, y] of [[2.4, 1.15], [1.5, 1.85], [.9, 2.55]]) { py(c.roof, MT.dwood, w, .7, w, 0, y, 0); bx(c.body, MT.dwood, w * .6, .5, w * .6, 0, y + .3, 0); for (let i = 0; i < 4; i++) { const a = i * PI / 2, o = bx(c.roof, MT.dwood, .06, .35, .06, Math.sin(a) * w * .45, y + .35, Math.cos(a) * w * .45); o.rotation.x = -.6 * Math.cos(a); o.rotation.z = .6 * Math.sin(a); } }
+    cy(c.roof, MT.gold, .03, .6, 0, 3.2, 0); bx(c.body, MT.black, .35, .6, .04, 0, .15, .91); bx(c.body, c.cm, .4, .1, .02, 0, .9, .92);
+    for (const x of [-1.5, 1.5]) cy(c.body, MT.stone, .14, .8, x, 0, 1.4);
+  },
+  thing(c) {   // the assembly: a ring of standing stones round a mound, a lawspeaker's platform, banners
+    lmDome(c, LMM.turf, 1.0, 0, 0, -.2, .35); for (let i = 0; i < 12; i++) { const a = i / 12 * PI * 2, o = bx(c.body, i & 1 ? MT.stone : MT.dstone, .25, .8 + (i % 3) * .2, .18, Math.cos(a) * 1.65, 0, Math.sin(a) * 1.55); o.rotation.y = -a; }
+    bx(c.body, MT.wood, .8, .3, .6, 0, .3, -.2); cy(c.body, MT.dwood, .03, 1.2, 0, .6, -.4); bx(c.body, c.cm, .02, .4, .5, 0, 1.3, -.15);
+    for (const x of [-.9, .9]) { cy(c.body, MT.dwood, .025, 1.8, x, 0, .9); bx(c.body, LMM.sail1, .02, .5, .35, x, 1.25, 1.08); } c.chim.push(.5, .5, .6); bx(c.body, MT.glow, .2, .15, .2, .5, 0, .6);
+  },
+  naust(c) {   // the longship yard: a long boat shed, a longship on the slipway, the water
+    bx(c.body, LMM.water, 3.8, .03, 1.2, 0, 0, 1.3);
+    for (let i = 0; i < 6; i++) for (const s of [-1, 1]) cy(c.body, MT.dwood, .06, .9, -1.0 + s * .7, 0, -1.6 + i * .4);
+    lmGable(c, LMM.turf, 1.7, 1.0, 2.4, -1.0, .9, -.6); bx(c.body, MT.dwood, 1.3, .7, .05, -1.0, 0, -1.75);
+    lmShip(c, .9, .3, 0, 2.6); bx(c.body, MT.wood, .3, .06, 3.0, .9, 0, .2); lmFlag(c, 1.7, -1.5, 2.0);
+  },
+  uppsala(c) {   // the temple at Uppsala: a hall with a golden roof and chain, the sacred tree beside it
+    bx(c.body, MT.stone, 2.4, .15, 2.0, -.5, 0, -.2); bx(c.body, MT.dwood, 2.0, 1.1, 1.6, -.5, .15, -.2); lmGable(c, LMM.goldm, 1.9, .8, 2.3, -.5, 1.25, -.2, PI / 2);
+    for (let i = 0; i < 9; i++) sp(c.roof, MT.gold, .04, -1.5 + i * .25, 1.2, .62);
+    bx(c.body, MT.black, .35, .6, .04, -.5, .15, .61);
+    cy(c.body, LMM.bark, .18, 1.8, 1.3, 0, .8); for (const [x, y, z, r] of [[1.3, 2.3, .8, .7], [1.0, 2.0, .5, .5], [1.6, 2.0, 1.1, .5], [1.3, 2.8, .8, .45]]) sp(c.roof, LMM.pine, r, x, y, z);
+    cy(c.body, MT.stone, .35, .25, 1.0, 0, 1.6); bx(c.body, LMM.water, .5, .02, .5, 1.0, .25, 1.6); lmFlag(c, -1.6, 1.4, 2.0);
+  },
+  jomsborg(c) {   // the Jomsviking fortress: a palisade ring, watchtowers, a sea gate, a hall inside
+    const N = 26;
+    for (let i = 0; i < N; i++) { const a = i / N * PI * 2; if (i === 6 || i === 7) continue; cy(c.body, MT.dwood, .09, 1.3, Math.cos(a) * 1.75, 0, Math.sin(a) * 1.75); cn(c.body, MT.dwood, .09, .15, Math.cos(a) * 1.75, 1.3, Math.sin(a) * 1.75); }
+    for (const a of [0, 2.1, 4.2]) { const x = Math.cos(a) * 1.6, z = Math.sin(a) * 1.6; for (const dx of [-.15, .15]) for (const dz of [-.15, .15]) cy(c.body, MT.dwood, .04, 2.0, x + dx, 0, z + dz); bx(c.body, MT.wood, .5, .3, .5, x, 1.9, z); py(c.roof, MT.dwood, .7, .4, .7, x, 2.2, z); }
+    bx(c.body, MT.dwood, 1.0, .7, 1.8, -.2, 0, -.2); lmGable(c, MT.thatch, 1.4, .8, 2.0, -.2, .7, -.2);
+    lmArch(c, MT.dwood, Math.cos(6.5 / N * PI * 2) * 1.75, Math.sin(6.5 / N * PI * 2) * 1.75, .9, 1.4, .3, -(6.5 / N * PI * 2) + PI / 2);
+    lmFlag(c, .6, .5, 2.4);
+  },
+  hedeby(c) {   // the market town: an earth rampart in a half ring, stalls with striped awnings, houses
+    for (let i = 0; i < 14; i++) { const a = PI + i / 13 * PI, o = bx(c.body, LMM.turf, .5, .5, .3, Math.cos(a) * 1.7, 0, Math.sin(a) * 1.7); o.rotation.y = -a + PI / 2; }
+    for (let i = 0; i < 4; i++) { const x = -1.2 + i * .8; bx(c.body, MT.wood, .5, .4, .4, x, 0, .9); bx(c.roof, i & 1 ? LMM.sail1 : MT.white, .6, .04, .5, x, .65, .95).rotation.x = .25; for (const s of [-1, 1]) cy(c.body, MT.dwood, .02, .65, x + s * .27, 0, 1.15); }
+    for (const [x, z] of [[-.8, -.5], [.6, -.6]]) { bx(c.body, MT.dwood, .8, .5, 1.0, x, 0, z); lmGable(c, MT.thatch, 1.0, .5, 1.1, x, .5, z); }
+    for (let i = 0; i < 3; i++) bx(c.body, MT.canvas, .25, .25, .25, 1.4, i * .25, -.2); lmFlag(c, 0, .3, 2.2);
+  },
+  ulfsalon(c) {   // the great hall of the slain: a golden roof, shields along the walls, two wolves at the door
+    bx(c.body, MT.dwood, 1.9, 1.1, 3.4, 0, 0, -.1); lmGable(c, LMM.goldm, 2.5, 1.2, 3.7, 0, 1.1, -.1);
+    for (let i = 0; i < 8; i++) for (const s of [-1, 1]) mk(G.wheel, c.body, i & 1 ? c.cm : LMM.sail1, .04, .32, .32, s * .97, .6, -1.5 + i * .4);
+    for (const s of [-1, 1]) { const o = bx(c.roof, MT.dwood, .08, .6, .08, 0, 2.2, s * 1.8); o.rotation.x = s * .5; }
+    bx(c.body, MT.black, .45, .8, .04, 0, 0, 1.61); bx(c.body, MT.gold, .55, .1, .05, 0, .82, 1.62);
+    for (const s of [-1, 1]) { bx(c.body, MT.stone, .3, .3, .5, s * .55, 0, 1.9); bx(c.body, mat(0x5a5a60, .8), .22, .35, .5, s * .55, .3, 1.9); bx(c.body, mat(0x5a5a60, .8), .16, .2, .25, s * .55, .6, 2.12); }
+    lmFlag(c, 1.4, -1.6, 2.4);
+  },
+};
+
 function makeBuilding(type, size, age, color, mask, seed, noGlb) {
   const root = new THREE.Group();
   const era = Math.max(0, Math.min(4, age | 0));
@@ -1122,7 +1480,7 @@ function makeBuilding(type, size, age, color, mask, seed, noGlb) {
     else bx(slab, c.P.base, size * .94, .7, size * .94, 0, -.64, 0);
     // (a building drawn from a generated model below skips the procedural one: it was built and thrown away)
     const glbNext = !noGlb && !SEA_BUILD[type] && hasGlb((type === 'wall' || type === 'gate') ? glbKey(type) : type, era);
-    if (!glbNext) try { if (SEA_BUILD[type]) { SEA_BUILD[type](c); if (c.noSlab) slab.clear(); if (c.live) { root.add(c.live); U.live = c.live; } } else (BUILD[type] || BUILD.house)(c); }
+    if (!glbNext) try { if (SEA_BUILD[type]) { SEA_BUILD[type](c); if (c.noSlab) slab.clear(); if (c.live) { root.add(c.live); U.live = c.live; } } else (BUILD[type] || (BUILDINGS[type] && BUILDINGS[type].landmark && LM_BUILD[BUILDINGS[type].landmark.look]) || BUILD.house)(c); }
     catch (err) {
       console.warn('[entities] building model failed:', type, era, err);
       body.clear(); roof.clear(); c.chim.length = 0; c.spin = null;
@@ -1435,6 +1793,17 @@ function uHead(H, k, cloth) {
   } else if (h === 'malicap') {    // farima: a quilted cap with a gold band, a white veil round the face
     cy(H, cm, .1, .1, 0, .11, 0); sp(H, cm, .095, 0, .2, 0); cy(H, MT.gold, .102, .025, 0, .12, 0);
     for (const s of [1, -1]) bx(H, MT.white, .02, .12, .15, s * .095, -.03, 0); bx(H, MT.white, .19, .12, .02, 0, -.03, -.09);
+  // ---- the heroes (landmarks.js HEROES)
+  } else if (h === 'kavuk') {      // Fatih: a great white turban, a jewelled gold aigrette with a plume, a beard
+    cy(H, MT.white, .12, .1, 0, .12, 0); sp(H, MT.white, .14, 0, .25, 0); cy(H, cm, .07, .12, 0, .3, 0); sp(H, mat(0x1e8a4a, .3, .2), .03, 0, .24, .13);
+    bx(H, MT.gold, .03, .1, .02, 0, .27, .13); bx(H, MT.white, .02, .16, .03, 0, .34, .11).rotation.x = -.3; bx(H, XM.hair, .13, .09, .03, 0, -.05, .09);
+  } else if (h === 'defne') {      // Caesar: short hair, a golden laurel wreath
+    bx(H, XM.hair, .18, .04, .18, 0, .15, 0); for (let i = 0; i < 10; i++) { const a = i / 10 * PI * 2; const l = bx(H, MT.gold, .03, .03, .05, Math.sin(a) * .1, .15, Math.cos(a) * .1); l.rotation.y = a; l.rotation.z = .5; }
+  } else if (h === 'ronin') {      // Musashi: a topknot, a headband, a stubbled jaw
+    bx(H, MT.black, .18, .05, .18, 0, .15, 0); bx(H, MT.black, .05, .05, .1, 0, .2, -.02); bx(H, cm, .185, .025, .185, 0, .12, 0); bx(H, MT.white, .02, .08, .02, .06, .1, -.09); bx(H, XM.hair, .12, .04, .02, 0, -.01, .087);
+  } else if (h === 'ragnar') {     // Ragnar: shaved sides, a long braid down the back, a forked beard, war paint
+    bx(H, mat(0xb88a4a, .9), .06, .05, .19, 0, .16, 0); bx(H, mat(0xb88a4a, .9), .04, .3, .04, 0, -.1, -.1); for (const s of [1, -1]) bx(H, mat(0xb88a4a, .9), .05, .14, .03, s * .03, -.1, .09);
+    bx(H, mat(0x1a1a20, .9), .17, .02, .01, 0, .09, .086);
   } else {                         // 'wrap': a cloth wound round the head (Mandinka)
     bx(H, cm, .19, .09, .19, 0, .12, 0); bx(H, cm, .06, .06, .06, .08, .2, -.04);
   }
@@ -1506,6 +1875,10 @@ function uBody(P, k, cloth) {
   } else if (b === 'cherkeska') {  // cossack: a long dark coat with cartridge loops on the chest, a black belt, a dagger
     bx(T, cm, .32, .52, .2, 0, -.16, 0); for (const s of [1, -1]) for (const y of [.16, .2, .24]) bx(T, MT.steel, .07, .02, .012, s * .08, y, .101);
     bx(T, MT.black, .325, .03, .205, 0, .04, 0); bx(T, MT.steel, .02, .12, .02, 0, -.08, .102); bx(T, cloth, .325, .04, .205, 0, -.12, 0);
+  } else if (b === 'kaftan') {     // Fatih: a gold-trimmed kaftan in his colour, a fur collar, a jewelled belt
+    bx(T, cm, .33, .52, .21, 0, -.16, 0); bx(T, MT.gold, .03, .5, .012, 0, -.14, .106); bx(T, MT.gold, .335, .04, .215, 0, .04, 0); sp(T, mat(0xc01c3a, .3, .2), .025, 0, .06, .11); bx(T, XM.fur, .3, .06, .2, 0, .33, 0);
+  } else if (b === 'kimono') {     // Musashi: a dark kimono over wide hakama, the player's colour on the sash
+    bx(T, cm, .32, .42, .2, 0, -.06, 0); bx(T, MT.white, .06, .3, .012, -.03, .1, .101).rotation.z = .5; bx(T, cloth, .325, .06, .205, 0, .04, 0); bx(T, mat(0x3a3a48, .9), .36, .16, .22, 0, -.18, 0);
   } else if (b === 'boubou') {     // farima: a wide robe with gold embroidery, the player's sash
     bx(T, cm, .34, .5, .22, 0, -.14, 0); bx(T, MT.gold, .1, .12, .012, 0, .18, .111); bx(T, cloth, .345, .05, .225, 0, .04, 0);
   }
@@ -1568,6 +1941,9 @@ function uWeapon(P, k, wm, cloth) {
   } else if (w === 'atlatl') {     // eagle warrior: the spear-thrower with a dart laid on it, more darts on the back
     bx(Rr, MT.wood, .025, .025, .3, 0, -.36, .14); bx(Rr, MT.lwood, .012, .012, .8, 0, -.37, .3); bx(Rr, UQ.feather, .04, .04, .06, 0, -.37, -.06); bx(Rr, UQ.obsid, .02, .02, .06, 0, -.37, .72);
     for (const x of [-.04, 0, .04]) { const d = bx(P.torso, MT.lwood, .012, .7, .012, x, -.12, -.12); d.rotation.z = .2; }
+  } else if (w === 'nitou') {      // Musashi: a long sword in the right hand, a short one in the left
+    const a = bx(Rr, MT.steel, .018, .04, .34, 0, -.36, .2), b2 = bx(Rr, MT.steel, .018, .04, .28, 0, -.335, .48); b2.rotation.x = -.14; void a; bx(Rr, MT.gold, .07, .06, .015, 0, -.37, .04);
+    bx(P.armL, MT.steel, .016, .035, .3, 0, -.36, .18); bx(P.armL, MT.gold, .06, .05, .015, 0, -.37, .04);
   } else if (w === 'sling') {      // balearic slinger: the sling's cords hanging from his hand, a stone in the pouch, a bag of stones
     cy(Rr, MT.leather, .006, .3, 0, -.66, 0); sp(Rr, MT.leather, .03, 0, -.68, 0); sp(Rr, MT.stone, .02, 0, -.69, .01); bx(P.torso, MT.leather, .08, .1, .06, .17, -.04, .05);
   } else {                         // 'dory': a long thrusting spear, a butt spike / counterweight in gold
@@ -1836,7 +2212,8 @@ function makeUnitRaw(type, color, age) {
   const P = {}; let rig = 'human', h = .8, pw = .5, pd = .5;
   const cloth = mat(color, .85, 0);
   // (a civilization's unique unit: its base unit's kit with its own changes)
-  const ud = UNITS[type], k = KIT[type] || (ud && ud.base && KIT[ud.base] ? Object.assign({}, KIT[ud.base], ud.kit) : undefined), ks = (k && k.scale) || 1;
+  const ud = UNITS[type], kb = ud && (ud.base || ud.kitBase), k = KIT[type] || (kb && KIT[kb] ? Object.assign({}, KIT[kb], ud.kit) : undefined), ks = (k && k.scale) || 1;   // (a hero: kitBase)
+  if (k && k.hero) mk(G.ring, inner, LMM.goldm, k.cav ? 1.5 : 1.0, 1, k.cav ? 1.5 : 1.0, 0, .02, 0);   // (a hero: a gold ring at its feet)
   if (k && !k.cav) { makeHuman(inner, color, k, P, A); inner.scale.setScalar(.72 * ks); }
   else if (k && k.cav) {
     rig = 'cav'; h = 1.25; pw = .6; pd = 1.0;
@@ -2466,7 +2843,7 @@ export class EntityView {
       if (dmg) {
         v.smokeT = .5 + Math.random() * .6;
         this.fx.smoke(e.x + (Math.random() - .5) * s * .6, y + v.h * (.5 + Math.random() * .4), e.z + (Math.random() - .5) * s * .6);
-      } else if (U.chim.length && (e.type === 'house' || e.type === 'blacksmith' || e.type === 'factory' || e.type === 'temple' || v.age >= 4)) {
+      } else if (U.chim.length && (e.type === 'house' || e.type === 'blacksmith' || e.type === 'factory' || e.type === 'temple' || v.age >= 4 || (BUILDINGS[e.type] && BUILDINGS[e.type].landmark))) {
         v.smokeT = e.type === 'factory' ? .45 + Math.random() * .4 : 1.2 + Math.random() * 2.2;
         const i = ((Math.random() * (U.chim.length / 3)) | 0) * 3;
         const k = v.k || 1; this.fx.smoke(e.x + U.chim[i] * k, y + U.chim[i + 1] * k, e.z + U.chim[i + 2] * k);
