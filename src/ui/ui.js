@@ -309,21 +309,25 @@ export class UI {
     };
     tile(0, 'karo_tek', 'Tek Oyunculu', 'Yapay zekâya karşı savaş', () => this._menuSolo());
     tile(1, 'karo_cok', 'Çok Oyunculu', 'Arkadaşınla oda kur, kodla katıl', () => this._menuMulti());
-    // the other screens: round icon buttons in the top right corner (MENU_ICO), the name shows on hover / focus.
-    // 'wide' ones (Oyuna Dön, Google ile Giriş) also write their name; 'hot' glows (a dot on the round ones)
+    // the other screens: a row of round icon buttons under the tiles (MENU_ICO), each with its name under it;
+    // 'hot' glows (Oyuna Dön, unread news). Signing in is apart from the row: a gold pill in the top right (.mn-giris)
     const link = (text, fn, cls = '') => {
-      const b = el('button', 'mn-link mbtn-home' + (cls ? ' ' + cls : ''), (MENU_ICO[text] || '') + (/\bwide\b/.test(cls) ? `<span>${esc(text)}</span>` : ''));
-      b.type = 'button'; b.dataset.ad = text; b.setAttribute('aria-label', text); b.onclick = go(fn); links.append(b); return b;
+      const b = el('button', 'mn-link mbtn-home' + (cls ? ' ' + cls : ''), `<span class="ml-ico">${MENU_ICO[text] || ''}</span><span class="ml-ad">${esc(text)}</span>`);
+      b.type = 'button'; b.onclick = go(fn); links.append(b); return b;
     };
     box.append(tiles, links);
     const foot = el('footer', 'mn-foot', '<span>Açık kaynak · <a href="https://github.com/arifngoral/medeniyet-rts" target="_blank" rel="noopener">kaynak kodu</a> (AGPL v3) · Aevum çatalı · <a href="https://medeniyet-kart-oyunu.onrender.com" target="_blank" rel="noopener" title="Aynı medeniyetlerle kart oyunu (ayrı site)">Kart oyunu ↗</a></span><span>Sürüm ' + esc(VERSION) + '</span>');
     box.append(foot);
     this.menuEl.append(box);
     if (note) this._menuNote(note);
-    if (this.game && !this.game.over && !this.app.demo && !this.app.net) link('Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); }, 'hot wide');
+    if (this.game && !this.game.over && !this.app.demo && !this.app.net) link('Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); }, 'hot');
     // (Devam Et / Kayıtlı Oyunlar: Tek Oyunculu'nun içinde, _menuSolo)
     link('Sandbox', () => this._menuSandbox());
-    if (!this._account() && ACCOUNTS && this.app.cloud) link('Google ile Giriş', () => loginScreen(this), 'hot wide');
+    if (!this._account() && ACCOUNTS && this.app.cloud) {
+      const g = el('button', 'mn-giris', `${MENU_ICO['Google ile Giriş']}<span>Google ile Giriş</span>`); g.type = 'button';
+      g.title = 'İsteğe bağlı: adın, seviyen, maç geçmişin ve kayıtların hesabına bağlanır, her bilgisayarda seninle gelir.';
+      g.onclick = go(() => loginScreen(this)); box.append(g);
+    }
     if (this._account()) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
     // release notes; marked until this version's notes have been opened once
     const seen = safe(() => localStorage.getItem('mrts-news-seen'), null);
