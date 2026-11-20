@@ -1,5 +1,7 @@
 # Medeniyet RTS (Aevum çatalı)
 
+**Oyna:** https://medeniyet-rts.onrender.com · **Model vitrini:** https://medeniyet-rts.onrender.com/vitrin.html
+
 > Bu depo [Aevum](https://github.com/flickrz/aevum-rts)'un bir çatalıdır (fork): üstüne **medeniyetler** eklenir.
 > Kod Aevum gibi AGPL v3. "Aevum" adı ve logosu asıl projeye aittir; bu çatalın oyun içindeki adı "Medeniyet" (`src/brand.js`).
 >
