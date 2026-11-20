@@ -108,18 +108,21 @@ export class UI {
 
     // top bar
     const top = el('div', 'topbar panel');
-    this.resEls = {};
+    // resources: a panel beside the minimap (built here, placed below). Each row: the stock and how many of your people
+    // are working on that resource right now (villagers, and fishing boats for food) - not the income rate.
+    const resPanel = (this.resPanelEl = el('div', 'respanel panel'));
+    this.resEls = {}; this.wkEls = {};
     for (const r of RES_LIST) {
-      const d = el('div', 'res', `<span class="i">${RES_ICON[r]}</span><b>0</b><small class="rate"></small>`);
-      this._tip(d, () => ({ name: RES_NAME[r], desc: 'Mevcut ' + RES_NAME[r].toLowerCase() + ' stoğu. Küçük sayı: son 30 saniyeye göre dakikalık gelir.' }));
-      this.resEls[r] = d; top.append(d);
+      const d = el('div', 'res', `<span class="i">${RES_ICON[r]}</span><b>0</b><span class="wk">${ico('u-villager')}<i>0</i></span>`);
+      this._tip(d, () => ({ name: RES_NAME[r], desc: 'Mevcut ' + RES_NAME[r].toLowerCase() + ' stoğu. Sağdaki sayı: şu an bu kaynakta çalışan köylü sayısı' + (r === 'food' ? ' (balıkçı tekneleri dahil).' : '.') }));
+      this.resEls[r] = d; this.wkEls[r] = d.querySelector('.wk i'); resPanel.append(d);
     }
     this.popEl = el('div', 'res', `<span class="i">${ico('x-pop')}</span><b>0/0</b>`);
     this._tip(this.popEl, () => ({ name: 'Nüfus', desc: 'Mevcut / azami nüfus. Sınır sabit: 1000.' }));
     this.idleEl = el('button', 'tbtn idlebtn', ico('u-villager') + '<b>0</b>');
     this.idleEl.onclick = () => { this._click(); safe(() => this.app.input?.nextIdleVillager()); };
     this._tip(this.idleEl, () => ({ name: 'Boşta köylüler', desc: 'Sıradaki boşta köylüyü seç ve ona git. Kısayol: nokta (.)' }));
-    top.append(el('div', 'sep'), this.popEl, this.idleEl, el('div', 'sep'));
+    const popRow = el('div', 'resfoot'); popRow.append(this.popEl, this.idleEl); resPanel.append(popRow);
     this.ageEl = el('div', 'agebox', '<span class="n"></span><div class="agebar"><i></i></div>');
     this.clockEl = el('div', 'clock', '00:00');
     top.append(this.ageEl, el('div', 'sep'), this.clockEl, el('div', 'sep'));
@@ -153,7 +156,7 @@ export class UI {
     this.mm = el('canvas');
     this.mm.width = MM; this.mm.height = MM;
     mmWrap.append(this.mm);
-    this.hudEl.append(mmWrap);
+    this.hudEl.append(mmWrap, resPanel);
     this._bindMinimap();
 
     // bottom
@@ -701,14 +704,20 @@ export class UI {
     if (now - this.slowT < 900) return;
     this.slowT = now;
     const units = safe(() => g.unitsOf(this._me()), []) || [], blds = safe(() => g.buildingsOf(this._me()), []) || [];
-    let idle = 0; const building = new Set();
+    let idle = 0; const building = new Set(), wk = { food: 0, wood: 0, stone: 0, gold: 0 };
     for (const u of units) {
-      if (u.dead || u.type !== 'villager') continue;
+      if (u.dead) continue;
+      // (who is gathering what: also on the way back with a load; a fishing boat works on food)
+      const o = u.order;
+      if (o && u.type === 'fishboat' && o.type === 'fish') wk.food++;
+      else if (o && u.type === 'villager' && (o.type === 'gather' || o.type === 'return') && o.res in wk) wk[o.res]++;
+      if (u.type !== 'villager') continue;
       if (u.state === 'idle') idle++;
       if (u.order && u.order.type === 'build') building.add(u.order.targetId);
       if (u.state === 'build' && u.order && u.order.targetId != null) building.add(u.order.targetId);
     }
     const ib = this.idleEl.querySelector('b'); if (ib.textContent !== String(idle)) ib.textContent = idle;
+    for (const r in wk) { const n = this.wkEls[r]; if (n && n.textContent !== String(wk[r])) { n.textContent = wk[r]; n.parentNode.classList.toggle('none', !wk[r]); } }
     this.idleEl.classList.toggle('has', idle > 0);
     const demo = !!this.app.demo;
     // hints

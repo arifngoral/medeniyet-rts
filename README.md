@@ -13,6 +13,9 @@
 > Bir sürümün eklediği ya da değiştirdiği modeller `showcase` listesine yazılır ve `vitrin.html`'de (3B model kitaplığı: `src/vitrin.js`) notuyla
 > birlikte ilk sekmede görünür: birlikler bekle → yürü → saldır → öl döngüsünde oynar, yapılar yavaşça döner; "Tüm birlikler" ve "Yapılar" sekmeleri de var.
 >
+> **Oyun içi arayüz:** `hud.css` (yalnız görünüm: paneller menülerle aynı dilde) ve kaynak paneli: kaynaklar mini haritanın yanında, her birinin yanında
+> o kaynakta çalışan köylü sayısı (`ui.js` `respanel`, sayım `_refreshSlow`).
+>
 > **Menü görünümü:** `menu.css` (kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, medeniyet afiş şeridi); çizimler
 > `assets/ui/` ve `assets/civ/` (CC BY 4.0, bkz. `assets/LICENSE.md`). Oyun içi arayüz asıl projedeki gibidir.
 >

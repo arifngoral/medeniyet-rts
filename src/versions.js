@@ -33,6 +33,10 @@ export const VERSIONS = [
         'Yeni menü görünümü: kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, portreli medeniyet şeridi.',
         'Yenilikler penceresi ve 3B vitrin eklendi.',
       ]],
+      ['Oyun içi arayüz', [
+        'Kaynaklar üst çubuktan mini haritanın yanına taşındı. Her kaynağın yanında o an o kaynakta çalışan köylü sayısı yazar (dakikalık gelir yerine); balıkçı tekneleri yiyeceğe sayılır. Nüfus ve boşta köylü düğmesi de aynı panelde.',
+        'Oyun içindeki bütün paneller menülerle aynı görünüme geçti: seçim paneli, yapıların üretim kuyruğu, komut kartı, ipuçları, görevler, bildirimler, teknoloji ağacı, istatistikler, duraklatma menüsü.',
+      ]],
       ['Düzeltmeler', [
         'Özel birlikler düğmeden basılamıyordu, düzeldi.',
       ]],
