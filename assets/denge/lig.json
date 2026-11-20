@@ -1,0 +1,1110 @@
+{
+ "date": "2026-11-20",
+ "version": "1.0",
+ "diff": "hard",
+ "maps": [
+  "plains",
+  "river",
+  "highlands"
+ ],
+ "size": 96,
+ "cap": 60,
+ "perPair": 8,
+ "sets": [],
+ "civs": [
+  "arap",
+  "aztek",
+  "bizans",
+  "cin",
+  "frank",
+  "hint",
+  "ingiliz",
+  "ispanyol",
+  "japon",
+  "kartaca",
+  "kore",
+  "mali",
+  "misir",
+  "mogol",
+  "pers",
+  "roma",
+  "rus",
+  "turk",
+  "viking",
+  "yunan"
+ ],
+ "total": {
+  "arap": {
+   "n": 152,
+   "w": 47.5,
+   "d": 1,
+   "min": 26.7
+  },
+  "aztek": {
+   "n": 152,
+   "w": 89,
+   "d": 2,
+   "min": 26.3
+  },
+  "bizans": {
+   "n": 152,
+   "w": 59,
+   "d": 4,
+   "min": 28
+  },
+  "cin": {
+   "n": 152,
+   "w": 97.5,
+   "d": 3,
+   "min": 28.2
+  },
+  "frank": {
+   "n": 152,
+   "w": 80.5,
+   "d": 1,
+   "min": 26.2
+  },
+  "hint": {
+   "n": 152,
+   "w": 69,
+   "d": 4,
+   "min": 27.5
+  },
+  "ingiliz": {
+   "n": 152,
+   "w": 54,
+   "d": 6,
+   "min": 29.3
+  },
+  "ispanyol": {
+   "n": 152,
+   "w": 69.5,
+   "d": 7,
+   "min": 28.5
+  },
+  "japon": {
+   "n": 152,
+   "w": 82.5,
+   "d": 3,
+   "min": 28
+  },
+  "kartaca": {
+   "n": 152,
+   "w": 76,
+   "d": 2,
+   "min": 27.7
+  },
+  "kore": {
+   "n": 152,
+   "w": 97.5,
+   "d": 5,
+   "min": 29.2
+  },
+  "mali": {
+   "n": 152,
+   "w": 75.5,
+   "d": 3,
+   "min": 28.4
+  },
+  "misir": {
+   "n": 152,
+   "w": 56,
+   "d": 2,
+   "min": 28.2
+  },
+  "mogol": {
+   "n": 152,
+   "w": 53,
+   "d": 4,
+   "min": 27
+  },
+  "pers": {
+   "n": 152,
+   "w": 88.5,
+   "d": 1,
+   "min": 28.6
+  },
+  "roma": {
+   "n": 152,
+   "w": 89.5,
+   "d": 1,
+   "min": 28.1
+  },
+  "rus": {
+   "n": 152,
+   "w": 67.5,
+   "d": 3,
+   "min": 28.5
+  },
+  "turk": {
+   "n": 152,
+   "w": 74.5,
+   "d": 5,
+   "min": 28.4
+  },
+  "viking": {
+   "n": 152,
+   "w": 97,
+   "d": 2,
+   "min": 26
+  },
+  "yunan": {
+   "n": 152,
+   "w": 96.5,
+   "d": 1,
+   "min": 29.4
+  }
+ },
+ "pairs": {
+  "arap|aztek": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "arap|bizans": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "arap|cin": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "arap|frank": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "arap|hint": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "arap|ingiliz": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "arap|ispanyol": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "arap|japon": {
+   "n": 8,
+   "w": 3.5,
+   "d": 1
+  },
+  "arap|kartaca": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "arap|kore": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "arap|mali": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "arap|misir": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "arap|mogol": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "arap|pers": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "arap|roma": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "arap|rus": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "arap|turk": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "arap|viking": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "arap|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "aztek|bizans": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "aztek|cin": {
+   "n": 8,
+   "w": 4.5,
+   "d": 1
+  },
+  "aztek|frank": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "aztek|hint": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "aztek|ingiliz": {
+   "n": 8,
+   "w": 8,
+   "d": 0
+  },
+  "aztek|ispanyol": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "aztek|japon": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "aztek|kartaca": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "aztek|kore": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "aztek|mali": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "aztek|misir": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "aztek|mogol": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "aztek|pers": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "aztek|roma": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "aztek|rus": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "aztek|turk": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "aztek|viking": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "aztek|yunan": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "bizans|cin": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "bizans|frank": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "bizans|hint": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "bizans|ingiliz": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "bizans|ispanyol": {
+   "n": 8,
+   "w": 5.5,
+   "d": 1
+  },
+  "bizans|japon": {
+   "n": 8,
+   "w": 1.5,
+   "d": 1
+  },
+  "bizans|kartaca": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "bizans|kore": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "bizans|mali": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "bizans|misir": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "bizans|mogol": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "bizans|pers": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "bizans|roma": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "bizans|rus": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "bizans|turk": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "bizans|viking": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "bizans|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "cin|frank": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "cin|hint": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "cin|ingiliz": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "cin|ispanyol": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "cin|japon": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "cin|kartaca": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "cin|kore": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "cin|mali": {
+   "n": 8,
+   "w": 5.5,
+   "d": 1
+  },
+  "cin|misir": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "cin|mogol": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "cin|pers": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "cin|roma": {
+   "n": 8,
+   "w": 4.5,
+   "d": 1
+  },
+  "cin|rus": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "cin|turk": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "cin|viking": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "cin|yunan": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "frank|hint": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "frank|ingiliz": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "frank|ispanyol": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "frank|japon": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "frank|kartaca": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "frank|kore": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "frank|mali": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "frank|misir": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "frank|mogol": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "frank|pers": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "frank|roma": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "frank|rus": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "frank|turk": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "frank|viking": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "frank|yunan": {
+   "n": 8,
+   "w": 3.5,
+   "d": 1
+  },
+  "hint|ingiliz": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "hint|ispanyol": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "hint|japon": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "hint|kartaca": {
+   "n": 8,
+   "w": 1.5,
+   "d": 1
+  },
+  "hint|kore": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "hint|mali": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "hint|misir": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "hint|mogol": {
+   "n": 8,
+   "w": 5,
+   "d": 2
+  },
+  "hint|pers": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "hint|roma": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "hint|rus": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "hint|turk": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "hint|viking": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "hint|yunan": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "ingiliz|ispanyol": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "ingiliz|japon": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "ingiliz|kartaca": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "ingiliz|kore": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "ingiliz|mali": {
+   "n": 8,
+   "w": 3,
+   "d": 2
+  },
+  "ingiliz|misir": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "ingiliz|mogol": {
+   "n": 8,
+   "w": 5.5,
+   "d": 1
+  },
+  "ingiliz|pers": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "ingiliz|roma": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "ingiliz|rus": {
+   "n": 8,
+   "w": 3.5,
+   "d": 1
+  },
+  "ingiliz|turk": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "ingiliz|viking": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "ingiliz|yunan": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "ispanyol|japon": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "ispanyol|kartaca": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "ispanyol|kore": {
+   "n": 8,
+   "w": 0.5,
+   "d": 1
+  },
+  "ispanyol|mali": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "ispanyol|misir": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "ispanyol|mogol": {
+   "n": 8,
+   "w": 8,
+   "d": 0
+  },
+  "ispanyol|pers": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "ispanyol|roma": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "ispanyol|rus": {
+   "n": 8,
+   "w": 3.5,
+   "d": 1
+  },
+  "ispanyol|turk": {
+   "n": 8,
+   "w": 5.5,
+   "d": 1
+  },
+  "ispanyol|viking": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "ispanyol|yunan": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "japon|kartaca": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "japon|kore": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "japon|mali": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "japon|misir": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "japon|mogol": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "japon|pers": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "japon|roma": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "japon|rus": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "japon|turk": {
+   "n": 8,
+   "w": 3.5,
+   "d": 1
+  },
+  "japon|viking": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "japon|yunan": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "kartaca|kore": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "kartaca|mali": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "kartaca|misir": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "kartaca|mogol": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "kartaca|pers": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "kartaca|roma": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "kartaca|rus": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "kartaca|turk": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "kartaca|viking": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "kartaca|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "kore|mali": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "kore|misir": {
+   "n": 8,
+   "w": 8,
+   "d": 0
+  },
+  "kore|mogol": {
+   "n": 8,
+   "w": 4.5,
+   "d": 1
+  },
+  "kore|pers": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "kore|roma": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "kore|rus": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "kore|turk": {
+   "n": 8,
+   "w": 4.5,
+   "d": 1
+  },
+  "kore|viking": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "kore|yunan": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "mali|misir": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "mali|mogol": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "mali|pers": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "mali|roma": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "mali|rus": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "mali|turk": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "mali|viking": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "mali|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "misir|mogol": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "misir|pers": {
+   "n": 8,
+   "w": 1,
+   "d": 0
+  },
+  "misir|roma": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "misir|rus": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "misir|turk": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "misir|viking": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "misir|yunan": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "mogol|pers": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  },
+  "mogol|roma": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "mogol|rus": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "mogol|turk": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "mogol|viking": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "mogol|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "pers|roma": {
+   "n": 8,
+   "w": 3,
+   "d": 0
+  },
+  "pers|rus": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "pers|turk": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "pers|viking": {
+   "n": 8,
+   "w": 5,
+   "d": 0
+  },
+  "pers|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "roma|rus": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "roma|turk": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "roma|viking": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "roma|yunan": {
+   "n": 8,
+   "w": 7,
+   "d": 0
+  },
+  "rus|turk": {
+   "n": 8,
+   "w": 6,
+   "d": 0
+  },
+  "rus|viking": {
+   "n": 8,
+   "w": 0,
+   "d": 0
+  },
+  "rus|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "turk|viking": {
+   "n": 8,
+   "w": 2.5,
+   "d": 1
+  },
+  "turk|yunan": {
+   "n": 8,
+   "w": 2,
+   "d": 0
+  },
+  "viking|yunan": {
+   "n": 8,
+   "w": 4,
+   "d": 0
+  }
+ }
+}
