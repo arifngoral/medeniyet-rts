@@ -171,7 +171,7 @@ async function readSse(url, ms, until) {
 }
 {
   const port = 5600 + Math.floor(Math.random() * 300);
-  const srv = await startServer(port, {});
+  const srv = await startServer(port, { AEVUM_GUESTS: '0' });   // accounts only (this fork takes guests by default: see below)
   try {
     const r = await fetch(base(port) + '/mp/events?room=ABCDE&peer=p1');
     ok(r.status === 401, 'relay: no ticket -> 401 (' + r.status + ')');
@@ -183,6 +183,19 @@ async function readSse(url, ms, until) {
     ok(a2.status === 401, 'relay: a bad Firebase token is refused');
     const h = await (await fetch(base(port) + '/mp/health')).json();
     ok(h.auth === 'on', 'health reports auth on');
+  } finally { srv.kill(); }
+}
+{
+  // this fork: signing in is optional, so by default the relay also lets a guest (no ticket) send and listen
+  const port = 5300 + Math.floor(Math.random() * 300);
+  const srv = await startServer(port, {});
+  try {
+    const s = await fetch(base(port) + '/mp/send?room=ABCDE&peer=p1', { method: 'POST', body: '{"topic":"lobby","data":{}}' });
+    ok(s.status !== 401, 'relay: a guest may send without a ticket (' + s.status + ')');
+    const a = await fetch(base(port) + '/mp/auth', { method: 'POST', body: JSON.stringify({ dev: { fb: 'x1', uid: UID, name: 'Dev' } }) });
+    ok(a.status === 401 || a.status === 400, 'relay: guests allowed, dev identities still refused (' + a.status + ')');
+    const h = await (await fetch(base(port) + '/mp/health')).json();
+    ok(h.auth === 'on', 'health still reports auth on (tickets are checked when given)');
   } finally { srv.kill(); }
 }
 {

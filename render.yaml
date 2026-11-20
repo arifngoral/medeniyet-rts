@@ -13,3 +13,6 @@ services:
       # signs relay tickets and the TP ledger (srv/identity.mjs); generated once by Render, never in the repo
       - key: AEVUM_SECRET
         generateValue: true
+      # accounts (Google sign-in + Firestore): the fork's own Firebase project; its web config is src/cloud/config.js
+      - key: AEVUM_FIREBASE_PROJECT
+        value: medeniyet-rts

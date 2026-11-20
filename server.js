@@ -14,6 +14,9 @@
   // everybody without a ticket. Set the project (and the client's web config) to get verified accounts back.
   const GUEST = !process.env.AEVUM_FIREBASE_PROJECT;
   const NO_AUTH = GUEST || /^(1|true|yes)$/i.test(process.env.AEVUM_NO_AUTH || '');
+  // this fork: signing in is optional, so the relay also takes guests (no ticket, unverified name) next to accounts.
+  // AEVUM_GUESTS=0 turns that off (accounts only, as upstream).
+  const OPEN = NO_AUTH || !/^(0|false|no)$/i.test(process.env.AEVUM_GUESTS || '');
   const KEYS = IDM.keysFromEnv(process.env);
   const ID = IDM.createIdentity({ projectId: process.env.AEVUM_FIREBASE_PROJECT || undefined, keys: KEYS.keys, noAuth: NO_AUTH, tpMinMs: process.env.AEVUM_TP_MIN_MS != null ? Number(process.env.AEVUM_TP_MIN_MS) : undefined });
   if (KEYS.source === 'ephemeral') console.warn('AEVUM_SECRET yok: TP kayitlari bu surec kapaninca gecersiz olur (yalnizca yerel test icin uygun).');
@@ -237,7 +240,7 @@
     const r = rooms.get(room);
     if (!r || !m || typeof m.topic !== 'string' || m.topic.length > 32) return;
     const sender = r.get(peer);
-    if (!sender && !NO_AUTH) return;   // (only a peer that is in the room may post; its verified identity travels with the message)
+    if (!sender && !OPEN) return;   // (only a peer that is in the room may post; its verified identity travels with the message)
     const msg = { type: 'msg', topic: m.topic, data: m.data, from: peer, id: pub(sender && sender.ident) };
     for (const [p, o] of r) if (p !== peer) tell(o, msg);
   }
@@ -252,7 +255,7 @@
     const room = (url.searchParams.get('room') || '').toUpperCase(), peer = url.searchParams.get('peer') || '';
     if (!okName(room) || !okName(peer)) { bye({ type: 'err', code: 400 }); return; }
     const ident = identOf(req, url);
-    if (!ident && !NO_AUTH) { bye({ type: 'err', code: 401 }); return; }
+    if (!ident && !OPEN) { bye({ type: 'err', code: 401 }); return; }
     if (kicked.has(room + ' ' + peer)) { bye({ type: 'dup' }); return; }
     const known = rooms.get(room) && rooms.get(room).get(peer);
     if (known && known.ident && (!ident || ident.uid !== known.ident.uid)) { bye({ type: 'err', code: 403 }); return; }
@@ -418,7 +421,7 @@
     }
     if (!okName(room) || !okName(peer)) { reply(res, 400, {}, 'bad room/peer'); return; }
     const ident = identOf(req, url);
-    if (!ident && !NO_AUTH) { reply(res, 401, J, '{"error":"ticket"}'); return; }
+    if (!ident && !OPEN) { reply(res, 401, J, '{"error":"ticket"}'); return; }
     if (kicked.has(room + ' ' + peer)) { reply(res, 409, J, '{"error":"dup"}'); return; }
     // a peer id belongs to the identity that registered it
     const known = rooms.get(room) && rooms.get(room).get(peer);

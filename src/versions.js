@@ -26,7 +26,9 @@ export const VERSIONS = [
         'Bot, medeniyetinin özel birliğini ve bonus aldığı birlik türlerini daha çok basar.',
       ]],
       ['Topluluk', [
-        'Ana menünün sol altında Genel Sohbet: siteye giren herkes aynı kanalda yazışır. Son 60 satır gösterilir; sunucu yeniden başlayınca sohbet sıfırlanır.',
+        'Ana menünün sol altında Genel Sohbet: siteye giren herkes okur, Google ile giriş yapanlar yazar. Son 60 satır gösterilir; sunucu yeniden başlayınca sohbet sıfırlanır.',
+        'Google ile giriş (isteğe bağlı): ad, avatar, TP, maç geçmişi ve kayıtlı oyunlar hesaba bağlanır, her bilgisayarda seninle gelir. Giriş yapmayan misafir olarak oynar; kayıtları o tarayıcıda kalır.',
+        'Giriş yapınca arkadaş ekleyebilir, çevrim içi oyuncuları görüp odana davet edebilirsin. Misafirler de odalara katılabilir.',
       ]],
       ['Denge', [
         'Medeniyetler bot maçlarıyla ölçüldü (1600 maç); uçtakiler ortaya doğru ayarlandı. Ayarlar tahmindir, yeniden ölçülmedi.',

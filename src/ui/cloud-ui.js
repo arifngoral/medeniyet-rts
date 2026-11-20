@@ -127,12 +127,16 @@ export function loginScreen(ui) {
   box.append(h('div', 'logo', BRAND_LOGO), h('div', 'tagline', TAGLINE));
   const card = h('div', 'gate-card');
   card.append(h('h2', '', 'Hoş Geldin, Komutan'),
-    h('p', 'gate-text', 'Oynamak için Google hesabınla giriş yap. Her hesap tek bir oyuncudur: adın, avatarın, TP puanın, maç geçmişin ve kayıtların hesabına bağlı kalır ve her bilgisayarda seninle gelir.'));
-  if (!ui.app.cloud) card.append(h('div', 'mperr', 'Hesap sistemi bu tarayıcıda başlatılamadı (çerezler / site verileri engellenmiş olabilir). Oynamak için giriş gerekli.'));
+    h('p', 'gate-text', 'Google hesabınla giriş yaparsan adın, avatarın, TP puanın, maç geçmişin ve kayıtların hesabına bağlı kalır ve her bilgisayarda seninle gelir. Giriş yapmadan da misafir olarak oynayabilirsin; o zaman kayıtların yalnız bu tarayıcıda durur.'));
+  if (!ui.app.cloud) card.append(h('div', 'mperr', 'Hesap sistemi bu tarayıcıda başlatılamadı (çerezler / site verileri engellenmiş olabilir). Misafir olarak oynayabilirsin.'));
   else card.append(googleBlock(ui, { wide: true }));
   card.append(h('p', 'gate-small', 'Kullanıcı adın e-posta adresinden otomatik oluşur; Profil ekranından değiştirebilirsin. E-posta adresin diğer oyunculara gösterilmez.'));
   box.append(card);
   const links = h('div', 'gate-links');
+  const guest = h('button', 'acc-link', 'Misafir olarak devam et');
+  guest.type = 'button';
+  guest.onclick = () => { safe(() => ui._click()); ui._menuMain(); };
+  links.append(guest);
   const how = h('button', 'acc-link', 'Nasıl Oynanır');
   how.type = 'button';
   how.onclick = () => { safe(() => ui._click()); ui._menuHowto(); };

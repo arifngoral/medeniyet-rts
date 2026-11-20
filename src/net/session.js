@@ -85,7 +85,14 @@ export class NetSession {
   _who(d, from, ident) {
     if (this.verified) {
       const id = ident || (typeof this.t.identOf === 'function' ? this.t.identOf(from) : null);
-      if (!id || !cleanUid(id.uid)) return null;
+      // a guest (signing in is optional in this fork): no relay identity, so its name and uid come from the message,
+      // never with a uid a verified player in the lobby already has
+      if (!id) {
+        const uid = cleanUid(d && d.uid);
+        if (!uid || (this.state && Array.isArray(this.state.slots) && this.state.slots.some(x => x.kind === 'human' && x.uid === uid && x.peer !== from && !x.guest))) return null;
+        return { uid, name: String((d && d.name) || 'Misafir').slice(0, 20), av: null, tp: null, guest: true };
+      }
+      if (!cleanUid(id.uid)) return null;
       return { uid: cleanUid(id.uid), name: String(id.name || 'Oyuncu').slice(0, 20), av: cleanAv(id.av), tp: cleanTp(id.tp) };
     }
     return { uid: cleanUid(d && d.uid), name: String((d && d.name) || 'Oyuncu').slice(0, 20), av: null, tp: null };

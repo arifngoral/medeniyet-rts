@@ -241,23 +241,28 @@ console.log('Verified identities (relay-stamped): names and uids come from the r
   const mk = (id, ident) => { if (ident) IDS.set(id, ident); return new NetSession(new VerTransport(id), { clock: fakeClock, ident: ident || undefined, name: 'Typed', uid: U('9') }); };
   const H = mk('vh', { uid: UH, name: 'Kerem', av: 'crown', tp: 12 });
   const A = mk('va', { uid: UA, name: 'Ayşe', av: 'wolf', tp: 4 });
-  const X = mk('vx', null);   // no identity (a client that skipped the relay check)
+  const X = mk('vx', null);   // no identity: a guest (signing in is optional in this fork)
+  const Y = mk('vy', null);   // a guest that claims the host's uid
+  Y._hello = () => ({ k: 'hello', name: 'Sahte', uid: UH });
   A._hello = () => ({ k: 'hello', name: 'Kerem', uid: UH });   // lies about who it is
   await H.host();
   A._j = false; A.join(H.state.code).then(() => { A._j = true; }).catch(() => {});
   X.join(H.state.code).catch(() => {});
+  Y.join(H.state.code).catch(() => {});
   ok(await until(() => A._j), 'verified joiner in the lobby');
   await runFor(1500);
   const sa = H.state.slots.find(s => s.peer === 'va');
   ok(sa && sa.name === 'Ayşe' && sa.uid === UA && sa.av === 'wolf' && sa.tp === 4, 'the slot shows the relay-verified name, uid, avatar, TP (not what the message claimed)');
   ok(H.state.slots[0].name === 'Kerem' && H.state.slots[0].uid === UH && H.state.slots[0].tp === 12, 'the host slot is his verified identity');
-  ok(!H.state.slots.some(s => s.peer === 'vx'), 'a peer without a verified identity never gets a slot');
+  const sx = H.state.slots.find(s => s.peer === 'vx');
+  ok(sx && sx.name === 'Typed' && sx.uid === U('9') && sx.av == null && sx.tp == null, 'a guest (no verified identity) gets a slot with its own name, no avatar / TP');
+  ok(!H.state.slots.some(s => s.peer === 'vy'), 'a guest can never take the uid of a verified player');
   A.setName('Kerem'); A._req('setName', 'Kerem');
   await runFor(1500);
   ok(H.state.slots.find(s => s.peer === 'va').name === 'Ayşe', 'renaming in the lobby is ignored (the account name stays)');
   const a2 = A.state.slots.find(s => s.peer === 'vh');
   ok(a2 && a2.uid === UH && a2.av === 'crown', 'the joiner sees the host with his verified uid / avatar');
-  closeAll(H, A, X);
+  closeAll(H, A, X, Y);
 }
 
 console.log(failed ? `\n${failed} check(s) FAILED` : '\nALL OK');

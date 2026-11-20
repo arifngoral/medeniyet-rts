@@ -411,7 +411,7 @@ function initCloud() {
   try {
     cloud = new CloudSync({
       fetch: (u, init) => fetch(u, init), apiKey: FIREBASE.apiKey, projectId: FIREBASE.projectId, ls: LS, authTimers: true,
-      guestless: true,   // signing in is required: signing out leaves no local profile
+      guestless: false,   // signing in is optional (this fork): a guest plays with a local profile, signing out returns to it
       // sign in with Google: the Firebase SDK is loaded from gstatic only when the button is used
       google: new GoogleSignIn({ config: FIREBASE, ss: (() => { try { return window.sessionStorage; } catch (err) { return null; } })() }),
       profile: { get: () => app.getProfile(), set: p => app.replaceProfile(p), create: n => app.createProfile(n), clear: () => app.clearProfile() },

@@ -279,7 +279,9 @@ export class UI {
   }
   // signed in with Google and the account's profile is here. Without accounts (guest mode, cloud/config.js) everybody
   // may play: the local profile is made on the first visit, with a name the player can change in the multiplayer screen
-  _signedIn() { return ACCOUNTS ? !!safe(() => this.app.cloud && this.app.cloud.loggedIn && this.app.getProfile(), false) : !!this._guest(); }
+  _signedIn() { return this._account() ? !!safe(() => this.app.getProfile(), null) : !!this._guest(); }
+  // signed in with Google right now (signing in is optional: without it the player is a guest with a local profile)
+  _account() { return ACCOUNTS && !!safe(() => this.app.cloud && this.app.cloud.loggedIn, false); }
   _guest() { return safe(() => this.app.getProfile(), null) || safe(() => this.app.createProfile('Komutan ' + (1000 + ((Math.random() * 9000) | 0))), null); }
   _menuMain(note) {
     // nothing is playable before signing in with Google (one account = one player)
@@ -309,7 +311,8 @@ export class UI {
     const cont = link('Devam Et', () => Promise.resolve(safe(() => this.app.continueLast(), false)).then((ok) => { if (!ok && this.app.lastLoadError && this.mode === 'menu') this._menuSaves(this.app.lastLoadError); }).catch(() => {}));
     const saves = link('Kayıtlı Oyunlar', () => this._menuSaves());
     link('Sandbox', () => this.app.newGame({ mapSize: 256, enemies: 1, difficulty: 'normal', startRes: 'high', startAge: 0, sandbox: true, seed: (Math.random() * 1e9) | 0 }));
-    if (ACCOUNTS) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
+    if (!this._account() && ACCOUNTS && this.app.cloud) link('Google ile Giriş', () => loginScreen(this), 'hot');
+    if (this._account()) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
     cont.disabled = true;
     Promise.resolve(safe(() => this.app.listSaves(), [])).then((l) => { cont.disabled = !(l && l.length); }).catch(() => {});
     // release notes; marked until this version's notes have been opened once
@@ -1790,7 +1793,7 @@ export class UI {
   }
   // a NetSession under this account's verified identity (the relay checks the Google session: srv/identity.mjs)
   async _mpSession() {
-    if (!ACCOUNTS) {   // guest mode: no ticket, the relay passes names as the players send them (unverified)
+    if (!this._account()) {   // a guest: no ticket, the relay passes names as the players send them (unverified)
       const p = this._guest(); if (!p) throw new Error('Profil oluşturulamadı (site verileri engellenmiş olabilir).');
       const { NetSession } = await import('../net/session.js');
       return NetSession.create('auto', { name: p.name, uid: p.uid });
@@ -1809,7 +1812,7 @@ export class UI {
     const who = el('div', 'mp-who');
     who.append(avatarEl(p?.avatar, p?.uid, 'av-sm'));
     const wn = el('span', 'mp-who-name'); wn.textContent = p?.name || ''; who.append(wn);
-    if (ACCOUNTS) {
+    if (this._account()) {
       const wt = el('span', 'acc-tp'); wt.textContent = tpText(safe(() => this.app.cloud.tp.tp, 0)); who.append(wt);
       const wh = el('small', 'prof-dim'); wh.textContent = 'Lobide bu adla görünürsün (Profil ekranından değiştirilir).'; who.append(wh);
     } else {
@@ -1835,7 +1838,7 @@ export class UI {
       } catch (e) { fail(e); }
     };
     btns.push(this._mbtn(box, 'Oda Kur', () => go(null), 'primary'));
-    if (ACCOUNTS) this._mbtn(box, 'Arkadaşlar · Davet Et', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
+    if (this._account()) this._mbtn(box, 'Arkadaşlar · Davet Et', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
     const jr = el('div', 'frow mpjoin', '<label>Oda Kodu</label>');
     const code = el('input', 'mpinput mpcode'); code.maxLength = 5; code.placeholder = 'ABCDE'; code.autocomplete = 'off';
     code.oninput = () => { code.value = code.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); };
@@ -1851,7 +1854,7 @@ export class UI {
   }
   // the online players list on the right (src/ui/online-ui.js), next to this menu box while it is shown
   _onlinePanel(box) {
-    if (!ACCOUNTS) return;   // (the list of online players needs accounts)
+    if (!this._account()) return;   // (the list of online players needs accounts)
     import('./online-ui.js').then((m) => { if (box.isConnected && !this.menuEl.querySelector('.online-panel')) this.menuEl.append(m.onlinePanel(this)); }).catch((e) => console.warn(e));
   }
   showLobby(session) {
@@ -1873,7 +1876,7 @@ export class UI {
     const foot = el('div', 'lb-foot');
     // online friends with "Davet Et" (the code below works as before)
     const inv = el('div', 'lb-invite-slot');
-    if (ACCOUNTS) import('./friends-ui.js').then((m) => { if (this.lobbySession === session) inv.append(m.lobbyInvites(this, session)); }).catch(() => {});
+    if (this._account()) import('./friends-ui.js').then((m) => { if (this.lobbySession === session) inv.append(m.lobbyInvites(this, session)); }).catch(() => {});
     this._lobbyNoteEl = el('div', 'mperr prof-ok hidden');
     box.append(head, this._lobbyNoteEl, body, inv, chat, foot);
     const sendChat = (t) => { t = String(t || '').trim(); if (!t) return; safe(() => (session.chat || session.sendChat || session.say)?.call(session, t)); };
