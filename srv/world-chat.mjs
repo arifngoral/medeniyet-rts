@@ -38,11 +38,18 @@ export function createWorldChat({ now = () => Date.now() } = {}) {
       if ((l.length && t - l[l.length - 1] < CHAT.GAP_MS) || l.length >= CHAT.PER_MIN) return { ok: false, error: 'rate' };
       l.push(t); rate.set(key, l);
       const m = { type: 'msg', id: ++seq, t, name: clean(name, CHAT.NAME_MAX) || 'Misafir', guest: !uid, text: tx };
-      if (uid) m.uid = String(uid).slice(0, 128);
       hist.push(m);
       if (hist.length > CHAT.KEEP) hist.splice(0, hist.length - CHAT.KEEP);
       cast(m);
-      return { ok: true, id: m.id };
+      // line: what the lasting copy stores (srv/chat-store.mjs); the account's uid is not sent to the clients
+      return { ok: true, id: m.id, line: uid ? { t, uid: String(uid).slice(0, 128), name: m.name, text: tx } : null };
+    },
+    // the lasting history (oldest first, from srv/chat-store.mjs) goes before the lines said since the start
+    seed(list) {
+      const old = (Array.isArray(list) ? list : []).map((x) => ({ type: 'msg', id: ++seq, t: x.t, name: clean(x.name, CHAT.NAME_MAX) || 'Oyuncu', guest: false, text: clean(x.text, CHAT.TEXT_MAX) })).filter((x) => x.text);
+      hist.unshift(...old);
+      if (hist.length > CHAT.KEEP) hist.splice(0, hist.length - CHAT.KEEP);
+      cast({ type: 'hist', list: hist.slice(), online: subs.size });
     },
     sweep() { const t = now(); for (const [k, l] of rate) if (!l.some((x) => t - x < 60000)) rate.delete(k); },
   };

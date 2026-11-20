@@ -30,6 +30,8 @@
   const WCM = await import(pathToFileURL(path.join(ROOT, 'srv', 'world-chat.mjs')).href);
   const WC = WCM.createWorldChat();
   setInterval(() => WC.sweep(), 60000).unref();
+  // its lasting copy in Firestore (srv/chat-store.mjs; accounts only): loaded once the server listens, written per line
+  const CS = process.env.AEVUM_FIREBASE_PROJECT ? (await import(pathToFileURL(path.join(ROOT, 'srv', 'chat-store.mjs')).href)).createChatStore({ projectId: process.env.AEVUM_FIREBASE_PROJECT, log: (t, e) => logErr(t, e) }) : null;
   const OWNERS = new Set(String(process.env.AEVUM_OWNERS || '').split(',').map(s => s.trim()).filter(Boolean));
   const SA = SAM.serviceAccountFromEnv(process.env);
   const STATS = STM.createStats({
@@ -320,7 +322,9 @@
         const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '?';
         const r = me ? WC.say({ key: 'fb:' + me.fb, name: me.name, uid: me.fb, text: body.text })
           : WC.say({ key: 'ip:' + ip, name: body.name, uid: null, text: body.text });
-        reply(res, r.ok ? 200 : r.error === 'rate' ? 429 : 400, J, JSON.stringify(r));
+        // the sender's own Firebase ID token writes the lasting copy (the rules check it is their uid and name)
+        if (r.ok && r.line && CS) CS.save(r.line, String(req.headers['x-aevum-id'] || ''));
+        reply(res, r.ok ? 200 : r.error === 'rate' ? 429 : 400, J, JSON.stringify({ ok: r.ok, id: r.id, error: r.error }));
       });
       return;
     }
@@ -540,6 +544,7 @@
   server.requestTimeout = 0; server.headersTimeout = 60000; server.keepAliveTimeout = 30000;
   server.listen(PORT, '0.0.0.0', async () => {
     listening = true;
+    if (CS) CS.load(WCM.CHAT.KEEP).then((l) => { WC.seed(l); console.log('Genel sohbet: ' + l.length + ' satir yuklendi.'); }, (e) => logErr('chat load', e));
     console.log(`Medeniyet RTS calisiyor: http://localhost:${PORT}  (kapatmak icin Ctrl+C)`);
     try {
       const os = await import('node:os');

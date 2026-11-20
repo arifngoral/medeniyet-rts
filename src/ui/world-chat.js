@@ -65,7 +65,11 @@ function draw(toBottom) {
 }
 async function say(text, inp, err) {
   const app = S.ui.app, headers = { 'Content-Type': 'application/json' };
-  if (ACCOUNTS) { try { headers['X-Aevum-Ticket'] = (await app.cloud.relayTicket()).ticket; } catch (e) { err.textContent = 'Yazmak için giriş yap.'; return; } }
+  if (ACCOUNTS) {
+    try { headers['X-Aevum-Ticket'] = (await app.cloud.relayTicket()).ticket; } catch (e) { err.textContent = 'Yazmak için giriş yap.'; return; }
+    // the server writes the line's lasting copy to Firestore with our own token (srv/chat-store.mjs)
+    try { headers['X-Aevum-Id'] = await app.cloud.auth.token(); } catch (e) { /* shown live anyway, just not kept */ }
+  }
   let r = null;
   try { r = await fetch('/mp/chat/say', { method: 'POST', headers, body: JSON.stringify({ text, name: myName() }) }); } catch (e) { err.textContent = 'Sunucuya ulaşılamadı.'; return; }
   if (r.ok) { inp.value = ''; err.textContent = ''; return; }
