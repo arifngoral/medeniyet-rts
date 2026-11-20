@@ -9,6 +9,7 @@ import { BUILD_TIME_MUL, QUEUE_TIME_MUL, TOWER_AGE_ATK, towerAgeBonus } from '..
 import { firstLaunch, menuProfile } from './profile-ui.js';
 import { levelOf } from '../rank.js';
 import { menuHud, saveBadge, saveBadgeTitle, confirmDeleteSave, loginScreen, avatarEl, tpText } from './cloud-ui.js';
+import { worldChat } from './world-chat.js';
 import { ico, applyIcons, keepIcons, stripIcons, RES_ICONS, CAT_ICONS, NATURE_ICONS } from '../icons.js';
 
 // developer mode (a sandbox game: no TP, no match history): offered on a local dev server, or with ?dev=1 in the URL
@@ -303,6 +304,7 @@ export class UI {
       link('İstatistikler', () => import('./stats-ui.js').then((m) => m.menuStats(this)));
     }).catch(() => {});
     safe(() => menuHud(this));   // the player plate (avatar, name, level, TP) and account chips around the menu
+    safe(() => worldChat(this));   // the world chat dock (bottom left)
     void saves; void firstLaunch;
   }
   // a short message at the top of the current menu box (green)

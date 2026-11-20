@@ -25,6 +25,9 @@ export const VERSIONS = [
         'Botlar medeniyetine göre oynar: Baskıncı, Ekonomist, Savunmacı, Taktikçi ya da Dengeli.',
         'Bot, medeniyetinin özel birliğini ve bonus aldığı birlik türlerini daha çok basar.',
       ]],
+      ['Topluluk', [
+        'Ana menünün sol altında Genel Sohbet: siteye giren herkes aynı kanalda yazışır. Son 60 satır gösterilir; sunucu yeniden başlayınca sohbet sıfırlanır.',
+      ]],
       ['Denge', [
         'Medeniyetler bot maçlarıyla ölçüldü (1600 maç); uçtakiler ortaya doğru ayarlandı. Ayarlar tahmindir, yeniden ölçülmedi.',
       ]],

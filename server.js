@@ -23,6 +23,10 @@
   // AEVUM_SA (a service account key, set in the host's dashboard) keeps the daily numbers in Firestore.
   const STM = await import(pathToFileURL(path.join(ROOT, 'srv', 'stats.mjs')).href);
   const SAM = await import(pathToFileURL(path.join(ROOT, 'srv', 'firestore-sa.mjs')).href);
+  // the world chat (srv/world-chat.mjs): one public channel for every open menu
+  const WCM = await import(pathToFileURL(path.join(ROOT, 'srv', 'world-chat.mjs')).href);
+  const WC = WCM.createWorldChat();
+  setInterval(() => WC.sweep(), 60000).unref();
   const OWNERS = new Set(String(process.env.AEVUM_OWNERS || '').split(',').map(s => s.trim()).filter(Boolean));
   const SA = SAM.serviceAccountFromEnv(process.env);
   const STATS = STM.createStats({
@@ -287,6 +291,34 @@
       if (!me) { reply(res, 401, J, '{"error":"ticket"}'); return; }
       if (!OWNERS.has(me.fb)) { reply(res, 403, J, '{"error":"owner"}'); return; }
       STATS.report(30).then(r => reply(res, 200, J, JSON.stringify(r)), e => { logErr('stats', e); reply(res, 500, J, '{"error":"stats"}'); });
+      return;
+    }
+    // ---- world chat: everybody reads; with accounts on only signed-in players write (the name is the verified one) ----
+    if (url.pathname === '/mp/chat/live' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
+      const send = (obj) => {
+        if (!alive(res)) return;
+        if (res.writableLength > 262144) { try { res.destroy(); } catch { /* ignore */ } return; }
+        try { res.write('data: ' + JSON.stringify(obj) + '\n\n'); } catch { /* closed */ }
+      };
+      try { res.write('retry: 4000\n\n'); } catch { /* ignore */ }
+      const leave = WC.join(send);
+      if (!leave) { send({ type: 'full' }); try { res.end(); } catch { /* ignore */ } return; }
+      const hb = setInterval(() => send({ type: 'hb' }), 20000);
+      res.on('close', () => { clearInterval(hb); leave(); });
+      return;
+    }
+    if (url.pathname === '/mp/chat/say' && req.method === 'POST') {
+      const me = identOf(req, url);
+      if (!GUEST && !me) { reply(res, 401, J, '{"ok":false,"error":"ticket"}'); return; }
+      readBody(req, 2048, (err, buf) => {
+        let body = {}; if (!err) { try { body = JSON.parse(buf.toString('utf8')) || {}; } catch { body = {}; } }
+        if (err || typeof body.text !== 'string') { reply(res, 400, J, '{"ok":false,"error":"bad"}'); return; }
+        const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '?';
+        const r = me ? WC.say({ key: 'fb:' + me.fb, name: me.name, uid: me.fb, text: body.text })
+          : WC.say({ key: 'ip:' + ip, name: body.name, uid: null, text: body.text });
+        reply(res, r.ok ? 200 : r.error === 'rate' ? 429 : 400, J, JSON.stringify(r));
+      });
       return;
     }
     // ---- friends: online status + room invites (an inbox per verified account; memory only) ----
