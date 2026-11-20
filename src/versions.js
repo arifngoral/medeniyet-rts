@@ -34,6 +34,7 @@ export const VERSIONS = [
         'Botlar iki özel birliğin türünü de daha çok basar. Denge: ikinci birlikler ilklerden biraz daha ılımlı tutuldu; bot ligiyle henüz ölçülmedi.',
       ]],
       ['Oyun ve menü', [
+        'Denge tablosu (denge.html, vitrinden "Denge"): her medeniyetin öteki her medeniyete karşı kazanma oranı, bot liginden (tools/lig.mjs --rr); toplam orana göre sıralı, yeşil üstün, kırmızı zayıf.',
         'Ana menünün kapak resmi baştan çizildi: aynı sahne (kale, cami, piramitler, pagoda, nehir boyunca ordugâhlar), çok daha keskin ve ayrıntılı (2752×1536).',
         'Ana ekranın alt menüsü yenilendi: Sandbox, Yenilikler, Vitrin, Nasıl Oynanır ve Ayarlar karoların altında simgeli yuvarlak düğmeler, adı altında yazar; okunmamış yenilikte altın nokta yanar. Google ile Giriş menüden ayrıldı, sağ üstte kendi düğmesi var.',
         "Devam Et ve Kayıtlı Oyunlar ana menüden Tek Oyunculu'nun içine taşındı: yarıda kalan oyunun varsa Tek Oyunculu'ya tıklayınca kaldığın yerden devam etmek isteyip istemediğin sorulur, öteki kayıtlar da orada listelenir.",

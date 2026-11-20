@@ -7,7 +7,8 @@
 //   node tools/lig.mjs --no-ai              the AI ignores its civilization's play style and unit taste (civ-ai.js)
 //   node tools/lig.mjs --vs roma            against that civilization instead of the baseline
 //   node tools/lig.mjs --rr                 round robin: every civilization against every other (target ~50 % each);
-//                                           --seeds N = maps per pair (default 2: 4 matches per pair, 76 per civilization)
+//                                           --seeds N = maps per pair (default 2: 4 matches per pair, 76 per civilization);
+//                                           writes the matchup table for denge.html to assets/denge/lig.json (--out FILE)
 //   node tools/lig.mjs --set fx.roma.bhp=0.05 --set unit.fil.hp=220 --set unit.mangudai.cost.gold=30
 //   other: --diff easy|normal|hard (hard)  --size 96  --cap 60 (minutes; an unfinished match is a draw = half a win)
 //          --maps plains,river,highlands  --jobs N
@@ -59,6 +60,7 @@ if (!isMainThread) {
   if (rr) { for (let a = 0; a < civs.length; a++) for (let b = a + 1; b < civs.length; b++) for (let s = 0; s < seeds; s++) for (const side of [0, 1]) work.push({ civ: civs[a], opp: civs[b], seed: 1000 + s * 7 + a * 131 + b * 17, side }); }
   else for (const civ of civs) for (let s = 0; s < seeds; s++) for (const side of [0, 1]) work.push({ civ, seed: 1000 + s * 7, side });
   const R = Object.fromEntries(civs.map(c => [c, { n: 0, w: 0, d: 0, min: 0 }]));
+  const PAIR = {};   // (round robin: 'a|b' -> { n, w: a's wins (draws half), d })
   const t0 = Date.now(); let done = 0, next = 0;
   console.log((rr ? `round robin: ${civs.length} civilizations, ${work.length} matches (${seeds * 2} per pair)` : `${civs.length} civilizations x ${seeds * 2} matches against ${vs || 'no civilization'}`) + `; ${jobs} workers` + (opt.noUnit ? '; unique units OFF' : '') + (opt.noFx ? '; passives OFF' : '') + (sets.length ? '; ' + sets.join(' ') : ''));
   await new Promise((resolve) => {
@@ -67,6 +69,7 @@ if (!isMainThread) {
       const give = () => { if (next < work.length) w.postMessage(work[next++]); else w.terminate(); };
       w.on('message', (m) => {
         const r = R[m.civ]; r.n++; r.w += m.res; if (m.res === 0.5) r.d++; r.min += m.min;
+        if (m.opp) { const k = m.civ + '|' + m.opp, pr = PAIR[k] || (PAIR[k] = { n: 0, w: 0, d: 0 }); pr.n++; pr.w += m.res; if (m.res === 0.5) pr.d++; }
         if (m.opp && R[m.opp]) { const q = R[m.opp]; q.n++; q.w += 1 - m.res; if (m.res === 0.5) q.d++; q.min += m.min; }   // (round robin: the match counts for both)
         if (++done % 100 === 0) process.stderr.write(`  ${done}/${work.length}  (${((Date.now() - t0) / 60000).toFixed(1)} min)\n`);
         if (done === work.length) resolve(); else give();
@@ -80,5 +83,13 @@ if (!isMainThread) {
   for (const r of rows) console.log(`${r.c.padEnd(13)} ${r.p.toFixed(1).padStart(5)} ${r.p > 56 ? '▲' : r.p < 44 ? '▼' : ' '} ${String(r.n).padStart(7)} ${String(r.d).padStart(6)} ${(r.min / r.n).toFixed(1).padStart(8)}`);
   const se = 50 / Math.sqrt(rows.reduce((t, r) => t + r.n, 0) / rows.length);   // (one row's matches)
   console.log(`\nmean ${(rows.reduce((s, r) => s + r.p, 0) / rows.length).toFixed(1)} %; one row's standard error ~${se.toFixed(1)} points; ${((Date.now() - t0) / 60000).toFixed(1)} min`);
+  if (rr) {   // the matchup table (denge.html)
+    const fs = await import('node:fs'), path = await import('node:path'), { VERSION } = await import('../src/versions.js');
+    const out = arg('out', path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'denge', 'lig.json'));
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    const total = Object.fromEntries(civs.map(c => [c, { n: R[c].n, w: R[c].w, d: R[c].d, min: +(R[c].min / Math.max(1, R[c].n)).toFixed(1) }]));
+    fs.writeFileSync(out, JSON.stringify({ date: new Date().toISOString().slice(0, 10), version: VERSION, diff: opt.diff, maps: opt.maps, size: opt.size, cap: opt.cap, perPair: seeds * 2, sets, civs, total, pairs: PAIR }, null, 1));
+    console.log('matchup table -> ' + out);
+  }
   process.exit(0);
 }
