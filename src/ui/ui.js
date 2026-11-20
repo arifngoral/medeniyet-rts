@@ -123,9 +123,8 @@ export class UI {
     this.idleEl = el('button', 'tbtn idlebtn', ico('u-villager') + '<b>0</b>');
     this.idleEl.onclick = () => { this._click(); safe(() => this.app.input?.nextIdleVillager()); };
     this._tip(this.idleEl, () => ({ name: 'Boşta köylüler', desc: 'Sıradaki boşta köylüyü seç ve ona git. Kısayol: nokta (.)' }));
-    // idle villagers on top of the resources (the first thing to look at), the population under them
-    const idleRow = el('div', 'reshead'); idleRow.append(this.idleEl); resPanel.prepend(idleRow);
-    const popRow = el('div', 'resfoot'); popRow.append(this.popEl); resPanel.append(popRow);
+    // idle villagers and the population side by side on top of the resources (the first thing to look at)
+    const idleRow = el('div', 'reshead'); idleRow.append(this.idleEl, this.popEl); resPanel.prepend(idleRow);
     this.ageEl = el('div', 'agebox', '<span class="n"></span><div class="agebar"><i></i></div>');
     this.clockEl = el('div', 'clock', '00:00');
     top.append(this.ageEl, el('div', 'sep'), this.clockEl, el('div', 'sep'));

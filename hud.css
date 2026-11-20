@@ -54,11 +54,10 @@
 .respanel .res .wk svg, .respanel .res .wk img { width: 15px; height: 15px; }
 .respanel .res.pulse { animation: respulse .5s ease; }
 @keyframes respulse { 0% { background: #e3ad4c4d; } 100% { background: transparent; } }
-.respanel .resfoot { display: flex; align-items: center; gap: 6px; padding-top: 2px; }
-.respanel .reshead { display: flex; padding-bottom: 3px; }
-.respanel .resfoot .res { flex: 1; min-width: 0; border-bottom: 0; font-size: 12.5px; padding: 0 2px; gap: 4px; white-space: nowrap; }
-.respanel .resfoot .res .i { font-size: 15px; width: 18px; }
-#ui .respanel .idlebtn { flex: 1; width: auto; height: 30px; padding: 0 8px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; }
+.respanel .reshead { display: flex; align-items: center; gap: 6px; padding-bottom: 3px; }
+.respanel .reshead .res { flex: 1 1 0; min-width: 0; height: 30px; border-bottom: 0; font-size: 13px; padding: 0 2px; gap: 4px; white-space: nowrap; }
+.respanel .reshead .res .i { font-size: 15px; width: 18px; }
+#ui .respanel .idlebtn { flex: 1 1 0; min-width: 0; width: auto; height: 30px; padding: 0 8px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; }
 #ui .respanel .idlebtn b { font-size: 14px; font-variant-numeric: tabular-nums; }
 #ui .respanel .idlebtn:not(.has) { opacity: .6; }
 #ui .respanel .idlebtn.has { border-color: #ffeec0; background: linear-gradient(#f7cf6c, #e3a03a 55%, #c27a1e); color: #2a1404; box-shadow: 0 0 12px #ffc04a77; }
