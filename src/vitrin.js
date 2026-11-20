@@ -9,7 +9,7 @@ import { CIVS, CIV_IDS } from './civs.js';
 import { LANDMARKS, HEROES, landmarkLines } from './landmarks.js';
 import { VERSIONS, TAG_TR } from './versions.js';
 import { makeUnitModel, makeBuildingModel, poseUnitModel } from './render/entities.js';
-import { loadEra, glbVersion } from './render/glb-models.js';
+import { loadEra, glbVersion, LM_GLB } from './render/glb-models.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -152,7 +152,7 @@ function frame() {
   for (const c of cards) {
     const r = c.view.getBoundingClientRect();
     if (r.bottom < 0 || r.top > hgt || r.right < 0 || r.left > w || r.width < 4) continue;
-    if (c.built && c.item.kind === 'building' && c.glb !== gv && !BUILDINGS[c.item.id].landmark) drop(c);   // (its real model arrived; age-up buildings have none)
+    if (c.built && c.item.kind === 'building' && c.glb !== gv && (!BUILDINGS[c.item.id].landmark || LM_GLB.has(c.item.id))) drop(c);   // (its real model arrived; most age-up buildings have none)
     if (!c.built) { if (builds++ >= 3) continue; try { buildModel(c); } catch (err) { console.warn('[vitrin]', c.item.id, err); c.built = true; c.scene = null; } }
     if (!c.scene) continue;
     if (c.v && c.animated) {

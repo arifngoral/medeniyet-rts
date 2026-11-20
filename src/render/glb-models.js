@@ -311,6 +311,21 @@ export function loadGlbModels() {
   loadEra(0);
 }
 export function glbVersion() { return version; }
+// ---------- age-up buildings (landmarks.js) ----------
+// Generated models of the age-up buildings (concept image -> Hunyuan 3D -> shrunk like the others): assets/models/lm/<id>.glb,
+// the same in every era. Only the ones listed here have a file; the others keep their procedural model (render/lm/).
+// A file is loaded the first time its building is drawn; the building is drawn again once it is in (glbVersion()).
+export const LM_GLB = new Set(['lm_ayasofya']);
+const LM_STARTED = new Set();
+export function loadLandmarkGlb(id) {
+  if (!LM_GLB.has(id) || LM_STARTED.has(id) || !enabled()) return;
+  LM_STARTED.add(id);
+  if (!loader) { loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder); }
+  loader.load(DIR + 'lm/' + id + '.glb', (gltf) => prepLater(() => {
+    const fin = (r) => { if (r) { for (let e = 0; e <= 4; e++) GEO.set(e + '|' + id, r); version++; WARM_Q.push(r); } };
+    try { prepare(gltf.scene, false, 'lm|' + id, fin); } catch (err) { console.warn('[glb] prepare failed', id, err); }
+  }), undefined, (err) => console.warn('[glb] load failed', id, err && err.message));
+}
 export function hasGlb(type, era) { return GEO.has((era | 0) + '|' + type); }
 // this type has (or will have) a model in this era
 export function glbPlanned(type, era) {

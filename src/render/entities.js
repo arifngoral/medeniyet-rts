@@ -6,7 +6,7 @@ import { updateConstruction, disposeConstruction, updateRepair } from './constru
 import { SEA_BUILD, SEA_UNITS, makeSeaUnit, seaAnimUnit, seaAnimBuilding, makeFish, seaAnimFish, seaMask } from './models-sea.js';
 import { StaticBatches } from './static-batch.js';
 import { LM_FILES } from './lm/index.js';   // (the age-up building models of the other civilizations: one file per few)
-import { loadGlbModels, loadEra, glbVersion, hasGlb, glbPlanned, eraSettled, addGlbBuilding, addGlbPiece, loadCrop, cropGeo } from './glb-models.js';
+import { loadGlbModels, loadEra, glbVersion, hasGlb, glbPlanned, eraSettled, addGlbBuilding, addGlbPiece, loadCrop, cropGeo, loadLandmarkGlb } from './glb-models.js';
 
 const PI = Math.PI;
 
@@ -1053,6 +1053,7 @@ function glbTower(c, era, size, color, H) {
 const GLB_BIG = 1.5;
 // per-type extra (owner 2026-11-18): the bank 1.5x smaller, the stable 1.5x bigger than the rest
 const GLB_K = { bank: 1 / 1.5, stable: 1.5 };
+const LM_GLB_K = 1.25;   // (an age-up building's generated model: its own stone base fills the footprint, a little over like the others)
 // height of the procedural 3x3 Bronze Age tower (without its banner), measured once (glb towers take this height)
 let TOWER_H1 = 0;
 function towerH1() {
@@ -1484,6 +1485,7 @@ function makeBuilding(type, size, age, color, mask, seed, noGlb) {
     else if (type === 'tower' && era <= 1) bx(slab, MT.dwood, size * .14, .7, size * .14, 0, -.66, 0);   // a watchtower stands on its legs (no stone plate)
     else bx(slab, c.P.base, size * .94, .7, size * .94, 0, -.64, 0);
     // (a building drawn from a generated model below skips the procedural one: it was built and thrown away)
+    if (!noGlb && BUILDINGS[type] && BUILDINGS[type].landmark) loadLandmarkGlb(type);   // (an age-up building with a generated model: drawn again when it is in)
     const glbNext = !noGlb && !SEA_BUILD[type] && hasGlb((type === 'wall' || type === 'gate') ? glbKey(type) : type, era);
     if (!glbNext) try { if (SEA_BUILD[type]) { SEA_BUILD[type](c); if (c.noSlab) slab.clear(); if (c.live) { root.add(c.live); U.live = c.live; } } else (BUILD[type] || (BUILDINGS[type] && BUILDINGS[type].landmark && LM_BUILD[BUILDINGS[type].landmark.look]) || BUILD.house)(c); }
     catch (err) {
@@ -1511,7 +1513,7 @@ function makeBuilding(type, size, age, color, mask, seed, noGlb) {
       const tall = type === 'tower' ? towerH1() : 0;
       body.clear(); roof.clear(); slab.clear(); c.chim.length = 0; c.spin = null;
       if (type === 'tower') U.glb = glbTower(c, era, size, color, tall);
-      else { addGlbBuilding(body, type, era, size, color, .96 * GLB_BIG * (GLB_K[type] || 1), tall); U.glb = true; }
+      else { addGlbBuilding(body, type, era, size, color, .96 * (BUILDINGS[type] && BUILDINGS[type].landmark ? LM_GLB_K : GLB_BIG * (GLB_K[type] || 1)), tall); U.glb = true; }
     }
     const hs = size * .46;
     if (type === 'wall') { wallScaf(c, scaf); U.wallScaf = true; }

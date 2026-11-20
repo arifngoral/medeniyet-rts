@@ -14,6 +14,7 @@ export const VERSIONS = [
     intro: 'Aevum çatalının ilk sürümü: 20 medeniyet, her birinin bonusları, iki özel birliği ve kendi oynayış tarzı.',
     items: [
       ['Çağ binaları ve efsaneler', [
+        'Ayasofya artık ana binalar gibi yapay zekâyla üretilmiş ayrıntılı bir 3B model (çizim → Hunyuan 3D → küçültme): kubbeler, minareler, kemerli pencereler, oyuncu renginde sancaklar. Öteki çağ binaları sırayla aynı yolla yenilenecek.',
         'Çağ binaları artık 20 medeniyetin hepsinde: 120 yeni bina daha (ör. Ayasofya, Theodosius Surları, Hipodrom; Elhamra, Beytülhikme; Güneş Piramidi, Templo Mayor; Yasak Şehir, Çin Seddi Kalesi, Porselen Kule; Notre-Dame, Versay, Carcassonne; Tac Mahal, Kızıl Kale; Londra Kulesi, Big Ben, Globe; El Escorial, Altın Kule; Kothon Limanı; Gyeongbokgung, Kaplumbağa Gemisi; Djinguereber, Mansa Musa Sarayı; Altın Otağ, Kurultay; Persepolis, Pasargad; Kremlin, Aziz Basil; Parthenon, Delfi, Rodos Limanı).',
         '15 efsane daha: Selahaddin Eyyubi, Moctezuma, Belisarius, Guan Yu, Şarlman, Rani Lakşmibay, Aslan Yürekli Richard, El Cid, Hannibal (filiyle), Amiral Yi Sun-sin, Mansa Musa, Cengiz Han (at üstünden ok atar), Büyük Kiros, Aleksandr Nevski, Leonidas.',
         'AoE4 gibi çağ atlama: Şehir Merkezi\'nden çağ atlanmaz, köylüler bir çağ binası kurar, bina bitince çağ atlanır. Bina türü şartı ve çağda bekleme süresi yok; bedel, çağın bedelidir. (Önce Türkler, Romalılar, Japonlar, Mısırlılar ve Vikinglerle denendi.)',
@@ -80,6 +81,7 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_ayasofya', kind: 'building', tags: ['yeni', 'gorunus'], note: 'Üretilmiş 3B model (Hunyuan 3D): büyük kubbe, yarım kubbeler, minareler, kemerli pencereler; sancaklar oyuncu renginde.' },
       { id: 'selahaddin', tags: ['yeni'], note: 'Efsane: sarıklı miğfer, kaftan, eğri kılıç ve pirinç kalkan; beyaz at.' },
       { id: 'moctezuma', tags: ['yeni'], note: 'Efsane: yeşil ketzal tüylerinden taç, tüylü giysi, obsidyenli kılıç.' },
       { id: 'belisarius', tags: ['yeni'], note: 'Efsane: yüzü zincirle kapalı miğfer, pullu zırh, mor pelerin, kargı.' },
@@ -95,7 +97,7 @@ export const VERSIONS = [
       { id: 'kiros', tags: ['yeni'], note: 'Efsane: uzun altın başlık, mor pelerin, hasır kalkan ve mızrak.' },
       { id: 'nevski', tags: ['yeni'], note: 'Efsane: sivri miğfer, pullu zırh, kırmızı pelerin; kılıç ve kalkan.' },
       { id: 'leonidas', tags: ['yeni'], note: 'Efsane: kapalı tunç miğfer, kırmızı sorguç ve pelerin, büyük yuvarlak kalkan.' },
-      { id: 'lm_ayasofya', kind: 'building', tags: ['yeni'], note: 'Dev kurşun kubbe, yarım kubbeler, payandalar, dört minare.' },
+
       { id: 'lm_hipodrom', kind: 'building', tags: ['yeni'], note: 'Kademeli tribünler, ortada dikilitaş ve yılanlı sütun, başlangıç kapılarının üstünde dört tunç at.' },
       { id: 'lm_yasaksehir', kind: 'building', tags: ['yeni'], note: 'Kırmızı surlar, hendek ve köprüler, üç katlı beyaz terasta çift saçaklı sarı çatılı salon.' },
       { id: 'lm_cennettapinagi', kind: 'building', tags: ['yeni'], note: 'Yuvarlak beyaz terasta üç mavi konik çatılı tapınak.' },
