@@ -1513,7 +1513,8 @@ function makeBuilding(type, size, age, color, mask, seed, noGlb) {
       const tall = type === 'tower' ? towerH1() : 0;
       body.clear(); roof.clear(); slab.clear(); c.chim.length = 0; c.spin = null;
       if (type === 'tower') U.glb = glbTower(c, era, size, color, tall);
-      else { addGlbBuilding(body, type, era, size, color, .96 * (BUILDINGS[type] && BUILDINGS[type].landmark ? LM_GLB_K : GLB_BIG * (GLB_K[type] || 1)), tall); U.glb = true; }
+      else { addGlbBuilding(body, type, era, size, color, .96 * (BUILDINGS[type] && BUILDINGS[type].landmark ? LM_GLB_K : GLB_BIG * (GLB_K[type] || 1)), tall); U.glb = true;
+        if (BUILDINGS[type] && BUILDINGS[type].landmark) lmFlag(c, size * .46, size * .46, size * .62); }   // (a banner in the player's colour: not every generated model carries the blue one)
     }
     const hs = size * .46;
     if (type === 'wall') { wallScaf(c, scaf); U.wallScaf = true; }

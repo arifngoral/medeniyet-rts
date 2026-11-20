@@ -14,7 +14,7 @@ export const VERSIONS = [
     intro: 'Aevum çatalının ilk sürümü: 20 medeniyet, her birinin bonusları, iki özel birliği ve kendi oynayış tarzı.',
     items: [
       ['Çağ binaları ve efsaneler', [
-        'Ayasofya artık ana binalar gibi yapay zekâyla üretilmiş ayrıntılı bir 3B model (çizim → Hunyuan 3D → küçültme): kubbeler, minareler, kemerli pencereler, oyuncu renginde sancaklar. Öteki çağ binaları sırayla aynı yolla yenilenecek.',
+        'Ayasofya, Himeji Kalesi, Tac Mahal ve Aziz Basil Katedrali artık ana binalar gibi yapay zekâyla üretilmiş ayrıntılı 3B modeller (Hunyuan 3D → küçültme), köşelerinde oyuncu renginde sancak. Öteki çağ binaları sırayla aynı yolla yenilenecek.',
         'Çağ binaları artık 20 medeniyetin hepsinde: 120 yeni bina daha (ör. Ayasofya, Theodosius Surları, Hipodrom; Elhamra, Beytülhikme; Güneş Piramidi, Templo Mayor; Yasak Şehir, Çin Seddi Kalesi, Porselen Kule; Notre-Dame, Versay, Carcassonne; Tac Mahal, Kızıl Kale; Londra Kulesi, Big Ben, Globe; El Escorial, Altın Kule; Kothon Limanı; Gyeongbokgung, Kaplumbağa Gemisi; Djinguereber, Mansa Musa Sarayı; Altın Otağ, Kurultay; Persepolis, Pasargad; Kremlin, Aziz Basil; Parthenon, Delfi, Rodos Limanı).',
         '15 efsane daha: Selahaddin Eyyubi, Moctezuma, Belisarius, Guan Yu, Şarlman, Rani Lakşmibay, Aslan Yürekli Richard, El Cid, Hannibal (filiyle), Amiral Yi Sun-sin, Mansa Musa, Cengiz Han (at üstünden ok atar), Büyük Kiros, Aleksandr Nevski, Leonidas.',
         'AoE4 gibi çağ atlama: Şehir Merkezi\'nden çağ atlanmaz, köylüler bir çağ binası kurar, bina bitince çağ atlanır. Bina türü şartı ve çağda bekleme süresi yok; bedel, çağın bedelidir. (Önce Türkler, Romalılar, Japonlar, Mısırlılar ve Vikinglerle denendi.)',
@@ -81,6 +81,9 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_himeji', kind: 'building', tags: ['gorunus'], note: 'Üretilmiş 3B model: eğimli taş temel, beyaz duvarlar, kıvrık kiremit çatılar.' },
+      { id: 'lm_tacmahal', kind: 'building', tags: ['gorunus'], note: 'Üretilmiş 3B model: soğan kubbe, köşk kubbeleri, dört minare, mermer kaide.' },
+      { id: 'lm_aziz_basil', kind: 'building', tags: ['gorunus'], note: 'Üretilmiş 3B model: renkli, çizgili soğan kubbeler, kızıl tuğla kuleler.' },
       { id: 'lm_ayasofya', kind: 'building', tags: ['yeni', 'gorunus'], note: 'Üretilmiş 3B model (Hunyuan 3D): büyük kubbe, yarım kubbeler, minareler, kemerli pencereler; sancaklar oyuncu renginde.' },
       { id: 'selahaddin', tags: ['yeni'], note: 'Efsane: sarıklı miğfer, kaftan, eğri kılıç ve pirinç kalkan; beyaz at.' },
       { id: 'moctezuma', tags: ['yeni'], note: 'Efsane: yeşil ketzal tüylerinden taç, tüylü giysi, obsidyenli kılıç.' },
@@ -102,7 +105,6 @@ export const VERSIONS = [
       { id: 'lm_yasaksehir', kind: 'building', tags: ['yeni'], note: 'Kırmızı surlar, hendek ve köprüler, üç katlı beyaz terasta çift saçaklı sarı çatılı salon.' },
       { id: 'lm_cennettapinagi', kind: 'building', tags: ['yeni'], note: 'Yuvarlak beyaz terasta üç mavi konik çatılı tapınak.' },
       { id: 'lm_notredame', kind: 'building', tags: ['yeni'], note: 'İki kare kule, gül pencere, uçan payandalar, kesişimde sivri kule.' },
-      { id: 'lm_tacmahal', kind: 'building', tags: ['yeni'], note: 'Beyaz kaide, soğan kubbe, dört minare, uzun havuz ve servi ağaçları.' },
       { id: 'lm_bigben', kind: 'building', tags: ['yeni'], note: 'Uzun gotik saray, saat kulesi, Thames kıyısı.' },
       { id: 'lm_globe', kind: 'building', tags: ['yeni'], note: 'On altı köşeli ahşap tiyatro, saz çatı, sahne.' },
       { id: 'lm_kothon', kind: 'building', tags: ['yeni'], note: 'Yuvarlak savaş limanı: çevrede gemi sundurmaları, ortada adada amiral kulesi.' },
@@ -110,7 +112,6 @@ export const VERSIONS = [
       { id: 'lm_djinguereber', kind: 'building', tags: ['yeni'], note: 'Ahşap kirişleri dışarı taşan kerpiç cami.' },
       { id: 'lm_altincadir', kind: 'building', tags: ['yeni'], note: 'Kırmızı kürsü üstünde dev altın otağ.' },
       { id: 'lm_persepolis', kind: 'building', tags: ['yeni'], note: 'Yüksek teras, merdiven, boğa başlıklı ince sütunlar ormanı.' },
-      { id: 'lm_aziz_basil', kind: 'building', tags: ['yeni'], note: 'Renkli soğan kubbeli kuleler kümesi.' },
       { id: 'lm_kremlin', kind: 'building', tags: ['yeni'], note: 'Kızıl tuğla surlar, yeşil sivri kuleler, saat kulesi, altın kubbeli katedral.' },
       { id: 'lm_rodos', kind: 'building', tags: ['yeni'], note: 'Liman girişinde iki kaidenin üstünde meşaleli tunç dev heykel.' },
       { id: 'lm_parthenon', kind: 'building', tags: ['yeni'], note: 'Basamaklı kaide üstünde dor sütunlu tapınak, mavi alınlık.' },
@@ -124,7 +125,6 @@ export const VERSIONS = [
       { id: 'lm_rumelihisari', kind: 'building', tags: ['yeni'], note: 'Üç büyük yuvarlak kule, kurşun külahlar, aralarında surlar.' },
       { id: 'lm_kolezyum', kind: 'building', tags: ['yeni'], note: 'Üç kat kemerli oval arena.' },
       { id: 'lm_pantheon', kind: 'building', tags: ['yeni'], note: 'Kubbeli rotunda, sütunlu revak, üçgen alınlık.' },
-      { id: 'lm_himeji', kind: 'building', tags: ['yeni'], note: 'Eğimli taş temel üstünde beş çatılı beyaz kale.' },
       { id: 'lm_kinkakuji', kind: 'building', tags: ['yeni'], note: 'Gölün kıyısında üç katlı altın köşk.' },
       { id: 'lm_sfenks', kind: 'building', tags: ['yeni'], note: 'Aslan gövdeli, mavi çizgili başlıklı sfenks; arkasında küçük piramit.' },
       { id: 'lm_feneri', kind: 'building', tags: ['yeni'], note: 'Kare kaide, sekizgen kat, ateşli fener kulesi.' },
