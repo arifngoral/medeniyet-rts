@@ -310,7 +310,7 @@ export class UI {
     if (this.game && !this.game.over && !this.app.demo && !this.app.net) link('Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); }, 'hot');
     const cont = link('Devam Et', () => Promise.resolve(safe(() => this.app.continueLast(), false)).then((ok) => { if (!ok && this.app.lastLoadError && this.mode === 'menu') this._menuSaves(this.app.lastLoadError); }).catch(() => {}));
     const saves = link('Kayıtlı Oyunlar', () => this._menuSaves());
-    link('Sandbox', () => this.app.newGame({ mapSize: 256, enemies: 1, difficulty: 'normal', startRes: 'high', startAge: 0, sandbox: true, seed: (Math.random() * 1e9) | 0 }));
+    link('Sandbox', () => this._menuSandbox());
     if (!this._account() && ACCOUNTS && this.app.cloud) link('Google ile Giriş', () => loginScreen(this), 'hot');
     if (this._account()) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
     cont.disabled = true;
@@ -427,6 +427,22 @@ export class UI {
     this._mbtn(bar, 'Başla', () => {
       const d = !!this.devOn && !dev.classList.contains('hidden');
       this.app.newGame({ ...this.setup, sandbox: d, dev: d, seed: (Math.random() * 1e9) | 0 });
+    }, 'primary');
+  }
+  // Sandbox: civilization, map and starting age chosen here (shares this.setup with Yeni Oyun); a small map,
+  // one normal enemy, endless resources, the age panel and "⚡ Anında" in the game (_devPanel, sim update)
+  _menuSandbox() {
+    const box = this._menuBox('<h2>Sandbox</h2>');
+    box.classList.add('wide');
+    this._civRow(box, this.setup.civ, (v) => { this.setup.civ = v; });
+    this._seg(box, 'Harita Türü', 'mapType', MAP_TYPES, 'wrap');
+    this._seg(box, 'İklim', 'climate', CLIMATE_OPTS, 'wrap');
+    this._seg(box, 'Başlangıç Çağı', 'startAge', AGES.map((a, i) => [i, a.name.split(' ')[0]]));
+    const bar = el('div', 'mn-bar'); box.append(bar);
+    this._mbtn(bar, 'Geri', () => this._menuMain());
+    this._mbtn(bar, 'Başla', () => {
+      const s = this.setup;
+      this.app.newGame({ mapSize: 256, enemies: 1, difficulty: 'normal', startRes: 'high', startAge: s.startAge, mapType: s.mapType, climate: s.climate, civ: s.civ, fog: s.fog, sandbox: true, seed: (Math.random() * 1e9) | 0 });
     }, 'primary');
   }
   _menuSaves(errText) {

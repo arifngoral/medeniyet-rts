@@ -46,6 +46,7 @@ export const VERSIONS = [
         'Oyun içindeki bütün paneller menülerle aynı görünüme geçti: seçim paneli, yapıların üretim kuyruğu, komut kartı, ipuçları, görevler, bildirimler, teknoloji ağacı, istatistikler, duraklatma menüsü.',
       ]],
       ['Sandbox', [
+        'Sandbox önce bir seçim ekranı açar: medeniyet, harita türü, iklim ve başlangıç çağı seçilir.',
         'Sağ üstteki Sandbox panelinden istediğin çağa tek tıkla geçilir (geri de dönülür); bekleme, bina şartı ve bedel yok.',
         '⚡ Anında (açık gelir): binalar yerleştirildiği anda biter, birlik / teknoloji / çağ sırası beklemeden tamamlanır, kaynaklar hiç bitmez. Kapatınca eski 2 kat hız kalır.',
       ]],
