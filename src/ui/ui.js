@@ -157,7 +157,25 @@ export class UI {
     this.mm = el('canvas');
     this.mm.width = MM; this.mm.height = MM;
     mmWrap.append(this.mm);
-    this.hudEl.append(mmWrap, resPanel);
+    // The next age: what it still needs, as icons (cost, building types, named buildings, the wait), and the button
+    // that starts it - at the corner where this strip meets the resources. Filled by _refreshSlow.
+    this.ageReqEl = el('div', 'agereq panel hidden', '<div class="ar-list"></div>');
+    this.ageBtn = el('button', 'ar-btn', `${ico('x-ageup')}<i class="ar-bar"></i>`); this.ageBtn.type = 'button';
+    this.ageBtn.onclick = () => {
+      this._click();
+      const g = this.game, me = this._me();
+      const tcs = (safe(() => g.buildingsOf(me), []) || []).filter((b) => b.type === 'towncenter' && b.done && !b.dead);
+      if (tcs.some((b) => safe(() => g.ageUp(b.id), false))) { this.cardSig = null; return; }
+      const r = safe(() => g.canAgeUp(me), null);
+      this.toast(ico('x-ageup') + ' ' + ((r && r.reason) || (tcs.length ? 'Çağ atlanamıyor' : 'Şehir Merkezi gerekli')), 'warn');
+    };
+    this._tip(this.ageBtn, () => {
+      const g = this.game, p = g && g.players[this._me()], na = p && AGES[p.age + 1]; if (!na) return { name: 'Çağ Atla', desc: 'Son çağdasın.' };
+      const r = safe(() => g.canAgeUp(this._me()), { ok: false, reason: '' }) || { ok: false, reason: '' };
+      return { name: 'Çağ Atla: ' + na.name, desc: (r.ok ? 'Hazır: tıkla.' : r.reason) + ' Açılanlar: ' + ((na.unlockText || []).join(', ') || '-') };
+    });
+    this.ageReqEl.append(this.ageBtn);
+    this.hudEl.append(mmWrap, resPanel, this.ageReqEl);
     this._bindMinimap();
 
     // bottom
@@ -738,7 +756,7 @@ export class UI {
     }
     // objective line
     const next = AGES[p.age + 1];
-    if (demo || !next) { this.objEl.classList.add('hidden'); return; }
+    if (demo || !next) { this.objEl.classList.add('hidden'); this.ageReqEl.classList.add('hidden'); return; }
     this.objEl.classList.remove('hidden');
     const has = (t) => blds.some((b) => b.type === t && !b.dead);
     const ga = p.stats?.gathered || {};
@@ -775,6 +793,21 @@ export class UI {
     const frac = aging ? this._qprog(aging) : (parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : 1);
     const costTxt = RES_LIST.filter((r) => next.cost[r]).map((r) => `${RES_ICON[r]} ${next.cost[r]}`).join(' ');
     const mtxt = aging ? 'Çağ atlanıyor…' : miss.length ? 'Eksik: ' + miss.join(' · ') : 'Hazır! Şehir Merkezi\'nden çağ atla';
+    this.objEl.classList.toggle('hidden', !steps.length);
+    // the age strip: one chip per need, green when it is met; no words (the hover text names it)
+    {
+      const chip = (ok, icon, txt, title) => `<span class="ar-c ${ok ? 'ok' : 'no'}" title="${esc(title)}">${icon}${txt != null ? '<b>' + esc(String(txt)) + '</b>' : ''}</span>`;
+      const chips = [];
+      for (const r of RES_LIST) { const need = next.cost[r]; if (!need) continue; const have = Math.floor(p.res[r] || 0); chips.push(chip(have >= need, RES_ICON[r], need, `${RES_NAME[r]}: ${have} / ${need}`)); }
+      if (next.reqBuildings > 0) chips.push(chip(types.size >= next.reqBuildings, ico('x-buildings'), Math.min(types.size, next.reqBuildings) + '/' + next.reqBuildings, 'Farklı bina türü (ev, sur, kapı ve şehir merkezi sayılmaz)'));
+      for (const t of next.reqTypes || []) { const okT = !needT.includes(t), bd = BUILDINGS[t]; chips.push(chip(okT, bd ? bd.icon : ico('x-buildings'), null, (bd ? bd.name : t) + (okT ? ' var' : ' gerekli'))); }
+      if (wait > 0) chips.push(chip(false, '⏳', `${Math.floor(wait / 60)}:${String(Math.floor(wait % 60)).padStart(2, '0')}`, 'Bu çağda kalman gereken süre'));
+      const ready = !aging && !miss.length, html = aging ? '' : chips.join('');   // (paid and under way: nothing left to need)
+      this.ageReqEl.classList.remove('hidden');
+      if (html !== this._arSig) { this._arSig = html; this.ageReqEl.querySelector('.ar-list').innerHTML = keepIcons(html); }
+      this.ageBtn.classList.toggle('ready', ready); this.ageBtn.classList.toggle('aging', !!aging);
+      this.ageBtn.querySelector('.ar-bar').style.width = aging ? (this._qprog(aging) * 100).toFixed(1) + '%' : '0';
+    }
     const sig = steps.map((s) => (s[1] ? 1 : 0)).join('') + '|' + p.age + '|' + mtxt;
     this.objEl.querySelector('.obar i').style.width = (frac * 100).toFixed(1) + '%';
     if (sig === this.objSig) return;

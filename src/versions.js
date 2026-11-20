@@ -38,6 +38,8 @@ export const VERSIONS = [
       ]],
       ['Oyun içi arayüz', [
         'Kaynaklar üst çubuktan mini haritanın yanına taşındı. Her kaynağın yanında o an o kaynakta çalışan köylü sayısı yazar (dakikalık gelir yerine); balıkçı tekneleri yiyeceğe sayılır. Nüfus ve boşta köylü düğmesi de aynı panelde.',
+        'Sonraki çağın gerektirdikleri mini haritanın üstünde simgelerle görünür (kaynak bedeli, bina türü sayısı, gereken yapılar, bekleme süresi): karşılanan yeşil, eksik kırmızı. Yanındaki Çağ Atla düğmesi hazır olunca altın renkte parlar; şehir merkezini seçmeden oradan çağ atlanır.',
+        'Kısayol grupları (1-9) ekranın altından sağ kenara, dikey bir sütuna taşındı; alttaki paneller artık en alta oturuyor.',
         'Oyun içindeki bütün paneller menülerle aynı görünüme geçti: seçim paneli, yapıların üretim kuyruğu, komut kartı, ipuçları, görevler, bildirimler, teknoloji ağacı, istatistikler, duraklatma menüsü.',
       ]],
       ['Düzeltmeler', [
