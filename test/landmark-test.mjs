@@ -91,8 +91,8 @@ const run = (g, s, until) => { for (let i = 0; i < 30 * s; i++) { g.update(1 / 3
   for (let t = 0; t < 30 * 60 * 9; t++) { a.update(1 / 30); b.update(1 / 30); }
   const lms = a.buildings.filter(x => x.owner === 0 && BUILDINGS[x.type].landmark && x.done);
   ok(a.players[0].age >= 1 && lms.length >= 1, `AI (misir): built ${lms.map(x => BUILDINGS[x.type].name).join(', ')} -> age ${a.players[0].age}`);
-  ok(a.players[1].age >= 1 && !a.buildings.some(x => x.owner === 1 && BUILDINGS[x.type].landmark), 'AI (kore, no age-up buildings yet): ages up at the town center as before');
-  ok(a.units.some(u => u.owner === 0 && u.type === 'ramses'), 'AI trains its hero');
+  ok(a.players[1].age >= 1 && a.buildings.some(x => x.owner === 1 && BUILDINGS[x.type].landmark && x.done), 'AI (kore): ages up by building too');
+  ok(a.units.some(u => u.owner === 0 && u.type === 'ramses') && a.units.some(u => u.owner === 1 && u.type === 'yisunsin'), 'AI trains its hero (both)');
   ok(a.hash() === b.hash(), 'two runs: same hash after 9 min');
 }
 // --- cfg.noLandmarks: the old way for everybody (balance measurements)

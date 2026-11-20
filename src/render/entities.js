@@ -5,6 +5,7 @@ import { BUILDINGS, UNITS } from '../data.js';
 import { updateConstruction, disposeConstruction, updateRepair } from './construction.js';
 import { SEA_BUILD, SEA_UNITS, makeSeaUnit, seaAnimUnit, seaAnimBuilding, makeFish, seaAnimFish, seaMask } from './models-sea.js';
 import { StaticBatches } from './static-batch.js';
+import { LM_FILES } from './lm/index.js';   // (the age-up building models of the other civilizations: one file per few)
 import { loadGlbModels, loadEra, glbVersion, hasGlb, glbPlanned, eraSettled, addGlbBuilding, addGlbPiece, loadCrop, cropGeo } from './glb-models.js';
 
 const PI = Math.PI;
@@ -1147,7 +1148,7 @@ const LM_BUILD = {
     for (const s of [-1, 1]) { lmDome(c, LMM.lead, .62, 0, 1.5, -.2 + s * .95, .8); lmDome(c, LMM.lead, .4, s * .95, 1.5, -.2, .8); }
     for (const s of [-1, 1]) { bx(c.body, W, .5, .7, 3.4, s * 1.6, 0, 0); for (let i = 0; i < 4; i++) lmDome(c, LMM.lead, .2, s * 1.6, .7, -1.2 + i * .8); }
     for (const [x, z, h] of [[-1.25, -1.45, 3.4], [1.25, -1.45, 3.4], [-1.25, 1.05, 4.0], [1.25, 1.05, 4.0]]) lmMinaret(c, x, z, h);
-    bx(c.body, MT.black, .45, .8, .04, 0, 0, .96); lmFlag(c, 0, 1.75, 1.6);
+    bx(c.body, MT.black, .45, .8, .04, 0, 0, .96); lmFlag(c, .6, 1.3, 1.6);
   },
   tophane(c) {   // the cannon foundry: a brick hall, two tall chimneys, cannons outside
     bx(c.body, MT.brick, 3.1, 1.3, 1.8, 0, 0, -.6); lmGable(c, LMM.lead, 2.0, .7, 3.3, 0, 1.3, -.6, PI / 2);
@@ -1309,10 +1310,10 @@ const LM_BUILD = {
   },
   ahir(c) {   // the chariot stables: mud-brick stalls under palm-trunk beams, chariots outside
     const M = LMM.mud;
-    bx(c.body, M, 3.4, 1.0, 1.3, 0, 0, -1.0); for (let i = 0; i < 10; i++) cy(c.body, LMM.bark, .05, 1.0, -1.6 + i * .36, 1.0, -.35).rotation.z = PI / 2;
+    bx(c.body, M, 3.4, 1.0, 1.3, 0, 0, -1.0); for (let i = 0; i < 10; i++) cy(c.body, LMM.bark, .05, .6, -1.6 + i * .36, .95, -.35).rotation.x = PI / 2;
     bx(c.roof, MT.thatch, 3.6, .12, 1.6, 0, 1.0, -.9); for (let i = 0; i < 5; i++) bx(c.body, MT.black, .4, .7, .04, -1.3 + i * .65, 0, -.34);
     for (const x of [-.8, .8]) { bx(c.body, MT.wood, .5, .3, .35, x, .25, .9); bx(c.body, LMM.blue, .5, .2, .04, x, .35, 1.08); for (const s of [-1, 1]) mk(G.wheel, c.body, MT.dwood, .04, .4, .4, x + s * .3, .2, .9); bx(c.body, MT.dwood, .04, .04, .7, x, .3, 1.4); }
-    cy(c.body, LMM.bark, .07, 2.2, 1.6, 0, 1.4); for (let i = 0; i < 5; i++) bx(c.roof, LMM.pine, .7, .04, .15, 1.6 + Math.cos(i * 1.25) * .3, 2.2, 1.4 + Math.sin(i * 1.25) * .3).rotation.y = -i * 1.25;
+    cy(c.body, LMM.bark, .07, 2.2, 1.25, 0, 1.15); for (let i = 0; i < 5; i++) bx(c.roof, LMM.pine, .6, .04, .15, 1.25 + Math.cos(i * 1.25) * .25, 2.2, 1.15 + Math.sin(i * 1.25) * .25).rotation.y = -i * 1.25;
     lmFlag(c, -1.6, 1.4, 1.8);
   },
   karnak(c) {   // a pylon gateway, a hall of fat lotus columns, obelisks before the gate
@@ -1415,10 +1416,14 @@ const LM_BUILD = {
     for (let i = 0; i < 8; i++) for (const s of [-1, 1]) mk(G.wheel, c.body, i & 1 ? c.cm : LMM.sail1, .04, .32, .32, s * .97, .6, -1.5 + i * .4);
     for (const s of [-1, 1]) { const o = bx(c.roof, MT.dwood, .08, .6, .08, 0, 2.2, s * 1.8); o.rotation.x = s * .5; }
     bx(c.body, MT.black, .45, .8, .04, 0, 0, 1.61); bx(c.body, MT.gold, .55, .1, .05, 0, .82, 1.62);
-    for (const s of [-1, 1]) { bx(c.body, MT.stone, .3, .3, .5, s * .55, 0, 1.9); bx(c.body, mat(0x5a5a60, .8), .22, .35, .5, s * .55, .3, 1.9); bx(c.body, mat(0x5a5a60, .8), .16, .2, .25, s * .55, .6, 2.12); }
+    for (const s of [-1, 1]) { bx(c.body, MT.stone, .3, .3, .5, s * .55, 0, 1.6); bx(c.body, mat(0x5a5a60, .8), .22, .35, .5, s * .55, .3, 1.6); bx(c.body, mat(0x5a5a60, .8), .16, .2, .25, s * .55, .6, 1.75); }
     lmFlag(c, 1.4, -1.6, 2.4);
   },
 };
+// The models in src/render/lm/*.js get these helpers (they cannot import them: this module imports theirs) and
+// return { look: (c) => {...} } entries; c.body / c.roof are the groups, c.cm the player's colour material.
+export const LM_KIT = { THREE, PI, G, MT, XM, LMM, mat, mk, bx, cy, cn, py, sp, lmFlag, lmDome, lmGable, lmMinaret, lmCols, lmCren, lmTower, lmWall, lmPagoda, lmSteps, lmArch, lmShip };
+for (const f of LM_FILES) Object.assign(LM_BUILD, f(LM_KIT));
 
 function makeBuilding(type, size, age, color, mask, seed, noGlb) {
   const root = new THREE.Group();
@@ -1801,6 +1806,12 @@ function uHead(H, k, cloth) {
     bx(H, XM.hair, .18, .04, .18, 0, .15, 0); for (let i = 0; i < 10; i++) { const a = i / 10 * PI * 2; const l = bx(H, MT.gold, .03, .03, .05, Math.sin(a) * .1, .15, Math.cos(a) * .1); l.rotation.y = a; l.rotation.z = .5; }
   } else if (h === 'ronin') {      // Musashi: a topknot, a headband, a stubbled jaw
     bx(H, MT.black, .18, .05, .18, 0, .15, 0); bx(H, MT.black, .05, .05, .1, 0, .2, -.02); bx(H, cm, .185, .025, .185, 0, .12, 0); bx(H, MT.white, .02, .08, .02, .06, .1, -.09); bx(H, XM.hair, .12, .04, .02, 0, -.01, .087);
+  } else if (h === 'tac') {        // a king's crown: a gold band with points and jewels over short hair, a beard
+    bx(H, XM.hair, .18, .04, .18, 0, .15, 0); cy(H, LMM.goldm, .1, .06, 0, .15, 0); for (let i = 0; i < 6; i++) { const a = i / 6 * PI * 2; cn(H, LMM.goldm, .025, .08, Math.sin(a) * .09, .21, Math.cos(a) * .09); }
+    sp(H, mat(0xc01c3a, .3, .2), .022, 0, .18, .1); bx(H, XM.hair, .13, .08, .03, 0, -.05, .09);
+  } else if (h === 'tuyler') {     // Moctezuma: a fan of long green quetzal feathers on a gold band
+    bx(H, LMM.goldm, .19, .05, .19, 0, .13, 0); for (let i = -3; i <= 3; i++) { const f = bx(H, i & 1 ? UQ.feather : cm, .035, .32, .03, i * .03, .16, -.05); f.rotation.z = i * .2; f.rotation.x = -.25; }
+    sp(H, LMM.goldm, .03, 0, .15, .1);
   } else if (h === 'ragnar') {     // Ragnar: shaved sides, a long braid down the back, a forked beard, war paint
     bx(H, mat(0xb88a4a, .9), .06, .05, .19, 0, .16, 0); bx(H, mat(0xb88a4a, .9), .04, .3, .04, 0, -.1, -.1); for (const s of [1, -1]) bx(H, mat(0xb88a4a, .9), .05, .14, .03, s * .03, -.1, .09);
     bx(H, mat(0x1a1a20, .9), .17, .02, .01, 0, .09, .086);

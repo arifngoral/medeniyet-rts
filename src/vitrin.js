@@ -40,7 +40,7 @@ const TABS = {
     items: () => CIV_IDS.flatMap((c) => CIVS[c].units || []).filter((id) => UNITS[id]).map(unitItem) },
   efsane: { label: 'Efsaneler', lead: () => 'Medeniyetlerin efsane karakterleri: çağ binalarından basılır, aynı anda yalnız bir tane olur, çağ atladıkça güçlenir ve yanındaki askerlere saldırı ve zırh verir. Ayaklarının altındaki altın halka onları belli eder.',
     items: () => Object.values(HEROES).filter((h) => UNITS[h.id]).map((h) => unitItem(h.id)) },
-  cag: { label: 'Çağ binaları', lead: () => 'AoE4 gibi çağ atlama: köylüler her çağ geçişi için iki binadan birini kurar, bitince çağ atlanır. Her binanın ayakta durduğu sürece işleyen kendi etkisi var. Şimdilik 5 medeniyette; sırayla her medeniyetin 8 binası.',
+  cag: { label: 'Çağ binaları', lead: () => 'AoE4 gibi çağ atlama: köylüler her çağ geçişi için iki binadan birini kurar, bitince çağ atlanır. Her binanın ayakta durduğu sürece işleyen kendi etkisi var. Her medeniyetin 8 binası, medeniyet sırasıyla (160 bina).',
     items: () => Object.keys(LANDMARKS).flatMap((c) => LANDMARKS[c].flat().map((l) => l.id)).filter((id) => BUILDINGS[id]).map(buildItem) },
   birlik: { label: 'Tüm birlikler', lead: () => 'Oyundaki bütün birlikler: standart olanlar ve medeniyetlerin özel birlikleri. Çağı değiştirince kıyafetleri de değişir.',
     items: () => Object.keys(UNITS).map(unitItem) },
