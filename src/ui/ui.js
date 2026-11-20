@@ -2,6 +2,7 @@
 import { AGES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS } from '../data.js';
 import { CIVS, CIV_IDS, civLines, civLabel, civUnit } from '../civs.js';
 import { ACCOUNTS } from '../cloud/config.js';
+import { VERSIONS, VERSION } from '../versions.js';
 import { AI_STYLES, civStyle } from '../civ-ai.js';
 import { BRAND_LOGO, BRAND_SUB, TAGLINE } from '../brand.js';
 import { BUILD_TIME_MUL, QUEUE_TIME_MUL, TOWER_AGE_ATK, towerAgeBonus } from '../sim/game.js';
@@ -276,7 +277,7 @@ export class UI {
       const b = el('button', 'mn-link mbtn-home' + (cls ? ' ' + cls : ''), esc(text)); b.type = 'button'; b.onclick = go(fn); links.append(b); return b;
     };
     box.append(tiles, links);
-    const foot = el('footer', 'mn-foot', '<span>Açık kaynak · <a href="https://github.com/arifngoral/medeniyet-rts" target="_blank" rel="noopener">kaynak kodu</a> (AGPL v3) · Aevum çatalı</span><span></span>');
+    const foot = el('footer', 'mn-foot', '<span>Açık kaynak · <a href="https://github.com/arifngoral/medeniyet-rts" target="_blank" rel="noopener">kaynak kodu</a> (AGPL v3) · Aevum çatalı</span><span>Sürüm ' + esc(VERSION) + '</span>');
     box.append(foot);
     this.menuEl.append(box);
     if (note) this._menuNote(note);
@@ -287,6 +288,10 @@ export class UI {
     if (ACCOUNTS) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
     cont.disabled = true;
     Promise.resolve(safe(() => this.app.listSaves(), [])).then((l) => { cont.disabled = !(l && l.length); }).catch(() => {});
+    // release notes; marked until this version's notes have been opened once
+    const seen = safe(() => localStorage.getItem('mrts-news-seen'), null);
+    link('Yenilikler', () => this._menuNews(), seen === VERSION ? '' : 'hot');
+    link('Vitrin', () => { window.open('vitrin.html', '_blank', 'noopener'); });
     link('Nasıl Oynanır', () => this._menuHowto());
     link('Ayarlar', () => this._menuSettings());
     // the game's owner: player statistics (the server says who that is)
@@ -433,6 +438,32 @@ export class UI {
       }
     }).catch(() => { list.textContent = 'Kayıtlar okunamadı.'; });
     this._mbtn(box, 'Geri', () => this._menuMain());
+  }
+  // release notes (versions.js): every version with its changes; one with new / changed models links to the 3D showcase
+  _menuNews() {
+    safe(() => localStorage.setItem('mrts-news-seen', VERSION));
+    const box = this._menuBox('<h2>Yenilikler</h2>');
+    box.classList.add('wide', 'news');
+    const list = el('div', 'news-list');
+    const dt = (s) => safe(() => new Date(s + 'T12:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }), s);
+    for (const ver of VERSIONS) {
+      const sec = el('section', 'news-ver');
+      sec.append(el('header', 'news-head', `<b>Sürüm ${esc(ver.v)}</b><span class="news-title">${esc(ver.title)}</span><time>${esc(dt(ver.date))}</time>`));
+      if (ver.intro) sec.append(el('p', 'news-intro', esc(ver.intro)));
+      for (const [head, lines] of ver.items) {
+        sec.append(el('h3', 'news-group', esc(head)));
+        sec.append(el('ul', 'news-items', lines.map((l) => `<li>${esc(l)}</li>`).join('')));
+      }
+      if (ver.showcase && ver.showcase.length) {
+        const b = el('button', 'mbtn small news-show', `Vitrinde gör · ${ver.showcase.length} model`); b.type = 'button';
+        b.onclick = () => { this._click(); window.open('vitrin.html?v=' + encodeURIComponent(ver.v), '_blank', 'noopener'); };
+        sec.append(b);
+      }
+      list.append(sec);
+    }
+    box.append(list);
+    const bar = el('div', 'mn-bar'); box.append(bar);
+    this._mbtn(bar, 'Geri', () => this._menuMain());
   }
   _menuHowto() {
     const box = this._menuBox(`<h2>Nasıl Oynanır</h2><div class="howto">

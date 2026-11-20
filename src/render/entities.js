@@ -1517,6 +1517,7 @@ function makeHuman(g, color, k, P, age) {
   const w = k.weapon, wm = A === 0 ? MT.stone : A === 1 ? MT.bronze : MT.steel;
   P.two = !!k.two;   // (a two-handed weapon: both arms swing)
   P.style = k.anim || '';   // (a unique unit's own way of fighting: _animHuman)
+  P.die = k.die || '';      // (and of dying: _dieHuman)
   if (k.wpn) uWeapon(P, k, wm, cloth);
   else if (w === 'spear') { cy(P.armR, MT.wood, .014, 1.2, 0, -.9, .03); cn(P.armR, wm, .03, .14, 0, -.9, .03).rotation.x = PI; if (A >= 3) bx(P.armR, cloth, .02, .08, .1, 0, -.72, .08); }
   else if (w === 'sword') { bx(P.armR, wm, A === 0 ? .04 : .025, .05, A === 0 ? .36 : .46, 0, -.36, A === 0 ? .22 : .27); bx(P.armR, A === 0 ? MT.wood : A >= 3 ? MT.gold : MT.bronze, .12, .03, .03, 0, -.35, .05); }
@@ -2403,6 +2404,90 @@ export class EntityView {
     }
   }
 
+  // The pose of a unit model: its death, or the animation of its rig. -> true while it is dying / dead.
+  // Touches only the model (v.inner, v.P), so it also runs outside the game world (poseUnitModel below).
+  _poseUnit(v, e, t, gt) {
+    const P = v.P;
+    if (e.dead || e.anim === 'die') {
+      const d = Math.max(0, gt - (e.deathTime == null ? gt : e.deathTime));
+      if (v.rig === 'human') this._dieHuman(v, e, d);
+      else if (v.rig === 'cav') this._dieCav(v, e, d);
+      else { const p = Math.min(1, d / .5); v.inner.rotation.z = PI / 2 * p * (v.rig === 'deer' || v.rig === 'cart' ? 1 : .35); v.inner.position.y = .12 * p - (d > 2 ? (d - 2) * .3 : 0); }
+      return true;
+    }
+    const walking = e.anim === 'walk';
+    switch (v.rig) {
+      case 'human': this._animHuman(v, e, t, gt, false); break;
+      case 'cav': this._animHorse(v, e, t, walking, gt); this._animHuman(v, e, t, gt, true); break;
+      case 'deer': case 'cart': this._animHorse(v, e, t, walking); break;
+      case 'ram': {
+        const q = gt - (e.attackT == null ? -9 : e.attackT);
+        P.log.position.z = e.anim === 'attack' && q >= 0 && q < .5 ? Math.sin(q / .5 * PI) * .35 - .1 : 0; break;
+      }
+      case 'catapult': {
+        const q = gt - (e.attackT == null ? -9 : e.attackT);
+        P.arm.rotation.x = q >= 0 && q < .2 ? -.4 + q / .2 * 1.9 : q >= .2 && q < 1.2 ? 1.5 - (q - .2) * 1.9 : -.4; break;
+      }
+      case 'cannon': {
+        const q = gt - (e.attackT == null ? -9 : e.attackT);
+        P.barrel.position.z = q >= 0 && q < .5 ? -.22 * (1 - q / .5) : 0; break;
+      }
+    }
+    return false;
+  }
+  // A man on foot dies one of several ways: thrown on his back, sinking to his knees and falling on his face, or spun
+  // round and dropped on his side. A unique unit has its own (kit.die); the others take turns by entity id.
+  // d: seconds since the death. The body lies for a while, then sinks into the ground.
+  _dieHuman(v, e, d) {
+    const P = v.P, I = v.inner, sm = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+    const mode = P.die || ['back', 'kneel', 'spin'][(e.id | 0) % 3], sink = d > 2.4 ? (d - 2.4) * .22 : 0;
+    P.torso.rotation.y = 0; P.armR.rotation.z = 0; P.armL.rotation.z = 0; P.torso.rotation.x = 0;
+    if (mode === 'kneel') {            // knees give way, a moment upright, then forward on his face
+      const a = sm(d / .35), b = sm((d - .55) / .45);
+      P.legL.rotation.x = P.legR.rotation.x = 1.45 * a; P.torso.position.y = .38;
+      P.armL.rotation.x = -.2 * a - 1.2 * b; P.armR.rotation.x = .3 * a - 1.2 * b; P.torso.rotation.x = .25 * a * (1 - b); P.head.rotation.x = .5 * a;
+      I.rotation.x = PI / 2 * b; I.position.y = -.2 * a + .26 * b - sink;
+    } else if (mode === 'spin') {      // the blow turns him half round before he drops on his side
+      const a = sm(d / .5), b = sm((d - .15) / .5);
+      I.rotation.y = a * 2.6; I.rotation.z = PI / 2 * b; I.position.y = .1 * b - sink;
+      P.armR.rotation.x = -1.4 * a; P.armR.rotation.z = -1.0 * a; P.armL.rotation.x = -.6 * a; P.armL.rotation.z = .9 * a;
+      P.legL.rotation.x = .5 * a; P.legR.rotation.x = -.3 * a;
+    } else {                           // 'back': thrown backwards, arms flung up
+      const a = sm(d / .5);
+      I.rotation.x = -PI / 2 * a; I.position.y = .08 * a + Math.sin(a * PI) * .1 - sink;
+      P.armL.rotation.x = P.armR.rotation.x = -2.5 * a; P.armL.rotation.z = .5 * a; P.armR.rotation.z = -.5 * a;
+      P.legL.rotation.x = -.35 * a; P.legR.rotation.x = .25 * a;
+    }
+  }
+  // A mount goes down first, the rider with it: the horse rears and rolls over; the camel folds its front legs and keels
+  // over; the elephant throws up its head and trunk, sinks on its knees and rolls on its side, slowly.
+  _dieCav(v, e, d) {
+    const P = v.P, I = v.inner, hl = P.hl, sm = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+    const side = (e.id | 0) & 1 ? 1 : -1;
+    let a, b, sink;
+    if (P.mount === 'elephant') {
+      a = sm(d / .6); b = sm((d - .7) / .9); sink = d > 3.2 ? (d - 3.2) * .3 : 0;
+      P.hhead.rotation.x = -.6 * a * (1 - b) + .25 * b; P.trunk.rotation.x = -1.7 * a * (1 - b) + .3 * b;
+      for (const ep of P.ears) ep.rotation.y = ep.userData.s * (.5 + .5 * a * (1 - b));
+      hl[0].rotation.x = hl[1].rotation.x = -1.35 * a; hl[2].rotation.x = hl[3].rotation.x = .25 * a + .6 * b;
+      P.hbody.rotation.x = .16 * a * (1 - b); P.hbody.position.y = -.22 * a * (1 - b);
+      I.rotation.z = side * PI / 2 * b; I.position.y = .3 * b - sink;
+    } else if (P.mount === 'camel') {
+      a = sm(d / .45); b = sm((d - .5) / .6); sink = d > 2.6 ? (d - 2.6) * .3 : 0;
+      hl[0].rotation.x = hl[1].rotation.x = -1.5 * a; hl[2].rotation.x = hl[3].rotation.x = .4 * b;
+      P.hbody.rotation.x = .3 * a * (1 - b); P.hbody.position.y = -.26 * a * (1 - b);
+      P.hhead.rotation.x = .7 * a; P.hhead.rotation.y = 0;
+      I.rotation.z = side * PI / 2 * b; I.position.y = .14 * b - sink;
+    } else {
+      a = sm(d / .3); b = sm((d - .25) / .5); sink = d > 2.4 ? (d - 2.4) * .3 : 0;
+      P.hbody.rotation.x = -.45 * a * (1 - b); P.hhead.rotation.x = -.4 * a;
+      hl[0].rotation.x = hl[1].rotation.x = -1.0 * a * (1 - b) + .5 * b; hl[2].rotation.x = hl[3].rotation.x = .3 * a - .5 * b;
+      I.rotation.z = side * PI / 2 * b; I.position.y = .12 * b - sink;
+    }
+    // the rider: flung back in the saddle, arms up, then limp
+    P.torso.rotation.x = -.6 * a * (1 - b) - .2 * b; P.torso.rotation.y = 0;
+    P.armL.rotation.x = P.armR.rotation.x = -2.4 * a * (1 - b * .6); P.armL.rotation.z = .5 * a; P.armR.rotation.z = -.5 * a;
+  }
   _animHorse(v, e, t, walking, gt) {
     const hl = v.P.hl;
     if (v.P.mount === 'elephant') {   // slow heavy stride; the trunk sways, the ears flap; attacking it throws its head up and whips the trunk
@@ -2450,30 +2535,7 @@ export class EntityView {
     const root = v.root, inner = v.inner, P = v.P, t = time + v.phase;
     root.position.set(v.x, y, v.z); root.rotation.y = v.rot;
     if (v.rig === 'ship' || v.rig === 'train') { try { return seaAnimUnit(this, v, e, dt, t, gt, y); } catch (err) { return y; } }
-    if (e.dead || e.anim === 'die') {
-      const d = Math.max(0, gt - (e.deathTime == null ? gt : e.deathTime)), p = Math.min(1, d / .5);
-      if (v.rig === 'human') { inner.rotation.x = -PI / 2 * p; inner.position.y = .08 * p - (d > 2 ? (d - 2) * .22 : 0); }
-      else { inner.rotation.z = PI / 2 * p * (v.rig === 'cav' || v.rig === 'deer' || v.rig === 'cart' ? 1 : .35); inner.position.y = .12 * p - (d > 2 ? (d - 2) * .3 : 0); }
-      return y;
-    }
-    const walking = e.anim === 'walk';
-    switch (v.rig) {
-      case 'human': this._animHuman(v, e, t, gt, false); break;
-      case 'cav': this._animHorse(v, e, t, walking, gt); this._animHuman(v, e, t, gt, true); break;
-      case 'deer': case 'cart': this._animHorse(v, e, t, walking); break;
-      case 'ram': {
-        const q = gt - (e.attackT == null ? -9 : e.attackT);
-        P.log.position.z = e.anim === 'attack' && q >= 0 && q < .5 ? Math.sin(q / .5 * PI) * .35 - .1 : 0; break;
-      }
-      case 'catapult': {
-        const q = gt - (e.attackT == null ? -9 : e.attackT);
-        P.arm.rotation.x = q >= 0 && q < .2 ? -.4 + q / .2 * 1.9 : q >= .2 && q < 1.2 ? 1.5 - (q - .2) * 1.9 : -.4; break;
-      }
-      case 'cannon': {
-        const q = gt - (e.attackT == null ? -9 : e.attackT);
-        P.barrel.position.z = q >= 0 && q < .5 ? -.22 * (1 - q / .5) : 0; break;
-      }
-    }
+    if (this._poseUnit(v, e, t, gt)) return y;
     const fx = this.fx;
     if (fx) {
       if (walking && v.rig !== 'human' && v.rig !== 'deer' && fx.puff) {
@@ -2756,6 +2818,23 @@ export class EntityView {
   }
 }
 
+// Pose a raw unit model (makeUnitModel) like the game does, outside the game world: e is a stand-in entity
+// { id, type, anim: 'idle' | 'walk' | 'attack' | 'die', attackT, deathTime, dead }, t the animation clock, gt the game
+// clock (attackT / deathTime are on it). A model that was dying is stood up again when it is alive.
+export function poseUnitModel(v, e, t, gt) {
+  if (v.rig === 'ship' || v.rig === 'train') return;
+  const dying = e.dead || e.anim === 'die';
+  if (!dying && v._wasDying) {
+    v.inner.rotation.set(0, 0, 0); v.inner.position.y = 0;
+    const P = v.P;
+    if (P.hbody) { P.hbody.rotation.set(0, 0, 0); P.hbody.position.y = 0; }
+    if (P.head) P.head.rotation.x = 0;
+    if (P.armL) { P.armL.rotation.z = 0; P.armR.rotation.z = 0; }
+    if (P.torso) P.torso.rotation.y = 0;
+  }
+  v._wasDying = dying;
+  EntityView.prototype._poseUnit.call(EntityView.prototype, v, e, t, gt);
+}
 // the raw (unbaked) unit model, for screens outside the game world (the menu lobby draft: drafts/lobby.html)
 export { makeUnitRaw as makeUnitModel };
 // the procedural building model (dev tools: tools/zfight-check.js sweeps every type x era x mask for coplanar faces)

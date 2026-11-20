@@ -127,6 +127,19 @@
 .menu .mpsel:focus, .menu input:focus, .menu textarea:focus { outline: 1px solid var(--gold); outline-offset: 1px; }
 .menu .mpsel option { background: #1d1109; color: var(--ink); }
 
+/* ======================= release notes ======================= */
+.menu .menu-box.news { display: block; text-align: left; }
+.news-list { display: flex; flex-direction: column; gap: 22px; }
+.news-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.news-head b { font: 800 1.25rem var(--display); letter-spacing: .06em; color: var(--gold-2); }
+.news-head .news-title { font: 700 1rem var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.news-head time { margin-left: auto; color: var(--dim); font-size: 12.5px; }
+.news-intro { margin: 10px 0 2px; color: var(--ink); font-size: 14px; line-height: 1.55; }
+.news-group { margin: 14px 0 4px; font: 700 .76rem var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.news-items { margin: 0; padding-left: 18px; color: #f1e3c4; font-size: 13.5px; line-height: 1.6; }
+.news-items li::marker { color: var(--gold); }
+.menu .mbtn.news-show { margin: 14px 0 0; }
+
 /* ======================= civilization picker: a strip of banners ======================= */
 .civsel { margin: 0 0 16px; text-align: left; --civ: #6b4a1e; --civ-2: #e3ad4c; }
 .civ-banners { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding: 12px 4px 14px; scrollbar-width: thin; scrollbar-color: #d9a64a66 transparent;

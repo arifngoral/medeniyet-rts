@@ -36,6 +36,12 @@ Run those two plus the suites your change touches (for example `path-test.mjs` f
 multiplayer). The simulation must stay deterministic: multiplayer is lockstep, so no `Math.random()`, `Date.now()`
 or floating-point order differences inside `src/sim/`.
 
+## Release notes and the showcase
+
+A change players can see gets a line in `src/versions.js` (the newest version first; changes of the same day go into
+the same version). A new or changed model or animation is also listed in that version's `showcase` with a short note
+on what to look at: it then appears in `vitrin.html`, the 3D model library, playing its animations in a loop.
+
 ## Pull requests
 
 - Fork the repo, work on a branch, open a PR against `main`. `main` deploys the live game, so every PR is reviewed.

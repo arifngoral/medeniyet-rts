@@ -7,6 +7,10 @@
 > tablosunu yeniden ağırlıklandırır (ilk saldırı dakikası, köylü ve ordu oranı, kule ve sur); ayrıca bot, medeniyetinin özel birliğinin ve
 > bonus aldığı sınıfların birliklerini daha çok basar. Medeniyetsiz bot eskisi gibi oynar.
 >
+> **Yenilikler ve vitrin:** sürüm notları `src/versions.js` (ana menüde "Yenilikler"; en yeni sürüm en başta, aynı gün yapılanlar aynı sürüme).
+> Bir sürümün eklediği ya da değiştirdiği modeller `showcase` listesine yazılır ve `vitrin.html`'de (3B model kitaplığı: `src/vitrin.js`) notuyla
+> birlikte ilk sekmede görünür: birlikler bekle → yürü → saldır → öl döngüsünde oynar, yapılar yavaşça döner; "Tüm birlikler" ve "Yapılar" sekmeleri de var.
+>
 > **Menü görünümü:** `menu.css` (kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, medeniyet afiş şeridi); çizimler
 > `assets/ui/` ve `assets/civ/` (CC BY 4.0, bkz. `assets/LICENSE.md`). Oyun içi arayüz asıl projedeki gibidir.
 >
