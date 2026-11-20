@@ -33,7 +33,7 @@
 /* ---------- minimap + resources (bottom left) ---------- */
 .hud .minimap { padding: 7px; }
 .hud .minimap canvas { border-radius: 0; box-shadow: 0 0 0 1px var(--line); }
-.respanel { position: absolute; left: 252px; bottom: 10px; width: 150px; height: 234px; padding: 9px 9px 8px; display: flex; flex-direction: column; gap: 3px; pointer-events: auto; }
+.respanel { position: absolute; left: 252px; bottom: 10px; width: 164px; height: 234px; padding: 9px 9px 8px; display: flex; flex-direction: column; gap: 3px; pointer-events: auto; }
 .respanel .res { flex: 1; min-width: 0; padding: 0 6px 0 4px; gap: 7px; border-radius: 0; font-size: 15px; border-bottom: 1px solid #d9a64a26; }
 .respanel .res .i { font-size: 19px; flex: none; width: 24px; display: grid; place-items: center; }
 .respanel .res b { flex: 1; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -44,16 +44,16 @@
 .respanel .res.pulse { animation: respulse .5s ease; }
 @keyframes respulse { 0% { background: #e3ad4c4d; } 100% { background: transparent; } }
 .respanel .resfoot { display: flex; align-items: center; gap: 6px; padding-top: 4px; }
-.respanel .resfoot .res { flex: 1; border-bottom: 0; font-size: 13px; padding: 0 2px; gap: 5px; }
+.respanel .resfoot .res { flex: 1; min-width: 0; border-bottom: 0; font-size: 12.5px; padding: 0 2px; gap: 4px; white-space: nowrap; }
 .respanel .resfoot .res .i { font-size: 15px; width: 18px; }
-#ui .respanel .idlebtn { flex: none; width: auto; min-width: 46px; height: 28px; padding: 0 7px; display: flex; align-items: center; gap: 4px; font-size: 14px; }
+#ui .respanel .idlebtn { flex: none; width: auto; min-width: 44px; height: 28px; padding: 0 6px; display: flex; align-items: center; gap: 4px; font-size: 14px; }
 #ui .respanel .idlebtn b { font-size: 13px; }
 #ui .respanel .idlebtn.has { border-color: var(--gold-2); background: #e3ad4c33; color: #fff; }
 
-/* the bottom group starts right of the resources (minimap 10..246, resources 252..402) */
-.hud .bottom { left: max(412px, calc(50% - var(--bw) / 2)); max-width: calc(100vw - 422px); }
-.hud .groupbar { left: calc(max(412px, calc(50% - var(--bw) / 2)) + var(--bw) / 2); }
-@media (max-width: 1100px) { .hud .selpanel { width: clamp(170px, calc(100vw - 422px - 334px), 340px); min-width: 0; } }
+/* the bottom group starts right of the resources (minimap 10..246, resources 252..416) */
+.hud .bottom { left: max(426px, calc(50% - var(--bw) / 2)); max-width: calc(100vw - 436px); }
+.hud .groupbar { left: calc(max(426px, calc(50% - var(--bw) / 2)) + var(--bw) / 2); }
+@media (max-width: 1100px) { .hud .selpanel { width: clamp(170px, calc(100vw - 436px - 334px), 340px); min-width: 0; } }
 @media (max-width: 900px) { .respanel { left: 10px; bottom: 250px; width: 234px; height: auto; flex-direction: row; flex-wrap: wrap; } .respanel .res { flex: 1 0 45%; } .hud .bottom { left: 256px; max-width: calc(100vw - 266px); } .hud .groupbar { left: calc(256px + var(--bw) / 2); } }
 
 /* ---------- selection panel ---------- */
