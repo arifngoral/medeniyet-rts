@@ -277,7 +277,7 @@ export class UI {
       const b = el('button', 'mn-link mbtn-home' + (cls ? ' ' + cls : ''), esc(text)); b.type = 'button'; b.onclick = go(fn); links.append(b); return b;
     };
     box.append(tiles, links);
-    const foot = el('footer', 'mn-foot', '<span>Açık kaynak · <a href="https://github.com/arifngoral/medeniyet-rts" target="_blank" rel="noopener">kaynak kodu</a> (AGPL v3) · Aevum çatalı</span><span>Sürüm ' + esc(VERSION) + '</span>');
+    const foot = el('footer', 'mn-foot', '<span>Açık kaynak · <a href="https://github.com/arifngoral/medeniyet-rts" target="_blank" rel="noopener">kaynak kodu</a> (AGPL v3) · Aevum çatalı · <a href="https://medeniyet-kart-oyunu.onrender.com" target="_blank" rel="noopener" title="Aynı medeniyetlerle kart oyunu (ayrı site)">Kart oyunu ↗</a></span><span>Sürüm ' + esc(VERSION) + '</span>');
     box.append(foot);
     this.menuEl.append(box);
     if (note) this._menuNote(note);
