@@ -54,6 +54,19 @@ const CARD_GUARD_MS = 350;   // after the command card switches page, clicks / h
 const ATTACK_TEXT = 'Saldırı altındasın!';   // the sim's notify text for underAttack (the attack banner shows it instead of a toast)
 const ATTACK_MS = 4000;  // how long the attack banner stays
 const DIR_TR = ['doğusunda', 'güneydoğusunda', 'güneyinde', 'güneybatısında', 'batısında', 'kuzeybatısında', 'kuzeyinde', 'kuzeydoğusunda'];   // how long a map flare stays on the minimap
+// home screen corner buttons (ui.js _menuMain link): line icons, stroke in currentColor (menu.css "corner icons")
+const MI = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const MENU_ICO = {
+  'Oyuna Dön': MI('<path d="M8 5 L19 12 L8 19 Z"/>'),
+  'Sandbox': MI('<path d="M12 3 L20 7.5 V16.5 L12 21 L4 16.5 V7.5 Z"/><path d="M4 7.5 L12 12 L20 7.5 M12 12 V21"/>'),
+  'Google ile Giriş': MI('<circle cx="12" cy="8.5" r="3.6"/><path d="M5 20 C5.8 15.6 8.6 13.6 12 13.6 C15.4 13.6 18.2 15.6 19 20"/>'),
+  'Arkadaşlar': MI('<circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5 C3.6 15.6 6 13.8 9 13.8 C12 13.8 14.4 15.6 15 19.5"/><circle cx="16.5" cy="7.5" r="2.6"/><path d="M16 12.6 C18.8 12.6 20.6 14.4 21 17.6"/>'),
+  'Yenilikler': MI('<path d="M6 4 H16 C17.7 4 18 5.5 18 7 V18 C18 19.5 17 20 16 20 H8 C6.3 20 6 18.5 6 17 Z"/><path d="M9 8.5 H15 M9 12 H15 M9 15.5 H13"/>'),
+  'Vitrin': MI('<path d="M2.5 12 C5 7.3 8.3 5 12 5 C15.7 5 19 7.3 21.5 12 C19 16.7 15.7 19 12 19 C8.3 19 5 16.7 2.5 12 Z"/><circle cx="12" cy="12" r="3.2"/>'),
+  'Nasıl Oynanır': MI('<circle cx="12" cy="12" r="9"/><path d="M9.4 9.4 C9.6 7.8 10.8 7 12.1 7 C13.7 7 14.8 8.1 14.8 9.4 C14.8 11.4 12 11.6 12 14"/><path d="M12 17 V17.2"/>'),
+  'Ayarlar': MI('<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.85 1.85M16.65 16.65l1.85 1.85M5.5 18.5l1.85-1.85M16.65 7.35l1.85-1.85"/><circle cx="12" cy="12" r="6.4"/>'),
+  'İstatistikler': MI('<path d="M4 20 H20"/><path d="M7 20 V13 M12 20 V8 M17 20 V11"/>'),
+};
 // civilizations: the picker's options and the text of what one gives
 const CIV_OPTS = [['random', '🎲 Rastgele'], ...CIV_IDS.map((id) => [id, civLabel(id)])];
 const civShort = (name) => String(name).replace(/\s*\(.*\)$/, '');
@@ -296,20 +309,21 @@ export class UI {
     };
     tile(0, 'karo_tek', 'Tek Oyunculu', 'Yapay zekâya karşı savaş', () => this._menuSolo());
     tile(1, 'karo_cok', 'Çok Oyunculu', 'Arkadaşınla oda kur, kodla katıl', () => this._menuMulti());
-    // the row of text links (this._mbtn(box, ...) below builds one of these on the home screen)
+    // the other screens: round icon buttons in the top right corner (MENU_ICO), the name shows on hover / focus.
+    // 'wide' ones (Oyuna Dön, Google ile Giriş) also write their name; 'hot' glows (a dot on the round ones)
     const link = (text, fn, cls = '') => {
-      if (links.childElementCount) links.append(el('i'));
-      const b = el('button', 'mn-link mbtn-home' + (cls ? ' ' + cls : ''), esc(text)); b.type = 'button'; b.onclick = go(fn); links.append(b); return b;
+      const b = el('button', 'mn-link mbtn-home' + (cls ? ' ' + cls : ''), (MENU_ICO[text] || '') + (/\bwide\b/.test(cls) ? `<span>${esc(text)}</span>` : ''));
+      b.type = 'button'; b.dataset.ad = text; b.setAttribute('aria-label', text); b.onclick = go(fn); links.append(b); return b;
     };
     box.append(tiles, links);
     const foot = el('footer', 'mn-foot', '<span>Açık kaynak · <a href="https://github.com/arifngoral/medeniyet-rts" target="_blank" rel="noopener">kaynak kodu</a> (AGPL v3) · Aevum çatalı · <a href="https://medeniyet-kart-oyunu.onrender.com" target="_blank" rel="noopener" title="Aynı medeniyetlerle kart oyunu (ayrı site)">Kart oyunu ↗</a></span><span>Sürüm ' + esc(VERSION) + '</span>');
     box.append(foot);
     this.menuEl.append(box);
     if (note) this._menuNote(note);
-    if (this.game && !this.game.over && !this.app.demo && !this.app.net) link('Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); }, 'hot');
+    if (this.game && !this.game.over && !this.app.demo && !this.app.net) link('Oyuna Dön', () => { this.showHUD(); this.app.setPaused?.(false); }, 'hot wide');
     // (Devam Et / Kayıtlı Oyunlar: Tek Oyunculu'nun içinde, _menuSolo)
     link('Sandbox', () => this._menuSandbox());
-    if (!this._account() && ACCOUNTS && this.app.cloud) link('Google ile Giriş', () => loginScreen(this), 'hot');
+    if (!this._account() && ACCOUNTS && this.app.cloud) link('Google ile Giriş', () => loginScreen(this), 'hot wide');
     if (this._account()) link('Arkadaşlar', () => import('./friends-ui.js').then((m) => m.menuFriends(this)));
     // release notes; marked until this version's notes have been opened once
     const seen = safe(() => localStorage.getItem('mrts-news-seen'), null);

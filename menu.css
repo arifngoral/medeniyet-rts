@@ -67,16 +67,37 @@
 .mn-tile:focus-visible { outline: none; }
 .mn-tile:active .mt-img { transform: scale(1.03); }
 
-/* plain text links */
-.mn-links { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 10px; animation: mn-fade .8s ease .4s both; }
-.mn-links i { width: 6px; height: 6px; transform: rotate(45deg); background: var(--gold); opacity: .8; }
-#ui .mn-link { position: relative; border: 0; background: none; padding: 8px 12px; cursor: pointer; color: var(--dim); font: 700 clamp(.8rem, 1vw, 1.08rem) var(--display);
-  letter-spacing: .2em; text-transform: uppercase; text-shadow: 0 2px 4px #000; transition: color .2s; }
-.mn-link::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 3px; height: 1px; background: var(--gold); transform: scaleX(0); transition: transform .25s var(--ease); }
-#ui .mn-link:hover:not(:disabled), #ui .mn-link:focus-visible { outline: none; color: var(--gold-2); }
-.mn-link:hover:not(:disabled)::after, .mn-link:focus-visible::after { transform: scaleX(1); }
+/* corner icons: the other screens as round buttons in the top right (ui.js _menuMain link, icons MENU_ICO); the name
+   slides out to the left on hover / focus. Signed in: under the account chips. Narrow screens: a centered row under the tiles. */
+.mn-links { position: absolute; top: 18px; right: clamp(14px, 2vw, 26px); z-index: 3; display: flex; align-items: center; gap: 8px;
+  animation: mn-fade .8s ease .4s both; }
+.menu.with-hud .mn-links { top: 76px; }
+#ui .mn-link { position: relative; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; cursor: pointer; color: var(--dim);
+  border: 1px solid var(--line); border-radius: 50%; background: radial-gradient(circle at 50% 30%, #2b1a0ee6, #120903e6);
+  box-shadow: inset 0 0 0 3px #120903, inset 0 0 0 4px #d9a64a33, 0 4px 14px #0009; transition: color .2s, border-color .2s, box-shadow .2s, transform .2s var(--ease); }
+#ui .mn-link svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 2px #000); }
+#ui .mn-link:hover:not(:disabled), #ui .mn-link:focus-visible { outline: none; color: var(--gold-2); border-color: var(--mline); transform: translateY(-1px);
+  box-shadow: inset 0 0 0 3px #120903, inset 0 0 0 4px var(--mline), 0 0 16px #e3ad4c55, 0 6px 16px #000a; }
 #ui .mn-link:disabled { opacity: .38; cursor: default; }
+/* the name: a small plate under the button */
+.mn-link:not(.wide)::after { content: attr(data-ad); position: absolute; top: calc(100% + 8px); left: 50%; transform: translate(-50%, -4px); opacity: 0; pointer-events: none;
+  white-space: nowrap; padding: 4px 10px 3px; font: 700 .7rem var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--gold-2);
+  background: #160c05f2; border: 1px solid var(--line); box-shadow: 0 4px 12px #000a; transition: opacity .18s, transform .18s; }
+.mn-link:not(.wide):hover::after, .mn-link:not(.wide):focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+.mn-links .mn-link:last-child:not(.wide)::after { left: auto; right: 0; transform: translateY(-4px); }
+.mn-links .mn-link:last-child:not(.wide):hover::after, .mn-links .mn-link:last-child:not(.wide):focus-visible::after { transform: none; }
+/* hot: unread news and the like (a gold dot); the wide ones (Oyuna Dön, Google ile Giriş) are gold pills with their name */
 #ui .mn-link.hot { color: var(--gold-2); }
+.mn-link.hot:not(.wide)::before { content: ''; position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; border-radius: 50%; background: #f7cf6c;
+  box-shadow: 0 0 0 2px #120903, 0 0 8px #f7cf6c; }
+#ui .mn-link.wide { display: flex; gap: 8px; width: auto; padding: 0 16px 0 12px; border-radius: 21px; border-color: var(--mline); color: var(--gold-2);
+  font: 700 .74rem var(--display); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+#ui .mn-link.wide.hot { color: #2a1404; border-color: #ffeec0; background: linear-gradient(#f7cf6c, #e3a03a 55%, #c27a1e); box-shadow: 0 0 0 2px #120903, 0 0 14px #e3ad4c66, 0 4px 14px #0009; }
+#ui .mn-link.wide.hot svg { filter: none; }
+@media (max-width: 760px) {
+  .mn-links, .menu.with-hud .mn-links { position: static; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+  .mn-link:not(.wide)::after { display: none; }
+}
 .mn-foot { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px;
   padding: 14px clamp(16px, 3vw, 40px); color: var(--dim); font-size: .72rem; letter-spacing: .08em; text-shadow: 0 1px 4px #000; animation: mn-fade 1s ease .5s both; }
 .mn-foot a { color: inherit; }
