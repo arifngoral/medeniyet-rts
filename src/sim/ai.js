@@ -7,6 +7,7 @@
 // follows its plan, counter quality, how often it leaves villagers idle, attack timing / sizes).
 import { UNITS, BUILDINGS, TECHS, AGES, FARM_SLOTS } from '../data.js';
 import { QUEUE_TIME_MUL, unitLos, buildingLos, forDisc } from './game.js';
+import { tuneDiff, civRoleBias } from '../civ-ai.js';
 
 const MIN = 60;
 const DIFF = {
@@ -90,6 +91,7 @@ export class AIController {
     this.playerId = playerId;
     this.difficulty = DIFF[difficulty] ? difficulty : 'normal';
     this.d = DIFF[this.difficulty];
+    this._civTune();
     this.rs = ((((game && game.cfg && game.cfg.seed) | 0) * 7919 + playerId * 104729 + 17) | 0) || 1;
     this.t = this.rand() * this.d.think;
     this.stats = { thinks: 0, ms: 0, raids: 0, pushes: 0, raidKills: 0 };
@@ -412,8 +414,15 @@ export class AIController {
     c.shop = s; this._prevShop = s;
   }
 
+  // the civilization's play style (the difficulty row re-weighted) and its taste in units (civ-ai.js); nothing without one
+  _civTune() {
+    const p = this.game && this.game.players && this.game.players[this.pid], civ = p && !(this.game.cfg && this.game.cfg.noCivAi) ? p.civ : null;
+    this.d = tuneDiff(this.difficulty, DIFF[this.difficulty], civ);
+    this.roleBias = civRoleBias(civ);
+  }
   _roleWeights(c) {
     const age = c.age, w = { ...ROLE_W[age] }, k = this.d.counter, e = c.enemySeen;
+    if (this.roleBias) for (const r in w) if (this.roleBias[r]) w[r] *= this.roleBias[r];
     if (e.n >= 3) {
       const sh = {}; for (const cl in e.cls) sh[cl] = e.cls[cl] / e.n;
       if (age <= 2) w.pike = (w.pike || 0) + 0.6 * sh.cavalry * k; else w.gun = (w.gun || 0) + 0.45 * sh.cavalry * k;
@@ -2069,6 +2078,7 @@ export class AIController {
   _loadExact(o) {
     for (const k of Object.keys(o.x)) { if (AI_SKIP.has(k)) continue; try { this[k] = this._dec(o.x[k]); } catch (e) { /* keep default */ } }
     this.d = DIFF[this.difficulty] || this.d;
+    this._civTune();
     this.vstamp = o.vstamp | 0;
     const mem = [...this.mem.values()];
     if (Array.isArray(o.memSt)) mem.forEach((m, i) => { m.st = o.memSt[i] != null ? o.memSt[i] : -1; });

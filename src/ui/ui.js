@@ -2,6 +2,7 @@
 import { AGES, UNITS, BUILDINGS, TECHS, PLAYER_COLORS } from '../data.js';
 import { CIVS, CIV_IDS, civLines, civLabel, civUnit } from '../civs.js';
 import { ACCOUNTS } from '../cloud/config.js';
+import { AI_STYLES, civStyle } from '../civ-ai.js';
 import { BRAND_LOGO, BRAND_SUB, TAGLINE } from '../brand.js';
 import { BUILD_TIME_MUL, QUEUE_TIME_MUL, TOWER_AGE_ATK, towerAgeBonus } from '../sim/game.js';
 import { firstLaunch, menuProfile } from './profile-ui.js';
@@ -54,7 +55,7 @@ const DIR_TR = ['doğusunda', 'güneydoğusunda', 'güneyinde', 'güneybatısın
 // civilizations: the picker's options and the text of what one gives
 const CIV_OPTS = [['random', '🎲 Rastgele'], ...CIV_IDS.map((id) => [id, civLabel(id)])];
 const civShort = (name) => String(name).replace(/\s*\(.*\)$/, '');
-const civTitle = (id) => (CIVS[id] ? CIVS[id].name + ' - ' + CIVS[id].passive + '\n' + civLines(id).join('\n') : 'Rastgele medeniyet: maç başlayınca belli olur');
+const civTitle = (id) => (CIVS[id] ? CIVS[id].name + ' - ' + CIVS[id].passive + '\n' + civLines(id).join('\n') + '\nYapay zekâ oynarsa: ' + AI_STYLES[civStyle(id)].name + ' (' + AI_STYLES[civStyle(id)].text + ')' : 'Rastgele medeniyet: maç başlayınca belli olur');
 const civInfoHtml = (id) => (CIVS[id] ? `<b>${esc(CIVS[id].passive)}</b>` + civLines(id).map((l) => `<span>${esc(l)}</span>`).join('') : '<span>Maç başlayınca rastgele bir medeniyet gelir.</span>');
 // map types (must match the generator's cfg.mapType values; 'random' is resolved by the simulation)
 const MAP_TYPES = [['random', 'Rastgele'], ['river', 'Nehir Vadisi'], ['continent', 'Kıta'], ['highlands', 'Yaylalar'], ['plains', 'Ovalar'], ['inlandsea', 'İç Deniz'], ['islands', 'Adalar']];

@@ -3,6 +3,10 @@
 > Bu depo [Aevum](https://github.com/flickrz/aevum-rts)'un bir çatalıdır (fork): üstüne **medeniyetler** eklenir.
 > Kod Aevum gibi AGPL v3. "Aevum" adı ve logosu asıl projeye aittir; bu çatalın oyun içindeki adı "Medeniyet" (`src/brand.js`).
 >
+> **Yapay zekâ kişiliği** (`src/civ-ai.js`): bot medeniyetine göre oynar. Tarz (Baskıncı / Ekonomist / Savunmacı / Taktikçi / Dengeli) zorluk
+> tablosunu yeniden ağırlıklandırır (ilk saldırı dakikası, köylü ve ordu oranı, kule ve sur); ayrıca bot, medeniyetinin özel birliğinin ve
+> bonus aldığı sınıfların birliklerini daha çok basar. Medeniyetsiz bot eskisi gibi oynar.
+>
 > **Menü görünümü:** `menu.css` (kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, medeniyet afiş şeridi); çizimler
 > `assets/ui/` ve `assets/civ/` (CC BY 4.0, bkz. `assets/LICENSE.md`). Oyun içi arayüz asıl projedeki gibidir.
 >

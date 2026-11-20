@@ -2,6 +2,7 @@
 import { UNITS } from '../src/data.js';
 import { CIVS, CIV_IDS, resolveCiv, civLines, civUnit } from '../src/civs.js';
 import { BUILDINGS } from '../src/data.js';
+import { AI_STYLES, civStyle, tuneDiff, civRoleBias } from '../src/civ-ai.js';
 import { Game } from '../src/sim/game.js';
 import { NetSession } from '../src/net/session.js';
 
@@ -108,6 +109,25 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
   g.cmdAttack([man.id], foe.id);
   let shot = false; for (let t = 0; t < 30 * 8 && !shot; t++) { g.update(1 / 30); if (g.projectiles.length) shot = true; }
   ok(shot, 'Mangudai attacks with a projectile from range');
+}
+
+// --- AI: play style and unit taste per civilization
+{
+  const bad = [];
+  for (const id of CIV_IDS) { if (!AI_STYLES[CIVS[id].style]) bad.push(id + ': style ' + CIVS[id].style); if (!civRoleBias(id) || !Object.keys(civRoleBias(id)).length) bad.push(id + ': no unit taste'); }
+  ok(!bad.length && new Set(CIV_IDS.map(civStyle)).size >= 4, 'every civilization has an AI style and a unit taste' + (bad.length ? ' - ' + bad.join('; ') : ''));
+  const g = new Game({ ...base, mp: true, me: 0, players: [{ kind: 'ai', team: 1, difficulty: 'hard', civ: 'mogol' }, { kind: 'ai', team: 2, difficulty: 'hard', civ: 'kore' }, { kind: 'ai', team: 3, difficulty: 'hard' }, { kind: 'ai', team: 4, difficulty: 'hard', civ: 'turk' }] });
+  const [mo, ko, no, tu] = g.ais.map(a => a.d);
+  ok(mo.raidFrom < no.raidFrom && mo.pushFrom < no.pushFrom && mo.army[1] > no.army[1], `raider (mogol): attacks earlier (raid ${mo.raidFrom} < ${no.raidFrom} min), more army`);
+  ok(ko.towers[2] > no.towers[2] && ko.wallFrom < no.wallFrom && ko.pushFrom > no.pushFrom, `defender (kore): more towers (${ko.towers[2]} > ${no.towers[2]}), walls earlier, pushes later`);
+  ok(tu === no && g.ais[2].roleBias === null && g.ais[3].roleBias && g.ais[0].roleBias.cav > 1, 'balanced style / no civilization: the plain difficulty row; unit taste only with a civilization');
+  ok(tuneDiff('hard', no, 'mogol') === mo && JSON.stringify(tuneDiff('hard', no, 'mogol')) === JSON.stringify(mo) && Number.isInteger(mo.raidSize) && mo.towers.every(t => t >= 0), 'tuning is cached, repeatable and keeps whole numbers whole');
+  const off = new Game({ ...base, noCivAi: true, mp: true, me: 0, players: [{ kind: 'ai', team: 1, difficulty: 'hard', civ: 'mogol' }, { kind: 'ai', team: 2, difficulty: 'hard' }] });
+  ok(off.ais[0].d === off.ais[1].d && off.ais[0].roleBias === null, 'cfg.noCivAi switches it off');
+  // a saved match restores the same style
+  for (let t = 0; t < 30 * 20; t++) g.update(1 / 30);
+  const c = Game.deserialize(JSON.parse(JSON.stringify(g.serialize())));
+  ok(c.ais[0].d.raidFrom === mo.raidFrom && c.ais[1].d.wallFrom === ko.wallFrom && c.ais[0].roleBias.cav === g.ais[0].roleBias.cav && c.hash() === g.hash(), 'save / load keeps the AI style');
 }
 
 // --- save / load keeps the civilization and its mods; two runs stay in sync
