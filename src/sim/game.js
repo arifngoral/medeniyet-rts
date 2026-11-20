@@ -1076,9 +1076,14 @@ export class Game {
 
   train(buildingId, unitType) {
     const b = this.entities.get(buildingId);
-    if (!b || b.dead || b.kind !== 'building' || !b.done || !UNITS[unitType] || !BUILDINGS[b.type].trains.includes(unitType)) return false;
-    // a civilization's unique unit replaces the standard one it is based on (asked for by either name)
-    if (!this.cfg.noCivUnit) unitType = civUnit(this.players[b.owner].civ, unitType);   // (noCivUnit / noCivFx: balance measurements, tools/lig.mjs)
+    if (!b || b.dead || b.kind !== 'building' || !b.done || !UNITS[unitType]) return false;
+    // A civilization's unique unit replaces the standard one it is based on. It may be asked for by either name: the UI
+    // sends the unique unit's own id, the AI and the hotkeys the standard one. Somebody else's unique unit is refused.
+    const base = UNITS[unitType].base || unitType;
+    if (!BUILDINGS[b.type].trains.includes(base)) return false;
+    const real = this.cfg.noCivUnit ? base : civUnit(this.players[b.owner].civ, base);   // (noCivUnit / noCivFx: balance measurements, tools/lig.mjs)
+    if (unitType !== base && unitType !== real) return false;
+    unitType = real;
     const d = UNITS[unitType];
     if ( !this.isUnlocked(b.owner, 'unit', unitType) || b.queue.length >= TRAIN_QUEUE_MAX || !this.canAfford(b.owner, d.cost)) return false;
     this._pay(b.owner, d.cost); b.queue.push({ kind: 'unit', id: unitType, t: 0, total: d.time }); return true;

@@ -96,7 +96,10 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
   ok(got[0] === ['lejyoner', 'lightcav', lj.food + lc.food, lj.gold + lc.gold].join(':'), 'roma trains Lejyoner for swordsman, pays its cost: ' + got[0]);
   ok(got[1] === ['swordsman', 'mangudai', sw.food + mg.food, sw.gold + mg.gold].join(':'), 'mogol trains Mangudai for lightcav: ' + got[1]);
   ok(got[2] === ['swordsman', 'lightcav', sw.food + lc.food, sw.gold + lc.gold].join(':'), 'no civilization: standard units');
-  ok(!g.train(g.buildings.find(b => b.owner === 0 && b.type === 'barracks').id, 'mangudai') && !Object.values(BUILDINGS).some(b => b.trains.includes('lejyoner')), 'a unique unit cannot be asked for directly from the wrong building');
+  const bar0 = g.buildings.find(b => b.owner === 0 && b.type === 'barracks'), stb1 = g.buildings.find(b => b.owner === 1 && b.type === 'stable'), bar2 = g.buildings.find(b => b.owner === 2 && b.type === 'barracks');
+  // (the UI's train button sends the unique unit's own id)
+  ok(g.train(bar0.id, 'lejyoner') && bar0.queue[1].id === 'lejyoner' && g.train(stb1.id, 'mangudai') && stb1.queue[1].id === 'mangudai', 'a unique unit can be asked for by its own id (the train button)');
+  ok(!g.train(bar0.id, 'mangudai') && !g.train(bar0.id, 'jaguar') && !g.train(bar2.id, 'lejyoner') && !g.train(stb1.id, 'akinci') && !Object.values(BUILDINGS).some(b => b.trains.includes('lejyoner')), 'not from the wrong building, and not somebody else\'s');
   // they come out, fight and keep both sides in sync
   for (let t = 0; t < 30 * 60; t++) g.update(1 / 30);
   const types = new Set(g.units.map(u => u.type));
