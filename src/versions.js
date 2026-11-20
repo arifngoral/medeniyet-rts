@@ -1,19 +1,55 @@
 // Release notes of this fork: the "Yenilikler" window of the main menu (ui.js _menuNews) and the 3D showcase
-// (vitrin.html) read this. Newest first. The game's version is the first entry's v.
+// (vitrin.html) read this. Newest first - inside a version too: a new group goes above the others and a new line to
+// the top of its group (owner 2026-11-20: the latest change must be the first thing you read). The game's version is
+// the first entry's v.
 //   items     what changed, in plain words (grouped: [heading, [lines]])
 //   showcase  the models this version added or changed: { id, kind: 'unit' | 'building', tags, note }
 //             tags: 'yeni' (new model), 'gorunus' (new look), 'animasyon' (new animation); note: what to look at.
-//             The showcase shows these first; a version without any has no "Vitrinde gör" button.
+//             The showcase shows these first, in this order (newest first as well); a version without any has no
+//             "Vitrinde gör" button.
 // Rule of thumb (same as the card game): changes made on the same day go into the same version.
 export const VERSIONS = [
   {
     v: '1.0', date: '2026-11-20', title: 'Medeniyetler',
-    intro: 'Aevum çatalının ilk sürümü: 20 medeniyet, her birinin bonusları, özel birliği ve kendi oynayış tarzı.',
+    intro: 'Aevum çatalının ilk sürümü: 20 medeniyet, her birinin bonusları, iki özel birliği ve kendi oynayış tarzı.',
     items: [
+      ['İkinci özel birlikler', [
+        'Her medeniyete ikinci bir özel birlik geldi (20 yeni birlik). İlkinden farklı bir standart birliğin yerine geçer: Türklerde Yeniçeri (Tüfekçi), Romalılarda Praetoryan (Ağır Piyade), Japonlarda Teppō Ashigaru (Tüfekçi), Mısırlılarda Savaş Arabası (Hafif Süvari), Vikinglerde Huskarl (Mızrakçı), Moğollarda Keşik (Şövalye), Çinlilerde Ateş Mızraklı (Mızrakçı), Perslerde Tırpanlı Araba (Şövalye), Yunanlarda Peltast (Okçu), Bizanslılarda Varang Muhafızı (Ağır Piyade), Franklarda Franciska Baltacısı (Kılıç Ustası), İngilizlerde Kırmızı Ceketli (Piyade Tüfekçisi), İspanyollarda Konkistador (Zırhlı Süvari), Araplarda Memlûk (Zırhlı Süvari), Hintlilerde Racput (Kılıç Ustası), Korelilerde Woldo Muhafızı (Mızrakçı), Azteklerde Kartal Savaşçısı (Okçu), Kartacalılarda Balear Sapancısı (Okçu), Ruslarda Kazak (Hafif Süvari), Malililerde Farima Atlısı (Şövalye).',
+        'Hepsinin kendi başlığı, gövdesi, silahı ve kalkanı var: Yeniçeri börkü, ayı postu kalpak, kartal gagalı miğfer, morion, hilal kalkan, hilal ağızlı pala, sapan...',
+        'Savaş arabası modeli: önde at, arkada iki tekerlekli araba, okçu ayakta durur; tekerlekler yürürken döner. Pers arabasının tekerleklerinde tırpan var.',
+        'Yeni dövüş biçimleri: tüfekçiler yan dönüp nişan alır ve tepmeyle namlu kalkar, Woldo Muhafızı palayı iki elle yatay savurur, sapancı taşı fırlatıp sapanı başının üstünde yeniden döndürür, Varang baltayı iki elle indirir.',
+        'Peltastın ciridi, Kartal Savaşçısının oku ve sapancının taşı havada kendi biçimiyle uçar.',
+        'Botlar iki özel birliğin türünü de daha çok basar. Denge: ikinci birlikler ilklerden biraz daha ılımlı tutuldu; bot ligiyle henüz ölçülmedi.',
+      ]],
+      ['Oyun ve menü', [
+        'Ana menünün kapak resmi baştan çizildi: aynı sahne (kale, cami, piramitler, pagoda, nehir boyunca ordugâhlar), çok daha keskin ve ayrıntılı (2752×1536).',
+        'Ana ekranın alt menüsü yenilendi: Sandbox, Yenilikler, Vitrin, Nasıl Oynanır ve Ayarlar karoların altında simgeli yuvarlak düğmeler, adı altında yazar; okunmamış yenilikte altın nokta yanar. Google ile Giriş menüden ayrıldı, sağ üstte kendi düğmesi var.',
+        "Devam Et ve Kayıtlı Oyunlar ana menüden Tek Oyunculu'nun içine taşındı: yarıda kalan oyunun varsa Tek Oyunculu'ya tıklayınca kaldığın yerden devam etmek isteyip istemediğin sorulur, öteki kayıtlar da orada listelenir.",
+        'Yenilikler penceresi ve 3B vitrin eklendi. Yenilikler en yeniden eskiye sıralanır: en son değişiklik en üstte.',
+        'Yeni menü görünümü: kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, portreli medeniyet şeridi.',
+        'Giriş gerekmez: oyun doğrudan açılır, çok oyunculu oda koduyla çalışır, adını lobide değiştirirsin.',
+      ]],
+      ['Oyun içi arayüz', [
+        'Kaynaklar üst çubuktan mini haritanın yanına taşındı. Her kaynağın yanında o an o kaynakta çalışan köylü sayısı yazar (dakikalık gelir yerine); balıkçı tekneleri yiyeceğe sayılır. Boşta köylü düğmesi ve nüfus panelin en üstünde, yan yana.',
+        'Arayüz ekran boyutuna göre ölçeklenir: 2K ekranda tam boy, Full HD ve daha küçük ekranlarda küçülür, oyun alanını daraltmaz.',
+        'Kısayol grupları (1-9) panellerin altından sağ alt köşeye taşındı; alttaki paneller artık en alta oturuyor.',
+        'Sonraki çağın gerektirdikleri mini haritanın üstünde simgelerle görünür (kaynak bedeli, bina türü sayısı, gereken yapılar, bekleme süresi): karşılanan yeşil, eksik kırmızı. Yanındaki Çağ Atla düğmesi hazır olunca altın renkte parlar; şehir merkezini seçmeden oradan çağ atlanır.',
+        'Oyun içindeki bütün paneller menülerle aynı görünüme geçti: seçim paneli, yapıların üretim kuyruğu, komut kartı, ipuçları, görevler, bildirimler, teknoloji ağacı, istatistikler, duraklatma menüsü.',
+      ]],
+      ['Sandbox', [
+        'Sandbox önce bir seçim ekranı açar: medeniyet, harita türü, iklim ve başlangıç çağı seçilir.',
+        'Sağ üstteki Sandbox panelinden istediğin çağa tek tıkla geçilir (geri de dönülür); bekleme, bina şartı ve bedel yok.',
+        '⚡ Anında (açık gelir): binalar yerleştirildiği anda biter, birlik / teknoloji / çağ sırası beklemeden tamamlanır, kaynaklar hiç bitmez. Kapatınca eski 2 kat hız kalır.',
+      ]],
+      ['Topluluk', [
+        'Ana menünün sol altında Genel Sohbet: siteye giren herkes okur, Google ile giriş yapanlar yazar. Son 60 satır gösterilir; giriş yapanların yazdıkları kalıcıdır, sunucu yeniden başlasa da kaybolmaz.',
+        'Google ile giriş (isteğe bağlı): ad, avatar, TP, maç geçmişi ve kayıtlı oyunlar hesaba bağlanır, her bilgisayarda seninle gelir. Giriş yapmayan misafir olarak oynar; kayıtları o tarayıcıda kalır.',
+        'Giriş yapınca arkadaş ekleyebilir, çevrim içi oyuncuları görüp odana davet edebilirsin. Misafirler de odalara katılabilir.',
+      ]],
       ['Medeniyetler', [
         '20 medeniyet eklendi. Her birinin maç başından geçerli pasif bonusları var (can, saldırı, kaynak toplama, ticaret...).',
         'Tek oyunculuda Yeni Oyun ekranından, çok oyunculuda lobiden seçilir. Zarı atarsan şerit döner ve şansına biri çıkar.',
-        'Her medeniyetin bir özel birliği var: standart bir birliğin yerine geçer, aynı binadan aynı çağda üretilir (düğmede ★).',
+        'Her medeniyetin özel birlikleri var: her biri standart bir birliğin yerine geçer, aynı binadan aynı çağda üretilir (düğmede ★).',
       ]],
       ['Görünüş ve animasyon', [
         'Özel birliklerin her birinin kendi başlığı, gövdesi, silahı ve kalkanı var.',
@@ -23,41 +59,36 @@ export const VERSIONS = [
       ]],
       ['Yapay zekâ', [
         'Botlar medeniyetine göre oynar: Baskıncı, Ekonomist, Savunmacı, Taktikçi ya da Dengeli.',
-        'Bot, medeniyetinin özel birliğini ve bonus aldığı birlik türlerini daha çok basar.',
-      ]],
-      ['Topluluk', [
-        'Ana menünün sol altında Genel Sohbet: siteye giren herkes okur, Google ile giriş yapanlar yazar. Son 60 satır gösterilir; giriş yapanların yazdıkları kalıcıdır, sunucu yeniden başlasa da kaybolmaz.',
-        'Google ile giriş (isteğe bağlı): ad, avatar, TP, maç geçmişi ve kayıtlı oyunlar hesaba bağlanır, her bilgisayarda seninle gelir. Giriş yapmayan misafir olarak oynar; kayıtları o tarayıcıda kalır.',
-        'Giriş yapınca arkadaş ekleyebilir, çevrim içi oyuncuları görüp odana davet edebilirsin. Misafirler de odalara katılabilir.',
+        'Bot, medeniyetinin özel birliklerini ve bonus aldığı birlik türlerini daha çok basar.',
       ]],
       ['Denge', [
         'Medeniyetler bot maçlarıyla ölçüldü (1600 maç); uçtakiler ortaya doğru ayarlandı. Ayarlar tahmindir, yeniden ölçülmedi.',
-      ]],
-      ['Oyun ve menü', [
-        'Giriş gerekmez: oyun doğrudan açılır, çok oyunculu oda koduyla çalışır, adını lobide değiştirirsin.',
-        'Yeni menü görünümü: kapak resmi, iki karolu ana ekran, altın çerçeveli pencereler, portreli medeniyet şeridi.',
-        'Yenilikler penceresi ve 3B vitrin eklendi.',
-        "Devam Et ve Kayıtlı Oyunlar ana menüden Tek Oyunculu'nun içine taşındı: yarıda kalan oyunun varsa Tek Oyunculu'ya tıklayınca kaldığın yerden devam etmek isteyip istemediğin sorulur, öteki kayıtlar da orada listelenir.",
-        'Ana ekranın alt menüsü yenilendi: Sandbox, Yenilikler, Vitrin, Nasıl Oynanır ve Ayarlar karoların altında simgeli yuvarlak düğmeler, adı altında yazar; okunmamış yenilikte altın nokta yanar. Google ile Giriş menüden ayrıldı, sağ üstte kendi düğmesi var.',
-        'Ana menünün kapak resmi baştan çizildi: aynı sahne (kale, cami, piramitler, pagoda, nehir boyunca ordugâhlar), çok daha keskin ve ayrıntılı (2752×1536).',
-      ]],
-      ['Oyun içi arayüz', [
-        'Kaynaklar üst çubuktan mini haritanın yanına taşındı. Her kaynağın yanında o an o kaynakta çalışan köylü sayısı yazar (dakikalık gelir yerine); balıkçı tekneleri yiyeceğe sayılır. Boşta köylü düğmesi ve nüfus panelin en üstünde, yan yana.',
-        'Sonraki çağın gerektirdikleri mini haritanın üstünde simgelerle görünür (kaynak bedeli, bina türü sayısı, gereken yapılar, bekleme süresi): karşılanan yeşil, eksik kırmızı. Yanındaki Çağ Atla düğmesi hazır olunca altın renkte parlar; şehir merkezini seçmeden oradan çağ atlanır.',
-        'Kısayol grupları (1-9) panellerin altından sağ alt köşeye taşındı; alttaki paneller artık en alta oturuyor.',
-        'Arayüz ekran boyutuna göre ölçeklenir: 2K ekranda tam boy, Full HD ve daha küçük ekranlarda küçülür, oyun alanını daraltmaz.',
-        'Oyun içindeki bütün paneller menülerle aynı görünüme geçti: seçim paneli, yapıların üretim kuyruğu, komut kartı, ipuçları, görevler, bildirimler, teknoloji ağacı, istatistikler, duraklatma menüsü.',
-      ]],
-      ['Sandbox', [
-        'Sandbox önce bir seçim ekranı açar: medeniyet, harita türü, iklim ve başlangıç çağı seçilir.',
-        'Sağ üstteki Sandbox panelinden istediğin çağa tek tıkla geçilir (geri de dönülür); bekleme, bina şartı ve bedel yok.',
-        '⚡ Anında (açık gelir): binalar yerleştirildiği anda biter, birlik / teknoloji / çağ sırası beklemeden tamamlanır, kaynaklar hiç bitmez. Kapatınca eski 2 kat hız kalır.',
       ]],
       ['Düzeltmeler', [
         'Özel birlikler düğmeden basılamıyordu, düzeldi.',
       ]],
     ],
     showcase: [
+      { id: 'arabaci', tags: ['yeni', 'animasyon'], note: 'Savaş arabası modeli: önde at, arkada iki tekerlekli araba; okçu ayakta, mavi savaş tacıyla. Tekerlekler yürürken döner.' },
+      { id: 'tirpanli', tags: ['yeni', 'animasyon'], note: 'Aynı araba, tekerlek göbeklerinde tırpanlarla. Arabacı uzun başlıklı, kare sakallı; mızrağını indirip saplar.' },
+      { id: 'yeniceri', tags: ['gorunus', 'animasyon'], note: 'Arkaya dökülen beyaz börk, önünde altın kaşıklık; mavi dolama, pirinç halkalı uzun tüfek. Yan dönüp nişan alır, tepmeyle namlu kalkar.' },
+      { id: 'teppo', tags: ['gorunus', 'animasyon'], note: 'Düz konik hasır şapka, koyu zırh; fitili yanan kara tüfek. Yan dönüp nişan alır.' },
+      { id: 'kirmiziceket', tags: ['gorunus', 'animasyon'], note: 'Ayı postu uzun kalpak, kırmızı ceket, çapraz beyaz kayışlar, altın düğmeler.' },
+      { id: 'praetoryan', tags: ['gorunus', 'animasyon'], note: 'Yaldızlı miğfer, kulaktan kulağa sorguç; tunç kaslı zırh, mor oval kalkan, uzun kılıç.' },
+      { id: 'varang', tags: ['gorunus', 'animasyon'], note: 'Altın bantlı sivri miğfer, sarı uzun sakal, kırmızı kaftan; iki elli baltayı tepeden indirir.' },
+      { id: 'huskarl', tags: ['gorunus', 'animasyon'], note: 'Gözlüklü yuvarlak miğfer, kızıl sakal, zincir zırh; boyalı yuvarlak kalkanın arkasından mızrak saplar.' },
+      { id: 'woldo', tags: ['gorunus', 'animasyon'], note: 'Kırmızı püsküllü uzun miğfer, altın çivili kaftan; hilal ağızlı palayı iki elle yatay savurur.' },
+      { id: 'atesmizrak', tags: ['gorunus', 'animasyon'], note: 'Kırmızı püsküllü çelik miğfer; mızrağın ucunda kırmızı sarılı barut borusu, ağzında kıvılcım.' },
+      { id: 'balear', tags: ['gorunus', 'animasyon'], note: 'Kıvırcık saç, başına sarılı yedek sapan. Taşı kolunu kamçılayarak atar, sonra sapanı başının üstünde yeniden döndürür.' },
+      { id: 'peltast', tags: ['gorunus', 'animasyon'], note: 'Öne kıvrık Frig başlığı, hilal hasır kalkan, bir tutam cirit; havada cirit uçar.' },
+      { id: 'kartal', tags: ['gorunus', 'animasyon'], note: 'Yüz kartalın açık gagasından bakar, tüylü giysi; atlatl ile ok fırlatır.' },
+      { id: 'racput', tags: ['gorunus', 'animasyon'], note: 'Yakutlu safran sarık, beyaz sorguç, geniş bıyık; eğri kılıç ve dört göbekli yuvarlak kalkan.' },
+      { id: 'franciska', tags: ['gorunus', 'animasyon'], note: 'Altın bantlı dilimli miğfer, uzun saç; kısa balta, belinde yedeği, demir göbekli yuvarlak kalkan.' },
+      { id: 'konkistador', tags: ['gorunus', 'animasyon'], note: 'Kalkık kenarlı morion, kırmızı sorguç, çelik göğüslük; uzun ince kılıç. Art arda iki hızlı kesiş.' },
+      { id: 'memluk', tags: ['gorunus', 'animasyon'], note: 'Sarıklı sivri miğfer, küçük pirinç kalkan, eğri kılıç; beyaz Arap atı.' },
+      { id: 'kazak', tags: ['gorunus', 'animasyon'], note: 'Kırmızı tepeli kalpak, göğsü fişeklikli uzun çerkeska; kabzasız eğri kılıç.' },
+      { id: 'kesik', tags: ['gorunus', 'animasyon'], note: 'Uzun sivri, sorguçlu çelik miğfer, kürk kenar; deri pullu zırh, kargı.' },
+      { id: 'farima', tags: ['gorunus', 'animasyon'], note: 'Altın bantlı kapitone başlık, yüzü saran beyaz örtü; nakışlı geniş kaftan, kargı ve deri kalkan.' },
       { id: 'fil', tags: ['yeni', 'animasyon'], note: 'Fil modeli: hortum, dişler, çırpan kulaklar, sırtında örtü. Saldırırken başını kaldırıp hortumunu savurur; ölürken dizlerinin üstüne çöküp yana yatar.' },
       { id: 'deve', tags: ['yeni', 'animasyon'], note: 'Deve modeli: tek hörgüç, uzun boyun, ince bacaklar. Rahvan yürür, boynu sallanır; ölürken ön ayaklarını kırar.' },
       { id: 'samuray', tags: ['gorunus', 'animasyon'], note: 'Altın boynuzlu miğfer, bağcıklı zırh, uzun kılıç. Bir sağdan bir soldan yatay keser; dizlerinin üstüne çökerek ölür.' },

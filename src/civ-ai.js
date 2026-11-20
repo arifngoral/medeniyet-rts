@@ -48,7 +48,7 @@ export function tuneDiff(key, row, civ) {
 }
 
 // Army mix: weights for the roles of ai.js (pike / inf / gun / bow / cav / siege). The role of the unique unit counts
-// most; the classes the civilization's passive bonuses help count a little.
+// most (both of them); the classes the civilization's passive bonuses help count a little.
 const CLS_ROLES = { infantry: ['inf', 'pike'], ranged: ['bow', 'gun'], cavalry: ['cav'], siege: ['siege'], spearman: ['pike'] };
 const BASE_ROLE = { spearman: 'pike', swordsman: 'inf', heavyinf: 'inf', musketeer: 'gun', rifleman: 'gun', archer: 'bow', crossbow: 'bow', lightcav: 'cav', knight: 'cav', cuirassier: 'cav' };
 const UNIQUE_W = 1.5, BONUS_W = 1.2;
@@ -58,8 +58,7 @@ export function civRoleBias(civ) {
   if (biasCache.has(civ)) return biasCache.get(civ);
   const b = {};
   for (const k of ['hp', 'atk', 'atkMul', 'armor', 'range', 'speed']) for (const cls in (c.fx[k] || {})) for (const r of CLS_ROLES[cls] || []) b[r] = BONUS_W;
-  const u = c.unit && UNITS[c.unit], ur = u && BASE_ROLE[u.base];
-  if (ur) b[ur] = UNIQUE_W;
+  for (const id of c.units || []) { const u = UNITS[id], ur = u && BASE_ROLE[u.base]; if (ur) b[ur] = UNIQUE_W; }
   biasCache.set(civ, b);
   return b;
 }

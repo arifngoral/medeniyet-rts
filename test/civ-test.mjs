@@ -65,12 +65,16 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
   ok(p0.res.gold === g1, 'viking: nothing for killing your own unit');
 }
 
-// --- unique units: one per civilization, replacing a standard unit
+// --- unique units: two per civilization, each replacing a different standard unit
 {
   const bad = [], ids = new Set();
   for (const id of CIV_IDS) {
-    const u = UNITS[CIVS[id].unit];
-    if (!u) { bad.push(id + ': no unique unit'); continue; }
+    const list = CIVS[id].units || [];
+    if (list.length !== 2 || CIVS[id].unit !== list[0]) bad.push(id + ': ' + list.length + ' unique units');
+    if (new Set(list.map(x => UNITS[x] && UNITS[x].base)).size !== list.length) bad.push(id + ': two units on one base');
+    for (const uid of list) {
+    const u = UNITS[uid];
+    if (!u) { bad.push(id + ': no unique unit ' + uid); continue; }
     const b = UNITS[u.base];
     if (ids.has(u.id)) bad.push(id + ': id used twice'); ids.add(u.id);
     if (u.civ !== id || !b || b.civ) bad.push(id + ': civ / base');
@@ -80,8 +84,9 @@ const base = { mapSize: 96, seed: 7, startRes: 'normal', startAge: 0, enemies: 1
     if (u.range > 0 && !u.proj) bad.push(id + ': a ranged unit needs a projectile');
     if (civUnit(id, u.base) !== u.id || civUnit(id, 'villager') !== 'villager' || civUnit(null, u.base) !== u.base) bad.push(id + ': swap');
     if (!civLines(id).some(l => l.includes(u.name))) bad.push(id + ': not in the bonus text');
+    }
   }
-  ok(!bad.length, CIV_IDS.length + ' unique units: data' + (bad.length ? ' - ' + bad.join('; ') : ''));
+  ok(!bad.length, ids.size + ' unique units: data' + (bad.length ? ' - ' + bad.join('; ') : ''));
   // training the standard unit gives the unique one (also when the AI asks for the standard name); others get the standard one
   const g = new Game({ ...base, startAge: 2, startRes: 'high', mp: true, me: 0, players: [{ kind: 'human', team: 1, civ: 'roma' }, { kind: 'human', team: 2, civ: 'mogol' }, { kind: 'human', team: 3 }] });
   const got = [];

@@ -8,24 +8,30 @@ import { CIV_UNITS } from './civ-units.js';
 export const CIVS = CIV_DATA;
 export const CIV_IDS = Object.keys(CIVS);   // order = the table's order (the same on every client)
 
-// Unique units (civ-units.js) become ordinary entries of UNITS: the base unit's definition with the changes applied,
-// plus civ (whose it is), base (what it replaces) and kit (its look). Done once, when this module loads - before the
-// simulation, the icons or the renderer read UNITS. Not in any building's trains list: train() swaps the type.
+// Unique units (civ-units.js, two per civilization) become ordinary entries of UNITS: the base unit's definition with the
+// changes applied, plus civ (whose it is), base (what it replaces), kit (its look) and look (its shots, view only).
+// Done once, when this module loads - before the simulation, the icons or the renderer read UNITS. Not in any
+// building's trains list: train() swaps the type. CIVS[civ].units = their ids (in order), .unit = the first one.
 const r2 = v => Math.round(v * 100) / 100;
+const SWAP = {};
 for (const civ of CIV_IDS) {
-  const u = CIV_UNITS[civ]; if (!u) continue;
-  const b = UNITS[u.base]; if (!b || UNITS[u.id]) throw new Error('civ unit ' + civ + ': bad base or id ' + u.id);
-  const bonus = Object.assign({}, b.bonus, u.bonus); for (const k in bonus) if (bonus[k] === 1) delete bonus[k];
-  UNITS[u.id] = Object.assign({}, b, {
-    id: u.id, name: u.name, desc: u.desc, icon: u.icon || b.icon, civ, base: u.base, kit: u.kit || {},
-    hp: Math.round(b.hp * (u.hp || 1)), atk: Math.max(1, b.atk + (u.atk || 0)), armor: Math.max(0, b.armor + (u.armor || 0)),
-    speed: r2(b.speed * (u.speed || 1)), range: Math.max(0, b.range + (u.range || 0)), rof: r2(b.rof * (u.rof || 1)),
-    time: Math.max(5, b.time + (u.time || 0)), cost: Object.assign({}, u.cost || b.cost), pop: u.pop || b.pop, bonus, proj: u.proj || b.proj,
-  });
-  CIVS[civ].unit = u.id;
+  CIVS[civ].units = [];
+  for (const u of CIV_UNITS[civ] || []) {
+    const b = UNITS[u.base]; if (!b || b.civ || UNITS[u.id]) throw new Error('civ unit ' + civ + ': bad base or id ' + u.id);
+    if (SWAP[civ + ':' + u.base]) throw new Error('civ unit ' + civ + ': two unique units for ' + u.base);
+    const bonus = Object.assign({}, b.bonus, u.bonus); for (const k in bonus) if (bonus[k] === 1) delete bonus[k];
+    UNITS[u.id] = Object.assign({}, b, {
+      id: u.id, name: u.name, desc: u.desc, icon: u.icon || b.icon, civ, base: u.base, kit: u.kit || {}, look: u.look || '',
+      hp: Math.round(b.hp * (u.hp || 1)), atk: Math.max(1, b.atk + (u.atk || 0)), armor: Math.max(0, b.armor + (u.armor || 0)),
+      speed: r2(b.speed * (u.speed || 1)), range: Math.max(0, b.range + (u.range || 0)), rof: r2(b.rof * (u.rof || 1)),
+      time: Math.max(5, b.time + (u.time || 0)), cost: Object.assign({}, u.cost || b.cost), pop: u.pop || b.pop, bonus, proj: u.proj || b.proj,
+    });
+    CIVS[civ].units.push(u.id);
+    SWAP[civ + ':' + u.base] = u.id;
+  }
+  CIVS[civ].unit = CIVS[civ].units[0];
 }
 // the unit a player of that civilization gets when it trains `type` (its unique unit instead of the base; else the same)
-const SWAP = {}; for (const civ of CIV_IDS) { const u = CIV_UNITS[civ]; if (u) SWAP[civ + ':' + u.base] = u.id; }
 export const civUnit = (civ, type) => (civ && SWAP[civ + ':' + type]) || type;
 
 // What a cfg entry means: a civ id -> that civ; 'random' -> picked from the match seed and the player index only
@@ -66,7 +72,7 @@ export function civLines(id) {
   const c = CIVS[id]; if (!c) return [];
   const out = [];
   for (const k in c.fx) out.push(...(LINE[k] ? LINE[k](c.fx[k]) : [k]));
-  if (c.unit && UNITS[c.unit]) out.push(`Özel birlik: ${UNITS[c.unit].name} (${UNITS[UNITS[c.unit].base].name} yerine)`);
+  for (const id of c.units || []) if (UNITS[id]) out.push(`Özel birlik: ${UNITS[id].name} (${UNITS[UNITS[id].base].name} yerine)`);
   return out;
 }
 export const civLabel = id => (CIVS[id] ? CIVS[id].icon + ' ' + CIVS[id].name : '');

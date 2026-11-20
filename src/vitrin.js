@@ -5,7 +5,7 @@
 // models cost one context. Models are the game's own (render/entities.js), posed by the game's own animation code.
 import * as THREE from 'three';
 import { UNITS, BUILDINGS, AGES } from './data.js';
-import { CIVS } from './civs.js';
+import { CIVS, CIV_IDS } from './civs.js';
 import { VERSIONS, TAG_TR } from './versions.js';
 import { makeUnitModel, makeBuildingModel, poseUnitModel } from './render/entities.js';
 import { loadEra, glbVersion } from './render/glb-models.js';
@@ -33,6 +33,8 @@ const buildItem = (id) => {
 const TABS = {
   yeni: { label: 'Bu sürüm', lead: () => `<b>Sürüm ${esc(ver.v)} · ${esc(ver.title)}</b> ile gelen ya da değişen modeller. Her kartın altında neye bakacağın yazıyor; animasyonlar döngüde oynar.`,
     items: () => (ver.showcase || []).filter((s) => (s.kind === 'building' ? BUILDINGS[s.id] : UNITS[s.id])).map((s) => (s.kind === 'building' ? buildItem(s.id) : unitItem(s.id))) },
+  ozel: { label: 'Özel birlikler', lead: () => 'Her medeniyetin iki özel birliği yan yana, medeniyet sırasıyla. Her biri bir standart birliğin yerine geçer; alttaki satır hangisinin yerine geçtiğini yazar.',
+    items: () => CIV_IDS.flatMap((c) => CIVS[c].units || []).filter((id) => UNITS[id]).map(unitItem) },
   birlik: { label: 'Tüm birlikler', lead: () => 'Oyundaki bütün birlikler: standart olanlar ve medeniyetlerin özel birlikleri. Çağı değiştirince kıyafetleri de değişir.',
     items: () => Object.keys(UNITS).map(unitItem) },
   yapi: { label: 'Yapılar', lead: () => 'Oyundaki bütün yapılar, seçtiğin çağın görünümüyle. Yavaşça dönerler.',
@@ -148,6 +150,7 @@ function frame() {
     if (c.v && c.animated) {
       const e = entityAt(c, now);
       try { poseUnitModel(c.v, e, now + c.i * .7, now); } catch (err) { if (!c.warned) { c.warned = true; console.warn('[vitrin] pose', c.item.id, err); } }
+      if (c.v.P.wheels) for (const w of c.v.P.wheels) w.rotation.x = e.anim === 'walk' ? now * 6 : 0;   // (the chariot's wheels turn as it goes)
       if (c.stateEl && c.stateEl.dataset.s !== e.anim) { c.stateEl.dataset.s = e.anim; c.stateEl.textContent = STATE_TR[e.anim] || ''; }
       c.root.rotation.y = -.5 + Math.sin(now * .25 + c.i) * .45;        // a slow look from both sides
     } else c.root.rotation.y = now * (c.item.kind === 'building' ? .22 : .35) + c.i;   // a turntable

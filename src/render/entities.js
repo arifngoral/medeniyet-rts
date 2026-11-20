@@ -1372,6 +1372,69 @@ function uHead(H, k, cloth) {
     bx(H, MT.leather, .19, .07, .19, 0, .13, 0); bx(H, XM.hair, .13, .08, .03, 0, -.03, .09); bx(H, cm, .195, .02, .195, 0, .12, 0);
   } else if (h === 'turban') {     // wound cloth, a tail down the back
     cy(H, MT.white, .115, .09, 0, .12, 0); sp(H, MT.white, .065, 0, .22, 0); bx(H, cm, .1, .03, .02, 0, .15, .11); bx(H, MT.white, .09, .16, .02, .03, -.02, -.1);
+  // ---- the second unique units (2026-11-20)
+  } else if (h === 'yenicerib') {  // janissary: a tall white felt cap folding down the back, a gilded spoon holder, moustache
+    cy(H, MT.white, .1, .07, 0, .12, 0); bx(H, MT.white, .15, .2, .15, 0, .16, -.01); bx(H, MT.white, .14, .3, .04, 0, .04, -.1);
+    bx(H, MT.gold, .045, .1, .02, 0, .15, .09); bx(H, XM.hair, .11, .025, .02, 0, .04, .087);
+  } else if (h === 'attic') {      // praetorian: gilded bowl, peak and cheek guards, a crest across from ear to ear
+    mk(G.dome, H, MT.gold, .21, .17, .21, 0, .1, 0); bx(H, MT.gold, .22, .025, .06, 0, .09, .08);
+    for (const s of [1, -1]) bx(H, MT.gold, .02, .1, .07, s * .095, 0, .04);
+    bx(H, MT.gold, .03, .05, .03, 0, .2, 0); bx(H, cm, .32, .1, .05, 0, .24, 0);
+  } else if (h === 'jingasa') {    // ashigaru: a flat lacquered cone hat with a red crest, a white headband
+    bx(H, MT.white, .18, .03, .18, 0, .12, 0); cn(H, MT.black, .21, .07, 0, .15, 0); sp(H, cm, .028, 0, .2, .06);
+  } else if (h === 'khepresh') {   // chariot archer: the blue war crown, a gold cobra on the brow
+    bx(H, cm, .19, .12, .2, 0, .11, -.005); bx(H, cm, .16, .1, .18, 0, .21, -.03); for (const y of [.15, .25]) bx(H, MT.gold, .012, .012, .012, .07, y, .07);
+    bx(H, MT.gold, .03, .07, .02, 0, .15, .1);
+  } else if (h === 'gjermund') {   // huscarl: round steel cap with spectacle guards, a mail curtain, a red beard
+    mk(G.dome, H, MT.steel, .21, .17, .21, 0, .11, 0); bx(H, MT.iron, .17, .045, .015, 0, .08, .095); bx(H, MT.iron, .025, .07, .015, 0, .03, .095);
+    bx(H, MT.iron, .025, .03, .21, 0, .17, 0); bx(H, XM.mail, .2, .1, .08, 0, -.02, -.07); bx(H, mat(0xb8743a, .9), .13, .08, .03, 0, -.05, .09);
+  } else if (h === 'mogolhelm') {  // keshig: steel bowl with a tall spike and a plume, fur brim, leather neck and ear guards
+    mk(G.dome, H, MT.steel, .21, .18, .21, 0, .1, 0); cy(H, XM.fur, .112, .04, 0, .09, 0); cn(H, MT.steel, .025, .14, 0, .18, 0); bx(H, cm, .03, .12, .03, 0, .3, -.02);
+    bx(H, MT.leather, .21, .12, .06, 0, -.01, -.08); for (const s of [1, -1]) bx(H, MT.leather, .02, .1, .08, s * .1, 0, -.02);
+  } else if (h === 'cinmigfer') {  // fire lancer: steel bowl, a flared neck guard, a red tassel on a gold knob
+    mk(G.dome, H, MT.steel, .21, .16, .21, 0, .11, 0); cy(H, MT.steel, .13, .015, 0, .11, 0);
+    bx(H, MT.steel, .22, .09, .04, 0, 0, -.09); for (const s of [1, -1]) bx(H, MT.steel, .02, .09, .12, s * .105, 0, -.02);
+    sp(H, MT.gold, .022, 0, .2, 0); cn(H, cm, .045, .09, 0, .2, 0);
+  } else if (h === 'kidaris') {    // scythed chariot: a tall fluted felt cap with a gold band, a square black beard
+    cy(H, cm, .1, .2, 0, .12, 0); cy(H, MT.gold, .102, .03, 0, .13, 0); bx(H, MT.black, .14, .09, .03, 0, -.04, .09);
+  } else if (h === 'phrygian') {   // peltast: the soft cap that folds forward, ear flaps
+    cy(H, cm, .098, .08, 0, .11, 0); cn(H, cm, .09, .16, 0, .17, 0).rotation.x = .6;
+    for (const s of [1, -1]) bx(H, cm, .02, .1, .08, s * .095, 0, -.01);
+  } else if (h === 'varang') {     // varangian: pointed helmet with gold bands and nasal, a mail curtain, a long fair beard
+    cy(H, MT.steel, .1, .04, 0, .11, 0); cn(H, MT.steel, .1, .2, 0, .15, 0); cy(H, MT.gold, .102, .02, 0, .135, 0); bx(H, MT.gold, .02, .09, .015, 0, .04, .095);
+    bx(H, XM.mail, .2, .1, .1, 0, -.03, -.06); bx(H, mat(0xd9b061, .9), .13, .12, .03, 0, -.08, .09);
+  } else if (h === 'spangen') {    // frankish axeman: segmented helmet with gold bands, moustache, long hair
+    mk(G.dome, H, MT.steel, .21, .2, .21, 0, .1, 0); bx(H, MT.gold, .022, .1, .22, 0, .12, 0); bx(H, MT.gold, .22, .1, .022, 0, .12, 0); cy(H, MT.gold, .107, .025, 0, .1, 0);
+    bx(H, XM.hair, .11, .025, .02, 0, .04, .087); bx(H, mat(0xc89a4a, .95), .17, .12, .03, 0, -.04, -.09);
+  } else if (h === 'bearskin') {   // guardsman: a tall black bearskin cap, a plume at the side, a gold chin strap
+    const fur = mat(0x161412, 1); cy(H, fur, .1, .3, 0, .1, 0); sp(H, fur, .1, 0, .4, 0); bx(H, cm, .025, .14, .025, .1, .22, 0); bx(H, MT.gold, .176, .015, .02, 0, .02, .07);
+  } else if (h === 'conqmorion') { // conquistador: steel morion with a comb and an upturned brim, a red plume, pointed beard
+    mk(G.dome, H, MT.steel, .2, .17, .2, 0, .12, 0); bx(H, MT.steel, .17, .015, .28, 0, .115, 0);
+    for (const s of [1, -1]) bx(H, MT.steel, .15, .015, .08, 0, .115, s * .16).rotation.x = -s * .6;
+    bx(H, MT.steel, .02, .07, .22, 0, .2, 0); bx(H, cm, .04, .12, .1, 0, .24, -.1); bx(H, XM.hair, .08, .07, .03, 0, -.05, .09); bx(H, XM.hair, .1, .02, .02, 0, .045, .088);
+  } else if (h === 'memluk') {     // mamluk: steel helmet wound with a turban, a spike, nasal, black beard
+    cy(H, MT.white, .112, .08, 0, .1, 0); cy(H, cm, .114, .02, 0, .13, 0); mk(G.dome, H, MT.steel, .19, .16, .19, 0, .17, 0); cn(H, MT.steel, .02, .12, 0, .24, 0);
+    bx(H, MT.steel, .02, .08, .015, 0, .04, .095); bx(H, MT.black, .12, .07, .03, 0, -.04, .09);
+  } else if (h === 'pagri') {      // rajput: a full saffron turban with a ruby and a white plume, a wide moustache
+    cy(H, cm, .115, .1, 0, .11, 0); sp(H, cm, .11, 0, .2, -.01); sp(H, mat(0xc01c3a, .3, .2), .022, 0, .19, .11);
+    bx(H, MT.white, .02, .14, .03, 0, .26, .07).rotation.x = -.4; bx(H, MT.black, .13, .03, .02, 0, .04, .087);
+  } else if (h === 'korhelm') {    // woldo guard: tall dark helmet with gold rim and spike, a red tassel, cloth flaps
+    mk(G.dome, H, UQ.dkiron, .21, .2, .21, 0, .1, 0); cy(H, MT.gold, .108, .02, 0, .1, 0); cy(H, MT.gold, .012, .14, 0, .18, 0); cy(H, MT.red, .035, .06, 0, .24, 0);
+    for (const s of [1, -1]) bx(H, cm, .02, .15, .12, s * .1, -.05, -.01); bx(H, cm, .2, .15, .02, 0, -.05, -.1);
+  } else if (h === 'kartal') {     // eagle warrior: the face looks out of an eagle's open beak, feathers behind
+    bx(H, cm, .21, .1, .22, 0, .13, 0); bx(H, MT.wheat, .1, .05, .12, 0, .14, .12); bx(H, MT.wheat, .06, .06, .04, 0, .1, .17); bx(H, MT.wheat, .09, .03, .08, 0, -.02, .11);
+    for (const s of [1, -1]) sp(H, MT.black, .015, s * .07, .17, .1);
+    for (const s of [1, 0, -1]) { const f = bx(H, s ? MT.white : cm, .03, .19, .03, s * .06, .19, -.08); f.rotation.x = -.5; }
+    bx(H, cm, .2, .16, .04, 0, -.02, -.1);
+  } else if (h === 'curly') {      // balearic slinger: bare curly head, a spare sling wound round it
+    bx(H, XM.hair, .185, .06, .185, 0, .14, 0); for (const [x, z] of [[.05, .04], [-.05, .04], [.05, -.05], [-.05, -.05]]) sp(H, XM.hair, .04, x, .19, z);
+    bx(H, cm, .19, .03, .19, 0, .12, 0);
+  } else if (h === 'papakha') {    // cossack: a tall dark fur cap with a red top and a gold cross on it, moustache
+    cy(H, mat(0x2a2420, 1), .1, .16, 0, .12, 0); cy(H, MT.red, .085, .012, 0, .28, 0); bx(H, MT.gold, .13, .015, .015, 0, .29, 0); bx(H, MT.gold, .015, .015, .13, 0, .29, 0);
+    bx(H, XM.hair, .12, .03, .02, 0, .04, .087);
+  } else if (h === 'malicap') {    // farima: a quilted cap with a gold band, a white veil round the face
+    cy(H, cm, .1, .1, 0, .11, 0); sp(H, cm, .095, 0, .2, 0); cy(H, MT.gold, .102, .025, 0, .12, 0);
+    for (const s of [1, -1]) bx(H, MT.white, .02, .12, .15, s * .095, -.03, 0); bx(H, MT.white, .19, .12, .02, 0, -.03, -.09);
   } else {                         // 'wrap': a cloth wound round the head (Mandinka)
     bx(H, cm, .19, .09, .19, 0, .12, 0); bx(H, cm, .06, .06, .06, .08, .2, -.04);
   }
@@ -1404,6 +1467,47 @@ function uBody(P, k, cloth) {
     bx(T, cloth, .32, .48, .2, 0, -.12, 0); bx(T, MT.gold, .04, .22, .012, 0, .08, .101); bx(T, MT.gold, .14, .04, .012, 0, .2, .101);
   } else if (b === 'coat') {       // a quilted riding coat in his own colour (steppe and desert riders, archers)
     bx(T, cm, .32, .42, .2, 0, -.06, 0); bx(T, cloth, .325, .05, .205, 0, .06, 0); bx(T, MT.leather, .04, .3, .012, .03, .08, .101);
+  // ---- the second unique units (2026-11-20)
+  } else if (b === 'muscle') {     // praetorian: a bronze muscle cuirass, leather strips at the hips and shoulders
+    bx(T, MT.bronze, .32, .3, .2, 0, .06, 0); bx(T, MT.gold, .012, .2, .012, 0, .1, .101); for (const s of [1, -1]) bx(T, MT.gold, .1, .035, .012, s * .06, .24, .101);
+    for (const x of [-.12, -.06, 0, .06, .12]) bx(T, MT.leather, .05, .12, .2, x, -.08, 0);
+    for (const s of [1, -1]) bx(T, MT.leather, .08, .08, .17, s * .2, .26, 0); bx(T, cloth, .325, .03, .205, 0, .05, 0);
+  } else if (b === 'dou') {        // ashigaru: a plain dark cuirass, a sash in the player's colour, tassets
+    bx(T, UQ.dkiron, .32, .3, .2, 0, .04, 0); bx(T, cloth, .325, .04, .205, 0, .08, 0); bx(T, UQ.dkiron, .33, .1, .21, 0, -.1, 0); sp(T, cm, .03, 0, .2, .1);
+  } else if (b === 'kalasiris') {  // egyptian: bare chest, a broad collar, a white linen kilt
+    bx(T, MT.skin, .31, .3, .19, 0, .08, 0); bx(T, cm, .32, .06, .2, 0, .3, 0); bx(T, MT.gold, .325, .025, .205, 0, .28, 0);
+    bx(T, MT.white, .32, .16, .2, 0, -.12, 0); bx(T, cloth, .325, .04, .205, 0, .04, 0);
+  } else if (b === 'byrnie') {     // huscarl: a mail shirt to the hips, a fur collar, a leather belt
+    bx(T, XM.mail, .32, .44, .2, 0, -.1, 0); bx(T, MT.leather, .325, .04, .205, 0, .04, 0); bx(T, XM.fur, .3, .05, .2, 0, .33, 0); bx(T, cloth, .325, .05, .205, 0, -.12, 0);
+  } else if (b === 'mlamellar') {  // keshig: leather lamellar in rows, trimmed in his own colour, shoulder guards, a skirt
+    for (const y of [.02, .12, .22]) bx(T, MT.leather, .32, .07, .2, 0, y, 0);
+    for (const y of [.085, .185]) bx(T, cm, .325, .03, .205, 0, y, 0);
+    for (const s of [1, -1]) bx(T, MT.leather, .1, .14, .16, s * .21, .2, 0);
+    bx(T, MT.leather, .33, .14, .21, 0, -.14, 0); bx(T, cloth, .335, .03, .215, 0, -.06, 0);
+  } else if (b === 'chiton') {     // peltast: a short white tunic with a border, a cloak in the player's colour
+    bx(T, MT.white, .32, .44, .2, 0, -.08, 0); bx(T, cm, .325, .03, .205, 0, -.08, 0); bx(T, cloth, .32, .4, .03, 0, -.02, -.11); bx(T, MT.leather, .325, .03, .205, 0, .06, 0);
+  } else if (b === 'varangcoat') { // varangian: a long red coat with gold trim over mail
+    bx(T, XM.mail, .32, .5, .2, 0, -.16, 0); bx(T, cm, .325, .42, .205, 0, -.1, 0); bx(T, MT.gold, .33, .025, .21, 0, -.1, 0); bx(T, MT.gold, .2, .04, .21, 0, .32, 0); bx(T, cloth, .33, .04, .21, 0, .05, 0);
+  } else if (b === 'tunic') {      // a knee-length tunic in his own colour, a belt, the player's band
+    bx(T, cm, .32, .44, .2, 0, -.1, 0); bx(T, MT.leather, .325, .04, .205, 0, .06, 0); bx(T, cloth, .325, .04, .205, 0, -.08, 0);
+  } else if (b === 'redcoat') {    // guardsman: the red coat, white crossbelts, gold buttons, coat tails
+    bx(T, cm, .32, .4, .2, 0, -.04, 0); for (const r of [.6, -.6]) bx(T, MT.white, .04, .42, .205, 0, -.02, 0).rotation.z = r;
+    for (const y of [.1, .18, .26]) sp(T, MT.gold, .013, 0, y, .1); bx(T, cm, .26, .18, .03, 0, -.16, -.1); for (const s of [1, -1]) bx(T, cloth, .08, .03, .15, s * .19, .34, 0);
+  } else if (b === 'breast') {     // conquistador: a steel breastplate over a doublet in his own colour, a sash
+    bx(T, cm, .32, .42, .2, 0, -.08, 0); bx(T, MT.steel, .32, .28, .21, 0, .06, 0); bx(T, MT.steel, .03, .24, .02, 0, .08, .105); bx(T, MT.steel, .33, .08, .21, 0, -.06, 0);
+    bx(T, cloth, .06, .36, .215, .04, 0, 0).rotation.z = .55;
+  } else if (b === 'angarkha') {   // rajput: a long saffron coat flaring at the knee, a sash, a gold closure
+    bx(T, cm, .32, .5, .2, 0, -.14, 0); bx(T, cm, .36, .14, .24, 0, -.16, 0); bx(T, cloth, .33, .05, .21, 0, .04, 0); bx(T, MT.gold, .03, .2, .012, .05, .12, .101).rotation.z = -.4;
+  } else if (b === 'dujeong') {    // woldo guard: a padded coat studded with gold, shoulder pieces
+    bx(T, cm, .32, .48, .2, 0, -.12, 0); for (const x of [-.1, 0, .1]) for (const y of [-.06, .06, .18, .28]) bx(T, MT.gold, .02, .02, .012, x, y, .101);
+    for (const s of [1, -1]) bx(T, cm, .1, .12, .16, s * .2, .22, 0); bx(T, cloth, .325, .04, .205, 0, .02, 0);
+  } else if (b === 'feather') {    // eagle warrior: a suit of brown feathers with white tips, a loincloth in the player's colour
+    bx(T, cm, .32, .42, .2, 0, -.06, 0); for (const y of [.04, .14, .24]) bx(T, MT.white, .325, .025, .205, 0, y, 0); bx(T, cloth, .325, .05, .205, 0, -.04, 0);
+  } else if (b === 'cherkeska') {  // cossack: a long dark coat with cartridge loops on the chest, a black belt, a dagger
+    bx(T, cm, .32, .52, .2, 0, -.16, 0); for (const s of [1, -1]) for (const y of [.16, .2, .24]) bx(T, MT.steel, .07, .02, .012, s * .08, y, .101);
+    bx(T, MT.black, .325, .03, .205, 0, .04, 0); bx(T, MT.steel, .02, .12, .02, 0, -.08, .102); bx(T, cloth, .325, .04, .205, 0, -.12, 0);
+  } else if (b === 'boubou') {     // farima: a wide robe with gold embroidery, the player's sash
+    bx(T, cm, .34, .5, .22, 0, -.14, 0); bx(T, MT.gold, .1, .12, .012, 0, .18, .111); bx(T, cloth, .345, .05, .225, 0, .04, 0);
   }
 }
 // -> draws on P.armR / P.armL and sets the pose flags the animation reads (P.bow, P.gun)
@@ -1436,6 +1540,36 @@ function uWeapon(P, k, wm, cloth) {
     cy(Rr, MT.wood, .014, 1.2, 0, -.9, .03); cn(Rr, wm, .03, .14, 0, -.9, .03).rotation.x = PI; bx(Rr, cm, .05, .14, .05, 0, -.76, .03);
   } else if (w === 'javelins') {   // a handful of throwing spears
     for (const [x, z] of [[0, .03], [.03, .0], [-.03, .0]]) { cy(Rr, MT.wood, .011, 1.0, x, -.8, z); cn(Rr, wm, .022, .1, x, -.8, z).rotation.x = PI; }
+  // ---- the second unique units (2026-11-20)
+  } else if (w === 'tufek') {      // janissary: a long musket with brass bands, a yataghan in the sash
+    bx(Rr, MT.wood, .04, .32, .055, 0, -.52, 0); cy(Rr, MT.iron, .014, .56, 0, -1.04, 0); for (const y of [-.72, -.92, -1.04]) cy(Rr, MT.gold, .019, .025, 0, y, 0);
+    bx(P.torso, MT.steel, .02, .03, .24, .12, 0, .1).rotation.y = -.3; P.gun = 1;
+  } else if (w === 'teppo') {      // ashigaru: a dark matchlock with a brass lock, the match glowing
+    bx(Rr, MT.dwood, .04, .3, .05, 0, -.5, 0); cy(Rr, MT.black, .015, .5, 0, -.98, 0); bx(Rr, MT.gold, .05, .04, .06, 0, -.56, .02); sp(Rr, MT.glow, .014, .03, -.6, .05); P.gun = 1;
+  } else if (w === 'spatha') {     // praetorian: a long straight sword
+    bx(Rr, MT.steel, .035, .04, .42, 0, -.36, .25); bx(Rr, MT.gold, .1, .03, .03, 0, -.35, .05); sp(Rr, MT.gold, .028, 0, -.335, -.03);
+  } else if (w === 'atesmizrak') { // fire lance: a spear with a red-wrapped powder tube under the head, a spark at the mouth
+    cy(Rr, MT.wood, .015, 1.3, 0, -.95, .03); cn(Rr, wm, .03, .14, 0, -.95, .03).rotation.x = PI; cy(Rr, mat(0xa82a22, .7), .028, .2, 0, -.93, .03); sp(Rr, MT.glow, .018, 0, -.94, .07);
+  } else if (w === 'daneaxe') {    // varangian: the long two-handed axe with a broad blade
+    bx(Rr, MT.wood, .03, .03, .8, 0, -.36, .3); bx(Rr, MT.steel, .022, .26, .16, 0, -.48, .62); bx(Rr, MT.steel, .022, .12, .06, 0, -.42, .72);
+  } else if (w === 'franciska') {  // frankish axeman: a short throwing axe, a spare one in the belt
+    bx(Rr, MT.wood, .03, .03, .36, 0, -.36, .16); bx(Rr, MT.steel, .022, .14, .08, 0, -.44, .3); bx(Rr, MT.steel, .022, .06, .04, 0, -.48, .34);
+    bx(P.torso, MT.wood, .025, .025, .22, .12, -.06, .02); bx(P.torso, MT.steel, .02, .08, .05, .12, -.1, .12);
+  } else if (w === 'rapier') {     // conquistador: a long thin blade, a cup hilt
+    bx(Rr, MT.steel, .012, .02, .52, 0, -.36, .3); sp(Rr, MT.steel, .035, 0, -.355, .05); bx(Rr, MT.gold, .12, .015, .015, 0, -.355, .07);
+  } else if (w === 'scimitar' || w === 'talwar' || w === 'shashka') {   // curved sabres: two pieces bending up
+    const th = w === 'shashka' ? .016 : .02;
+    bx(Rr, MT.steel, th, .05, .24, 0, -.36, .18); const b2 = bx(Rr, MT.steel, th, .05, .2, 0, -.34, .4); b2.rotation.x = -.35;
+    if (w === 'shashka') bx(Rr, MT.black, .03, .035, .1, 0, -.36, .02);
+    else { bx(Rr, MT.gold, .1, .025, .025, 0, -.35, .05); if (w === 'talwar') mk(G.wheel, Rr, MT.gold, .015, .07, .07, 0, -.335, -.03).rotation.y = PI / 2; }
+  } else if (w === 'woldo') {      // the crescent glaive: a long pole, a curved blade with a back hook, a red tassel
+    cy(Rr, MT.dwood, .016, 1.3, 0, -.95, .03); bx(Rr, MT.steel, .02, .25, .07, 0, -1.2, .07); bx(Rr, MT.steel, .02, .1, .05, 0, -1.3, .11).rotation.x = .4;
+    bx(Rr, MT.steel, .02, .06, .05, 0, -1.02, -.02); bx(Rr, MT.red, .05, .08, .05, 0, -.95, .03);
+  } else if (w === 'atlatl') {     // eagle warrior: the spear-thrower with a dart laid on it, more darts on the back
+    bx(Rr, MT.wood, .025, .025, .3, 0, -.36, .14); bx(Rr, MT.lwood, .012, .012, .8, 0, -.37, .3); bx(Rr, UQ.feather, .04, .04, .06, 0, -.37, -.06); bx(Rr, UQ.obsid, .02, .02, .06, 0, -.37, .72);
+    for (const x of [-.04, 0, .04]) { const d = bx(P.torso, MT.lwood, .012, .7, .012, x, -.12, -.12); d.rotation.z = .2; }
+  } else if (w === 'sling') {      // balearic slinger: the sling's cords hanging from his hand, a stone in the pouch, a bag of stones
+    cy(Rr, MT.leather, .006, .3, 0, -.66, 0); sp(Rr, MT.leather, .03, 0, -.68, 0); sp(Rr, MT.stone, .02, 0, -.69, .01); bx(P.torso, MT.leather, .08, .1, .06, .17, -.04, .05);
   } else {                         // 'dory': a long thrusting spear, a butt spike / counterweight in gold
     cy(Rr, MT.wood, .015, 1.4, 0, -1.0, .03); cn(Rr, wm, .032, .16, 0, -1.0, .03).rotation.x = PI; sp(Rr, MT.gold, .032, 0, .4, .03);
   }
@@ -1454,6 +1588,24 @@ function uShield(P, k, cloth) {
   } else if (s === 'kite') {       // almond shield: wide top, narrow foot, an emblem
     bx(L, cloth, .035, .26, .26, .07, -.3, .02); bx(L, cloth, .035, .14, .18, .07, -.44, .02); bx(L, cloth, .035, .1, .1, .07, -.54, .02);
     bx(L, cm, .04, .2, .04, .075, -.34, .02); bx(L, cm, .04, .04, .16, .075, -.24, .02);
+  // ---- the second unique units (2026-11-20)
+  } else if (s === 'oval') {       // praetorian: a tall oval in his colour, gold rim, wings and boss
+    mk(G.wheel, L, MT.gold, .03, .54, .38, .072, -.28, .02); mk(G.wheel, L, cm, .036, .5, .34, .075, -.28, .02); sp(L, MT.gold, .04, .1, -.28, .02);
+    bx(L, MT.gold, .012, .04, .24, .095, -.3, .02); bx(L, MT.gold, .012, .3, .03, .095, -.43, .02);
+  } else if (s === 'round') {      // huscarl: a painted round wooden shield, an iron rim and boss
+    mk(G.wheel, L, MT.iron, .028, .45, .45, .068, -.26, .02); mk(G.wheel, L, MT.wood, .032, .42, .42, .07, -.26, .02);
+    bx(L, cm, .036, .41, .08, .072, -.465, .02); bx(L, cloth, .036, .08, .41, .072, -.3, .02); sp(L, MT.iron, .05, .1, -.26, .02);
+  } else if (s === 'pelte') {      // peltast: a crescent wicker shield with a coloured rim
+    mk(G.wheel, L, cm, .028, .34, .4, .068, -.3, .02); mk(G.wheel, L, UQ.wicker, .032, .3, .36, .072, -.3, .02);
+    for (const z of [1, -1]) bx(L, UQ.wicker, .032, .14, .06, .072, -.2, .02 + z * .15).rotation.x = -z * .5;
+  } else if (s === 'roundboss') {  // frankish axeman: a round wooden shield, painted centre, iron boss
+    mk(G.wheel, L, MT.iron, .028, .42, .42, .068, -.26, .02); mk(G.wheel, L, MT.wood, .032, .39, .39, .07, -.26, .02); mk(G.wheel, L, cm, .036, .26, .26, .072, -.26, .02);
+    sp(L, MT.iron, .055, .1, -.26, .02);
+  } else if (s === 'kalkan') {     // mamluk: a small round shield of brass, his colour inside, a gold boss
+    mk(G.wheel, L, MT.bronze, .03, .3, .3, .072, -.24, .02); mk(G.wheel, L, cm, .034, .2, .2, .074, -.24, .02); sp(L, MT.gold, .035, .09, -.24, .02);
+  } else if (s === 'dhal') {       // rajput: a dark round hide shield, a gold rim and four bosses
+    mk(G.wheel, L, MT.gold, .03, .37, .37, .07, -.24, .02); mk(G.wheel, L, mat(0x3a2a1a, .8), .035, .34, .34, .072, -.24, .02);
+    for (const [dy, dz] of [[.05, .05], [.05, -.05], [-.05, .05], [-.05, -.05]]) sp(L, MT.gold, .02, .1, -.24 + dy, .02 + dz);
   } else {                         // 'hide': tall oval hide shield with a stripe
     bx(L, XM.hide, .035, .42, .2, .07, -.46, .02); bx(L, XM.hide, .035, .3, .25, .07, -.4, .02); bx(L, cm, .04, .36, .04, .075, -.43, .02);
   }
@@ -1470,6 +1622,7 @@ function makeHuman(g, color, k, P, age) {
   else if (A === 2) { torsoM = k.armor ? MT.steel : XM.mail; armM = torsoM; }
   else if (A === 3) { torsoM = MT.steel; armM = cloth; }
   else { torsoM = k.armor ? MT.steel : cloth; armM = cloth; }
+  if (k.sleeve != null) armM = mat(k.sleeve, .8);   // (a unique unit's own sleeves: the redcoat's red ones)
   P.legL = piv(g, .075, .38, 0); bx(P.legL, legM, .1, .38, .11, 0, -.38, 0);
   P.legR = piv(g, -.075, .38, 0); bx(P.legR, legM, .1, .38, .11, 0, -.38, 0);
   if (A >= 3) { bx(P.legL, MT.black, .11, .14, .12, 0, -.38, 0); bx(P.legR, MT.black, .11, .14, .12, 0, -.38, 0); }
@@ -1623,6 +1776,29 @@ function makeCamel(g, coatHex, P, cloth) {
   bx(P.hbody, MT.leather, .08, .14, .1, .17, .72, -.26);
   return 1.15;
 }
+// A two-wheeled war chariot (kit.mount 'chariot'; kit.scythe: blades on the hubs): the horse in front, the car behind
+// it on the same pivot (P.hbody), so the cavalry animation and death drive both. The wheels turn (P.wheels).
+// -> the car's floor (where the rider stands) and how far back the car is.
+const TIRE = new THREE.TorusGeometry(.5, .085, 4, 16).rotateY(PI / 2);
+function makeChariot(g, coatHex, P, cloth, k) {
+  makeHorse(g, coatHex, P);
+  P.hbody.position.z = .42;
+  const cz = -1.0, C = piv(P.hbody, 0, 0, cz), cm = k.crest != null ? mat(k.crest, .75) : cloth;
+  bx(C, MT.dwood, .62, .05, .46, 0, .3, 0);                                            // floor
+  bx(C, cloth, .62, .34, .04, 0, .35, .21); bx(C, MT.gold, .64, .03, .06, 0, .67, .21);   // breastwork in the player's colour, gold rail
+  for (const s of [1, -1]) { bx(C, cloth, .04, .22, .42, s * .3, .35, 0); bx(C, MT.gold, .05, .03, .44, s * .3, .56, 0); bx(C, cm, .045, .06, .3, s * .31, .44, .02); }
+  bx(C, MT.dwood, .82, .04, .05, 0, .25, 0);                                          // axle
+  P.wheels = [];
+  for (const s of [1, -1]) {
+    const w = piv(C, s * .39, .27, 0); P.wheels.push(w);
+    mk(TIRE, w, MT.dwood, .6, .54, .54, 0, 0, 0); mk(G.wheel, w, MT.gold, .08, .1, .1, 0, 0, 0);
+    for (let i = 0; i < 3; i++) mk(G.cbox, w, MT.lwood, .03, .5, .03, 0, 0, 0).rotation.x = i * PI / 3;
+    if (k.scythe) { bx(C, MT.steel, .34, .025, .05, s * .62, .26, 0); bx(C, MT.steel, .14, .025, .05, s * .82, .26, -.04).rotation.y = s * .6; }
+  }
+  bx(P.hbody, MT.dwood, .05, .05, .95, 0, .4, -.3);                                     // the pole, up to the yoke
+  bx(P.hbody, MT.dwood, .4, .04, .05, 0, .8, .26); bx(P.hbody, cloth, .32, .05, .3, 0, .78, -.02);
+  return { seat: .35, z: cz };
+}
 function makeWheels(g, P, r, hw, z1, z2, age) {
   P.wheels = [];
   for (let i = 0; i < 4; i++) {
@@ -1667,6 +1843,7 @@ function makeUnitRaw(type, color, age) {
     let seat = .78;   // the top of the mount's back
     if (k.mount === 'elephant') { seat = makeElephant(inner, P, cloth); h = 2.1; pw = 1.0; pd = 1.7; }
     else if (k.mount === 'camel') { seat = makeCamel(inner, k.coat, P, cloth); h = 1.6; pw = .6; pd = 1.1; }
+    else if (k.mount === 'chariot') { const c = makeChariot(inner, k.coat, P, cloth, k); seat = c; h = 1.4; pw = .8; pd = 1.6; }
     else makeHorse(inner, k.coat, P);
     P.mount = k.mount || '';
     if (k.mount) { /* its own tack is part of the model */ }
@@ -1681,8 +1858,13 @@ function makeUnitRaw(type, color, age) {
       if (k.barding && A === 3) bx(P.hbody, MT.steel, .17, .1, .2, 0, .98, .6);
       if (A === 4) bx(P.hbody, MT.canvas, .3, .09, .1, 0, .82, -.24);
     }
-    const r = piv(P.hbody, 0, seat - .36, -.02); makeHuman(r, color, k, P, A);
-    P.legL.rotation.set(-1.1, 0, k.mount === 'elephant' ? .75 : .45); P.legR.rotation.set(-1.1, 0, k.mount === 'elephant' ? -.75 : -.45);
+    if (k.mount === 'chariot') {   // (standing in the car, not astride)
+      const r = piv(P.hbody, 0, seat.seat + .03, seat.z - .04); makeHuman(r, color, k, P, A);
+      P.legL.rotation.set(0, 0, .06); P.legR.rotation.set(0, 0, -.06);
+    } else {
+      const r = piv(P.hbody, 0, seat - .36, -.02); makeHuman(r, color, k, P, A);
+      P.legL.rotation.set(-1.1, 0, k.mount === 'elephant' ? .75 : .45); P.legR.rotation.set(-1.1, 0, k.mount === 'elephant' ? -.75 : -.45);
+    }
     inner.scale.setScalar(.72 * ks);
   } else if (type === 'ram') {
     rig = 'ram'; h = .9; pw = .8; pd = 1.3;
@@ -1899,6 +2081,10 @@ const PROJ = {
   bullet: [G.cbox, mat(0xffe08a, .4, 0, 0xffc040), .025, .025, .55],
   stone: [G.sph, MT.stone, .2, .2, .2],
   cannonball: [G.sph, MT.black, .16, .16, .16],
+  // (view only: the shot of a unique unit with a look, civ-units.js; the sim still flies an arrow)
+  javelin: [G.cbox, mat(0x8a6238, .8, 0), .035, .035, .95],
+  dart: [G.cbox, mat(0xb08a55, .8, 0), .025, .025, .7],
+  sling: [G.sph, MT.stone, .085, .085, .085],
 };
 
 function grpStatic(g) { return !g || (g.visible && g.scale.x === 1 && g.scale.y === 1 && g.scale.z === 1 && g.position.y === 0); }
@@ -1952,7 +2138,7 @@ export class EntityView {
     this.fx = this.ctx.fx || (this.ctx.renderer && this.ctx.renderer.fx) || null;
     this.views = new Map(); this.proxies = []; this.selected = new Set();
     this.frame = 0; this.t = 0;
-    this.projs = new Map(); this.projPool = { arrow: [], bolt: [], bullet: [], stone: [], cannonball: [] };
+    this.projs = new Map(); this.projPool = {}; for (const k in PROJ) this.projPool[k] = [];
     this.ghost = null; this.ghostType = null; this.ghostValid = null;
     this.flag = new THREE.Group();
     cy(this.flag, MT.dwood, .03, 1.3, 0, 0, 0);
@@ -2386,7 +2572,18 @@ export class EntityView {
       } else if (st === 'throw') {     // javelin man: the arm goes back, then whips forward
         thrust = 0;
         if (atk) { const p = hit(.36); if (p >= 0) { ra = -3.0 + p * 2.2; lean = -.25 + p * .6; ty = .4 - p * .8; } else { ra = -2.6; lean = -.12; ty = .3; } }
+      } else if (st === 'aim') {       // musketeer: side on, the cheek on the stock; the shot kicks the muzzle up
+        if (atk) { const p = hit(.32); ty = .28; la = -1.4; lz = -.25; ra = -1.5; if (p >= 0) { ra -= (1 - p) * .55; lean = -(1 - p) * .16; } }
+        else if (idle) { ra = -.8; la = -.65; lz = -.3; }
+      } else if (st === 'sweep') {     // woldo: a wide level sweep of the glaive with both hands, one way then the other
+        thrust = 0;
+        if (atk) { const p = hit(.5); la = -1.15; lz = -.35; if (p >= 0) { ra = -1.25; rz = sd * (1.3 - p * 2.6); ty = -sd * (.7 - p * 1.4); lean = Math.sin(p * PI) * .22; } else { ra = -1.0; rz = -sd * .9; } }
+        else if (idle) { ra = -.25; la = -.4; }
+      } else if (st === 'sling') {     // slinger: the stone flies with a whip of the arm, then the sling whirls overhead again
+        if (atk) { la = -.55; const p = hit(.24); if (p >= 0) { ra = -2.9 + p * 2.0; lean = p * .28; ty = .3 - p * .6; } else { ra = -2.85; rz = Math.sin(t * 17) * .45; lean = -.06; } }
+        else if (idle) ra = -.15 + Math.sin(t * 2.2) * .06;
       }
+      if (P.two && st === 'chop') la = ra;   // (the varangian's axe: both hands on the haft)
     }
     if (!riding) { P.legL.rotation.x = ll; P.legR.rotation.x = rl; P.torso.position.y = .38 + bob; }
     P.armL.rotation.x = la; P.armR.rotation.x = ra; P.torso.rotation.x = lean; P.head.rotation.y = hy;
@@ -2601,7 +2798,9 @@ export class EntityView {
       const p = arr[i];
       let r = this.projs.get(p.id);
       if (!r) {
-        const type = p.type === 'arrow' && p.bolt ? 'bolt' : PROJ[p.type] ? p.type : 'arrow', pool = this.projPool[type];
+        let type = p.type === 'arrow' && p.bolt ? 'bolt' : PROJ[p.type] ? p.type : 'arrow';
+        if (p.type === 'arrow') { const src = this.game.entities.get(p.srcId), lk = src && UNITS[src.type] && UNITS[src.type].look; if (lk && PROJ[lk]) type = lk; }
+        const pool = this.projPool[type];
         let mesh = pool.pop();
         if (!mesh) { const d = PROJ[type]; mesh = new THREE.Mesh(d[0], d[1]); mesh.scale.set(d[2], d[3], d[4]); mesh.castShadow = true; this.scene.add(mesh); }
         const hs = Math.imul(p.id ^ 0x9e3779b9, 0x85ebca6b) >>> 0, h1 = (hs & 1023) / 1023, h2 = ((hs >>> 10) & 1023) / 1023;
