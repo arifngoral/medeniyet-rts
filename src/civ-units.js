@@ -22,7 +22,7 @@ export const CIV_UNITS = {
   misir: { id: 'nubyali', base: 'archer', name: 'Nubyalı Okçu', icon: '🏺', range: 1, cost: { wood: 35, gold: 20 }, time: -3,
     desc: 'Nubya’nın ünlü okçuları: daha uzağa atar, daha ucuz ve çabuk yetişir.', kit: { head: 'band', skin: 'dark', wpn: 'bow', crest: 0xe8c66a } },
   viking: { id: 'berserker', base: 'swordsman', name: 'Berserker', icon: '🪓', atk: 3, hp: 1.1, armor: -1, speed: 1.1,
-    desc: 'Zırhsız, gözü dönmüş savaşçı: çok sert vurur, hızlı koşar, az korunur.', kit: { head: 'pelt', body: 'bare', wpn: 'axe', shield: 0, cape: 0x6f5236 } },
+    desc: 'Zırhsız, gözü dönmüş savaşçı: çok sert vurur, hızlı koşar, az korunur.', kit: { head: 'pelt', body: 'bare', wpn: 'axe', two: 1, shield: 0, cape: 0x6f5236 } },
   mogol: { id: 'mangudai', base: 'lightcav', name: 'Mangudai', icon: '🐎', range: 4, proj: 'arrow', rof: 1.05, bonus: { ranged: 1, infantry: 1.3 }, cost: { food: 60, gold: 20 },
     desc: 'Atlı okçu: at sırtından ok atar, piyadeyi uzaktan eritir.', kit: { head: 'furcap', body: 'coat', weapon: 'bow', wpn: 'bow', crest: 0x2e6fa8 } },
   cin: { id: 'chukonu', base: 'crossbow', name: 'Chu-Ko-Nu', icon: '🐉', rof: 0.68,

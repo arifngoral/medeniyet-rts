@@ -1515,6 +1515,7 @@ function makeHuman(g, color, k, P, age) {
   if (!V && A === 1) { bx(P.armL, MT.bronze, .095, .08, .095, 0, -.3, 0); bx(P.armR, MT.bronze, .095, .08, .095, 0, -.3, 0); }
   if (A === 4 && !V) { bx(P.armL, MT.white, .095, .04, .095, 0, -.31, 0); bx(P.armR, MT.white, .095, .04, .095, 0, -.31, 0); }
   const w = k.weapon, wm = A === 0 ? MT.stone : A === 1 ? MT.bronze : MT.steel;
+  P.two = !!k.two;   // (a two-handed weapon: both arms swing)
   if (k.wpn) uWeapon(P, k, wm, cloth);
   else if (w === 'spear') { cy(P.armR, MT.wood, .014, 1.2, 0, -.9, .03); cn(P.armR, wm, .03, .14, 0, -.9, .03).rotation.x = PI; if (A >= 3) bx(P.armR, cloth, .02, .08, .1, 0, -.72, .08); }
   else if (w === 'sword') { bx(P.armR, wm, A === 0 ? .04 : .025, .05, A === 0 ? .36 : .46, 0, -.36, A === 0 ? .22 : .27); bx(P.armR, A === 0 ? MT.wood : A >= 3 ? MT.gold : MT.bronze, .12, .03, .03, 0, -.35, .05); }
@@ -1572,14 +1573,17 @@ function makeElephant(g, P, cloth) {
   P.hhead = piv(E, 0, 1.0, .68);
   bx(P.hhead, m, .38, .4, .3, 0, -.3, 0);                                      // skull
   bx(P.hhead, m, .3, .1, .22, 0, .08, -.02);                                   // domed forehead
+  P.ears = [];
   for (const s of [1, -1]) {
-    const ear = bx(P.hhead, dk, .04, .36, .28, s * .23, -.26, -.12); ear.rotation.y = s * .5;   // big ears, swept back
+    const ep = piv(P.hhead, s * .2, -.08, -.04); ep.rotation.y = s * .5; ep.userData.s = s; P.ears.push(ep);
+    bx(ep, dk, .04, .36, .28, s * .03, -.18, -.1);   // big ears, swept back (they flap)
     const tusk = bx(P.hhead, ivory, .045, .045, .34, s * .12, -.34, .22); tusk.rotation.x = .45;
     bx(P.hhead, mat(0x15120f, .5), .02, .04, .04, s * .19, -.06, .12);         // eye
   }
-  const t1 = bx(P.hhead, m, .14, .34, .14, 0, -.6, .16); t1.rotation.x = -.12;   // trunk, three pieces curling in
-  const t2 = bx(P.hhead, m, .11, .26, .11, 0, -.84, .14); t2.rotation.x = .1;
-  const t3 = bx(P.hhead, dk, .085, .16, .085, 0, -.97, .1); t3.rotation.x = .5;
+  P.trunk = piv(P.hhead, 0, -.26, .16);                                        // trunk: three pieces curling in, swings from its root
+  const t1 = bx(P.trunk, m, .14, .34, .14, 0, -.34, 0); t1.rotation.x = -.12;
+  const t2 = bx(P.trunk, m, .11, .26, .11, 0, -.58, -.02); t2.rotation.x = .1;
+  const t3 = bx(P.trunk, dk, .085, .16, .085, 0, -.71, -.06); t3.rotation.x = .5;
   bx(E, dk, .04, .4, .04, 0, .52, -.53).rotation.x = -.12;               // tail
   P.hl = [];
   for (let i = 0; i < 4; i++) {
@@ -1662,6 +1666,7 @@ function makeUnitRaw(type, color, age) {
     if (k.mount === 'elephant') { seat = makeElephant(inner, P, cloth); h = 2.1; pw = 1.0; pd = 1.7; }
     else if (k.mount === 'camel') { seat = makeCamel(inner, k.coat, P, cloth); h = 1.6; pw = .6; pd = 1.1; }
     else makeHorse(inner, k.coat, P);
+    P.mount = k.mount || '';
     if (k.mount) { /* its own tack is part of the model */ }
     else if (A === 0) { bx(P.hbody, MT.leather, .31, .03, .05, 0, .78, .1); }
     else if (A === 1) { bx(P.hbody, cloth, .32, .05, .36, 0, .78, -.02); bx(P.hbody, MT.bronze, .16, .03, .05, 0, 1.0, .7); }
@@ -2322,10 +2327,13 @@ export class EntityView {
       else if (P.spear) { ra = -1.35; la = -.6; if (k >= 0 && k < .34) { const p = k / .34; thrust = Math.sin(p * PI); ra = -1.5; lean = thrust * .32; la = -.9; } }
       else if (k >= 0 && k < .38) { const p = k / .38; ra = -2.5 + p * 2.3; lean = Math.sin(p * PI) * .3; la = -.5; }
       else { ra = -1.0 + Math.sin(t * 3) * .08; la = -.5; }
+      if (P.two) { la = ra; lean *= 1.4; }   // (both hands on the haft: a bigger, heavier swing)
     } else {
       bob = Math.sin(t * 2) * .008; hy = Math.sin(t * .55) * .5;
       la = Math.sin(t * 1.3) * .05; ra = P.gun ? -.75 : -la;
+      if (P.two) { ra = -.55 + Math.sin(t * 1.3) * .04; la = ra; }   // (the axe held across the body)
     }
+    if (P.two && a === 'walk') la = ra = -.6;
     if (!riding) { P.legL.rotation.x = ll; P.legR.rotation.x = rl; P.torso.position.y = .38 + bob; }
     P.armL.rotation.x = la; P.armR.rotation.x = ra; P.torso.rotation.x = lean; P.head.rotation.y = hy;
     if (P.spear) { if (v.az0 === undefined) v.az0 = P.armR.position.z; P.armR.position.z = v.az0 + thrust * .3; }
@@ -2341,8 +2349,27 @@ export class EntityView {
     }
   }
 
-  _animHorse(v, e, t, walking) {
+  _animHorse(v, e, t, walking, gt) {
     const hl = v.P.hl;
+    if (v.P.mount === 'elephant') {   // slow heavy stride; the trunk sways, the ears flap; attacking it throws its head up and whips the trunk
+      const Q = v.P, s = Math.sin(t * 6.2), c = Math.cos(t * 6.2), k = e.anim === 'attack' && e.attackT != null ? gt - e.attackT : -1;
+      const sw = walking ? s * .42 : 0;
+      hl[0].rotation.x = sw; hl[3].rotation.x = sw; hl[1].rotation.x = -sw; hl[2].rotation.x = -sw;
+      Q.hbody.position.y = walking ? Math.abs(c) * .03 : 0; Q.hbody.rotation.z = walking ? s * .025 : 0;
+      let head = walking ? s * .05 : Math.sin(t * .6) * .06, tr = Math.sin(t * 1.5) * .16 + (walking ? s * .12 : 0);
+      if (k >= 0 && k < .55) { const p = Math.sin(k / .55 * PI); head = -p * .5; tr = -p * 1.5; }
+      Q.hhead.rotation.x = head; Q.trunk.rotation.x = tr;
+      for (const ep of Q.ears) ep.rotation.y = ep.userData.s * (.5 + Math.sin(t * 2.1 + ep.userData.s) * .28);
+      return;
+    }
+    if (v.P.mount === 'camel') {      // pacing gait (both legs of a side together), a rolling sway, the long neck nods
+      const Q = v.P, s = Math.sin(t * 8.5), c = Math.cos(t * 8.5);
+      const sw = walking ? s * .6 : 0;
+      hl[0].rotation.x = sw; hl[2].rotation.x = sw * .9; hl[1].rotation.x = -sw; hl[3].rotation.x = -sw * .9;
+      Q.hbody.position.y = walking ? Math.abs(c) * .035 : 0; Q.hbody.rotation.z = walking ? s * .045 : 0;
+      Q.hhead.rotation.x = walking ? s * .16 : Math.sin(t * .8) * .1; Q.hhead.rotation.y = walking ? 0 : Math.sin(t * 2.6) * .06;
+      return;
+    }
     if (walking) {
       const s = Math.sin(t * 11), c = Math.cos(t * 11);
       hl[0].rotation.x = s * .7; hl[3].rotation.x = s * .7; hl[1].rotation.x = -s * .7; hl[2].rotation.x = -s * .7;
@@ -2378,7 +2405,7 @@ export class EntityView {
     const walking = e.anim === 'walk';
     switch (v.rig) {
       case 'human': this._animHuman(v, e, t, gt, false); break;
-      case 'cav': this._animHorse(v, e, t, walking); this._animHuman(v, e, t, gt, true); break;
+      case 'cav': this._animHorse(v, e, t, walking, gt); this._animHuman(v, e, t, gt, true); break;
       case 'deer': case 'cart': this._animHorse(v, e, t, walking); break;
       case 'ram': {
         const q = gt - (e.attackT == null ? -9 : e.attackT);
