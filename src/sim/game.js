@@ -1119,15 +1119,15 @@ export class Game {
     if (!this.canAfford(owner, a.cost)) return { ok: false, reason: 'Yetersiz kaynak' };
     return { ok: true, reason: '' };
   }
-  // developer mode: jump straight to any age (also back), as if aged up there; cancels a running age-up
+  // developer mode / sandbox: jump straight to any age (also back), as if aged up there; cancels a running age-up
   devSetAge(age) {
-    if (!this.cfg.dev) return false;
+    if (!this.cfg.dev && !this.cfg.sandbox) return false;
     const p = this.players[this.me]; if (!p) return false;
     age = Math.max(0, Math.min(AGES.length - 1, age | 0)); if (age === p.age) return false;
     for (const b of this.buildings) if (b.owner === p.id) for (let i = b.queue.length - 1; i >= 0; i--) if (b.queue[i].kind === 'age') b.queue.splice(i, 1);
     p.age = age; p.ageProgress = 0; p.ageAt = this.time; this._rescaleBuildings(p);
     this.events.emit('ageUp', { owner: p.id, age, dev: true });
-    this.events.emit('notify', { text: AGES[age].name + ' (geliştirici modu)', type: 'good' });
+    this.events.emit('notify', { text: AGES[age].name + (this.cfg.dev ? ' (geliştirici modu)' : ' (sandbox)'), type: 'good' });
     return true;
   }
   ageUp(buildingId) {
@@ -1912,7 +1912,7 @@ export class Game {
         if (n > 0) this._near(b.x, b.z, TEMPLE_HEAL_R, e => { if (e.dead || e.owner !== b.owner || e.hp >= e.maxHp || e.state === 'attack' || this.time - (e.hitT || -99) < 5 || Math.hypot(e.x - b.x, e.z - b.z) > TEMPLE_HEAL_R) return; e.hp = Math.min(e.maxHp, e.hp + n); }); }
     }
     const q = b.queue[0]; if (!q) return;
-    const sp = (this.cfg.sandbox && b.owner === 0 ? 2 : 1) / QUEUE_TIME_MUL * (q.kind === 'unit' ? 1 + p.mods.train + (b.type === 'factory' ? p.mods.factory : 0) : 1);
+    const sp = (this.cfg.sandbox && b.owner === 0 ? (this.cfg.instant !== false ? 1e6 : 2) : 1) / QUEUE_TIME_MUL * (q.kind === 'unit' ? 1 + p.mods.train + (b.type === 'factory' ? p.mods.factory : 0) : 1);
     if (q.t < q.total) q.t = Math.min(q.total, q.t + dt * sp);
     if (q.kind === 'age') p.ageProgress = q.t / q.total;
     if (q.t < q.total) return;
@@ -1952,6 +1952,15 @@ export class Game {
     this.time += dt; this._pn = 0; this._fpn = 0;
     // developer mode (single player, the owner's account only; see ui _menuSetup): whole map visible, resources never run out
     if (this.cfg.dev) { this.reveal = true; const p = this.players[this.me]; if (p) for (const k in p.res) if (p.res[k] < 50000) p.res[k] = 99999; }
+    // sandbox: resources never run out; with "Anında" (cfg.instant, on unless set false) the player's foundations stand up
+    // at once and their queues (units, techs, age-up) finish on the next tick (_bTick: sp)
+    if (this.cfg.sandbox) {
+      const p = this.players[this.me]; if (p) for (const k in p.res) if (p.res[k] < 50000) p.res[k] = 99999;
+      if (this.cfg.instant !== false) for (const b of this.buildings) if (b.owner === this.me && !b.done && !b.dead) {
+        if (!b.started && (b.type === 'wall' || b.type === 'tower' || b.type === 'gate')) { b.started = true; this._block(b, this._solidV(b)); this._repathAround(b); this._pushOut(b); }
+        b.hp = b.maxHp; this._complete(b);
+      }
+    }
     if (this.time >= (this._expT || 0)) { this._expT = this.time + 0.7; for (const u of this.units) if (u.explore && !u.dead && !u.order && this.time >= (u.exploreT || 0)) this._exploreStep(u); }
     const hc = this._hc, cells = this._cells, units = this.units;
     for (let i = 0; i < cells.length; i++) cells[i].length = 0;

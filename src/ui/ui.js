@@ -872,20 +872,26 @@ export class UI {
 
   // developer mode panel: jump between ages (only in a dev game)
   _devPanel() {
-    const g = this.game, on = !!(g && g.cfg && g.cfg.dev && this.mode === 'hud');
+    // (sandbox too: any age in one click, and "⚡ Anında": buildings stand up at once, queues finish at once; sim update)
+    const g = this.game, on = !!(g && g.cfg && (g.cfg.dev || g.cfg.sandbox) && !this.app.net && this.mode === 'hud');
     if (!on) { if (this.devEl) this.devEl.classList.add('hidden'); return; }
     if (!this.devEl) {
-      this.devEl = el('div', 'devpanel', '<b>Geliştirici</b>');
+      this.devEl = el('div', 'devpanel', '<b></b>');
       for (let i = 0; i < AGES.length; i++) {
-        const b = el('button', '', AGES[i].name.split(' ')[0]); b.dataset.age = i;
+        const b = el('button', '', AGES[i].name.split(' ')[0]); b.dataset.age = i; b.title = AGES[i].name + ': hemen bu çağa geç';
         b.onclick = () => { this._click(); safe(() => this.game.devSetAge(i)); };
         this.devEl.append(b);
       }
+      const ins = el('button', 'dev-instant', '⚡ Anında'); ins.title = 'Açıkken binalar yerleştirildiği anda biter, birlik / teknoloji / çağ sırası beklemeden tamamlanır';
+      ins.onclick = () => { this._click(); const c = this.game.cfg; c.instant = c.instant === false; this._devPanel(); };
+      this.devEl.append(ins);
       this.hudEl.append(this.devEl);
     }
     this.devEl.classList.remove('hidden');
+    this.devEl.querySelector('b').textContent = g.cfg.dev ? 'Geliştirici' : 'Sandbox';
     const age = g.players[this._me()]?.age | 0;
-    this.devEl.querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.age === age));
+    this.devEl.querySelectorAll('button[data-age]').forEach((b) => b.classList.toggle('on', +b.dataset.age === age));
+    this.devEl.querySelector('.dev-instant').classList.toggle('on', g.cfg.instant !== false);
   }
   update(dt) {
     this.frames++; this.fpsT += dt;

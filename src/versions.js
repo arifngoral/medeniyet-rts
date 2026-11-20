@@ -45,6 +45,10 @@ export const VERSIONS = [
         'Arayüz ekran boyutuna göre ölçeklenir: 2K ekranda tam boy, Full HD ve daha küçük ekranlarda küçülür, oyun alanını daraltmaz.',
         'Oyun içindeki bütün paneller menülerle aynı görünüme geçti: seçim paneli, yapıların üretim kuyruğu, komut kartı, ipuçları, görevler, bildirimler, teknoloji ağacı, istatistikler, duraklatma menüsü.',
       ]],
+      ['Sandbox', [
+        'Sağ üstteki Sandbox panelinden istediğin çağa tek tıkla geçilir (geri de dönülür); bekleme, bina şartı ve bedel yok.',
+        '⚡ Anında (açık gelir): binalar yerleştirildiği anda biter, birlik / teknoloji / çağ sırası beklemeden tamamlanır, kaynaklar hiç bitmez. Kapatınca eski 2 kat hız kalır.',
+      ]],
       ['Düzeltmeler', [
         'Özel birlikler düğmeden basılamıyordu, düzeldi.',
       ]],
