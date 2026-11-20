@@ -18,7 +18,7 @@
 > **Medeniyetler:** 20 medeniyet, her birinin maç başından geçerli pasif bonusları var (`src/civs.js`, veri `src/civ-data.js`).
 > Tek oyunculuda Yeni Oyun ekranından, çok oyunculuda lobiden seçilir; "Rastgele" maç tohumundan belirlenir. Test: `node test/civ-test.mjs`.
 > Her medeniyetin bir **özel birliği** var (`src/civ-units.js`): standart bir birliğin yerine geçer (Roma'da Kılıç Ustası yerine Lejyoner,
-> Moğollarda Hafif Süvari yerine atlı okçu Mangudai...), aynı binadan aynı çağda üretilir; görünüşü temel birliğin donanımına sorguç / pelerin eklenerek çizilir; Savaş Fili ve Deve Süvarisi kendi binek modeliyle (`render/entities.js` `makeElephant` / `makeCamel`).
+> Moğollarda Hafif Süvari yerine atlı okçu Mangudai...), aynı binadan aynı çağda üretilir; her birinin kendi başlığı, gövdesi, silahı ve kalkanı var (`render/entities.js` `uHead` / `uBody` / `uWeapon` / `uShield`); Savaş Fili ve Deve Süvarisi kendi binek modeliyle (`render/entities.js` `makeElephant` / `makeCamel`).
 
 # Aevum
 

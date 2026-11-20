@@ -1318,6 +1318,147 @@ const KIT = {
 };
 const CARRY_M = { wood: MT.wood, food: MT.red, stone: MT.stone, gold: MT.gold };
 
+// ---------- unique units: their own headgear, body, weapon and shield (kit.head / body / wpn / shieldLook) ----------
+// Same boxes and pivots as the standard kit, so the animations are unchanged; the look is the same in every age.
+// cm: the unit's own colour (kit.crest), cloth: the player's colour.
+const UQ = { straw: mat(0xd8c07a, 1), jag: mat(0xd98a2b, .9), obsid: mat(0x15151a, .3, .4), dkiron: mat(0x2b2d33, .5, .6), feather: mat(0x2f9a5a, .8), wicker: mat(0xb39256, 1), dkskin: mat(0x7a4a2c, .85) };
+function uHead(H, k, cloth) {
+  const cm = k.crest != null ? mat(k.crest, .75) : cloth, h = k.head;
+  if (k.skin === 'dark') bx(H, UQ.dkskin, .172, .172, .172, 0, 0, 0);
+  if (h === 'kabuto') {            // samurai: dark bowl, neck guard, gold horns
+    mk(G.dome, H, UQ.dkiron, .22, .17, .22, 0, .1, 0); bx(H, UQ.dkiron, .25, .05, .2, 0, .07, -.05); bx(H, cm, .26, .025, .21, 0, .07, -.05);
+    for (const s of [1, -1]) { const hn = bx(H, MT.gold, .022, .16, .02, s * .06, .2, .09); hn.rotation.z = -s * .4; }
+    bx(H, MT.gold, .05, .04, .02, 0, .19, .1);
+  } else if (h === 'galea') {      // legionary: steel bowl, cheek guards, brow band, red crest
+    mk(G.dome, H, MT.steel, .21, .18, .21, 0, .1, 0); bx(H, MT.steel, .22, .03, .1, 0, .08, -.08);
+    for (const s of [1, -1]) bx(H, MT.steel, .02, .1, .07, s * .095, .0, .04);
+    bx(H, MT.gold, .2, .02, .02, 0, .11, .1); bx(H, MT.gold, .03, .05, .2, 0, .25, -.01); bx(H, cm, .045, .1, .26, 0, .29, -.01);
+  } else if (h === 'corinth') {    // hoplite: closed bronze helmet, tall horsehair crest
+    bx(H, MT.bronze, .2, .24, .2, 0, -.03, 0); bx(H, MT.black, .15, .03, .01, 0, .09, .1); bx(H, MT.black, .02, .1, .01, 0, -.03, .1);
+    bx(H, MT.bronze, .03, .05, .22, 0, .21, -.02); bx(H, cm, .045, .15, .3, 0, .25, -.03);
+  } else if (h === 'pelt') {       // berserker: bare head, beard, a bear's pelt over it
+    bx(H, XM.hair, .18, .05, .18, 0, .15, 0); bx(H, XM.hair, .13, .09, .03, 0, -.04, .09);
+    bx(H, XM.fur, .21, .09, .21, 0, .16, -.02); bx(H, XM.fur, .2, .2, .05, 0, -.04, -.1);
+    for (const s of [1, -1]) bx(H, XM.fur, .045, .045, .03, s * .07, .25, .02);
+  } else if (h === 'bork') {       // akinci: fur-trimmed red cap, a feather
+    cy(H, XM.fur, .105, .05, 0, .13, 0); cn(H, cm, .09, .15, 0, .17, 0); bx(H, MT.white, .02, .12, .03, 0, .2, .08);
+  } else if (h === 'furcap') {     // steppe rider: fur band, pointed leather top, ear flaps
+    cy(H, XM.fur, .108, .06, 0, .12, 0); cn(H, MT.leather, .085, .12, 0, .18, 0); sp(H, cm, .03, 0, .31, 0);
+    for (const s of [1, -1]) bx(H, MT.leather, .02, .11, .1, s * .095, .02, -.01);
+  } else if (h === 'conic') {      // druzhina: pointed steel helmet, nasal, mail curtain
+    cy(H, MT.steel, .1, .04, 0, .11, 0); cn(H, MT.steel, .1, .2, 0, .15, 0); sp(H, cm, .028, 0, .36, 0);
+    bx(H, MT.steel, .02, .09, .015, 0, .04, .095); bx(H, XM.mail, .2, .12, .16, 0, -.03, -.03);
+  } else if (h === 'tiara') {      // immortal: soft cap wound round the head and chin
+    bx(H, cm, .19, .11, .19, 0, .11, 0); bx(H, cm, .2, .05, .06, 0, -.01, .07); bx(H, cm, .19, .17, .04, 0, -.01, -.09);
+  } else if (h === 'jaguar') {     // jaguar warrior: the head looks out of the beast's jaws, quetzal feathers behind
+    bx(H, UQ.jag, .22, .14, .23, 0, .1, .01); bx(H, UQ.jag, .22, .1, .05, 0, -.02, -.1); bx(H, MT.white, .14, .025, .02, 0, .1, .125);
+    for (const s of [1, -1]) { bx(H, UQ.jag, .045, .045, .03, s * .075, .24, -.02); bx(H, UQ.obsid, .03, .03, .012, s * .06, .17, .12); bx(H, UQ.obsid, .035, .012, .04, s * .06, .241, .05); }
+    for (const s of [1, 0, -1]) { const f = bx(H, UQ.feather, .03, .2, .03, s * .06, .2, -.1); f.rotation.x = -.35; }
+  } else if (h === 'band') {       // headband and a feather (Nubian archer, Numidian rider)
+    bx(H, UQ.obsid, .18, .04, .18, 0, .15, 0); bx(H, cm, .185, .035, .185, 0, .1, 0); bx(H, cm, .025, .15, .03, 0, .12, -.09);
+  } else if (h === 'hood') {       // longbowman: a hood in his own colour with a pointed tail
+    bx(H, cm, .19, .09, .19, 0, .12, -.01); bx(H, cm, .19, .17, .04, 0, 0, -.09); bx(H, cm, .21, .04, .2, 0, -.02, -.01); cn(H, cm, .05, .1, 0, .2, -.07).rotation.x = -.7;
+  } else if (h === 'gat') {        // hwarang: lacquered wide-brimmed hat, a feather
+    cy(H, MT.black, .16, .012, 0, .165, 0); cy(H, MT.black, .075, .09, 0, .17, 0); bx(H, cm, .02, .12, .03, .06, .2, 0); bx(H, XM.hair, .18, .02, .18, 0, .15, 0);
+  } else if (h === 'douli') {      // Chinese crossbowman: wide conical straw hat
+    cn(H, UQ.straw, .17, .1, 0, .13, 0); bx(H, cm, .1, .02, .1, 0, .2, 0);
+  } else if (h === 'paladin') {    // great helm, gold cross, a tall plume
+    bx(H, MT.steel, .2, .23, .2, 0, -.02, 0); bx(H, MT.black, .14, .02, .01, 0, .1, .1); bx(H, MT.gold, .02, .16, .012, 0, .01, .101); bx(H, MT.gold, .1, .02, .012, 0, .12, .101);
+    bx(H, cm, .05, .2, .16, 0, .21, -.04); bx(H, MT.gold, .21, .02, .21, 0, .19, 0);
+  } else if (h === 'cataphract') { // steel bowl, mail over the whole face, horsehair tuft
+    mk(G.dome, H, MT.steel, .21, .16, .21, 0, .11, 0); bx(H, XM.mail, .2, .16, .2, 0, -.04, 0); bx(H, MT.black, .13, .025, .01, 0, .09, .101);
+    cy(H, MT.gold, .02, .06, 0, .26, 0); bx(H, cm, .03, .14, .03, 0, .3, -.02);
+  } else if (h === 'net') {        // almogavar: leather net cap, beard
+    bx(H, MT.leather, .19, .07, .19, 0, .13, 0); bx(H, XM.hair, .13, .08, .03, 0, -.03, .09); bx(H, cm, .195, .02, .195, 0, .12, 0);
+  } else if (h === 'turban') {     // wound cloth, a tail down the back
+    cy(H, MT.white, .115, .09, 0, .12, 0); sp(H, MT.white, .065, 0, .22, 0); bx(H, cm, .1, .03, .02, 0, .15, .11); bx(H, MT.white, .09, .16, .02, .03, -.02, -.1);
+  } else {                         // 'wrap': a cloth wound round the head (Mandinka)
+    bx(H, cm, .19, .09, .19, 0, .12, 0); bx(H, cm, .06, .06, .06, .08, .2, -.04);
+  }
+}
+function uBody(P, k, cloth) {
+  const cm = k.crest != null ? mat(k.crest, .75) : cloth, T = P.torso, b = k.body;
+  if (b === 'lamellar') {          // samurai: laced plates in the player's colour, shoulder guards, a skirt of plates
+    for (const y of [.02, .12, .22]) bx(T, UQ.dkiron, .32, .07, .2, 0, y, 0);
+    for (const y of [.085, .185]) bx(T, cloth, .325, .03, .205, 0, y, 0);
+    for (const s of [1, -1]) { bx(T, UQ.dkiron, .1, .16, .16, s * .21, .18, 0); bx(T, cloth, .105, .03, .165, s * .21, .24, 0); }
+    bx(T, UQ.dkiron, .33, .12, .21, 0, -.12, 0); bx(T, cloth, .335, .025, .215, 0, -.06, 0);
+  } else if (b === 'bands') {      // legionary: steel hoops, a red tunic under them
+    for (const y of [.04, .12, .2, .28]) bx(T, MT.steel, .32, .06, .2, 0, y, 0);
+    for (const s of [1, -1]) bx(T, MT.steel, .09, .06, .17, s * .2, .28, 0);
+    bx(T, cm, .32, .12, .2, 0, -.1, 0); bx(T, MT.gold, .06, .06, .012, 0, .04, .101);
+  } else if (b === 'pelt') {       // jaguar warrior: the spotted hide
+    bx(T, UQ.jag, .32, .44, .2, 0, -.08, 0);
+    for (const [x, y] of [[.08, .22], [-.07, .14], [.05, .04], [-.09, -.02], [.1, .12], [-.02, .26]]) bx(T, UQ.obsid, .04, .04, .012, x, y, .101);
+    bx(T, cloth, .325, .05, .205, 0, .04, 0);
+  } else if (b === 'bare') {       // berserker: bare chest, a belt and trousers
+    bx(T, MT.skin, .31, .28, .19, 0, .09, 0); bx(T, cloth, .32, .09, .2, 0, -.02, 0);
+  } else if (b === 'robe') {       // a long robe in his own colour (Immortal, Mandinka), the player's sash
+    bx(T, cm, .32, .46, .2, 0, -.1, 0); bx(T, cloth, .325, .05, .205, 0, .08, 0); const s = bx(T, cloth, .07, .38, .205, .12, .0, 0); s.rotation.z = .55;
+  } else if (b === 'linen') {      // hoplite: stiffened linen cuirass, bronze trim, leather strips
+    bx(T, MT.white, .32, .3, .2, 0, .06, 0); bx(T, MT.bronze, .325, .03, .205, 0, .3, 0); bx(T, cloth, .325, .04, .205, 0, .08, 0);
+    for (const x of [-.11, -.04, .04, .11]) bx(T, MT.white, .06, .1, .2, x, -.06, 0);
+  } else if (b === 'scale') {      // cataphract / druzhina: a long coat of scales
+    bx(T, XM.mail, .32, .5, .2, 0, -.14, 0); bx(T, cloth, .325, .05, .205, 0, .06, 0); bx(T, MT.steel, .2, .14, .012, 0, .18, .101);
+  } else if (b === 'surcoat') {    // paladin: a surcoat in the player's colour over mail, a gold cross
+    bx(T, cloth, .32, .48, .2, 0, -.12, 0); bx(T, MT.gold, .04, .22, .012, 0, .08, .101); bx(T, MT.gold, .14, .04, .012, 0, .2, .101);
+  } else if (b === 'coat') {       // a quilted riding coat in his own colour (steppe and desert riders, archers)
+    bx(T, cm, .32, .42, .2, 0, -.06, 0); bx(T, cloth, .325, .05, .205, 0, .06, 0); bx(T, MT.leather, .04, .3, .012, .03, .08, .101);
+  }
+}
+// -> draws on P.armR / P.armL and sets the pose flags the animation reads (P.bow, P.gun)
+function uWeapon(P, k, wm, cloth) {
+  const cm = k.crest != null ? mat(k.crest, .75) : cloth, Rr = P.armR, w = k.wpn;
+  if (w === 'katana') {            // long, thin, slightly curved; a short sword in the belt
+    const a = bx(Rr, MT.steel, .018, .04, .34, 0, -.36, .2), b2 = bx(Rr, MT.steel, .018, .04, .28, 0, -.335, .48); b2.rotation.x = -.14; void a;
+    bx(Rr, MT.gold, .07, .06, .015, 0, -.37, .04); bx(Rr, UQ.dkiron, .03, .04, .12, 0, -.36, -.04);
+    const s = bx(P.torso, UQ.dkiron, .03, .04, .3, .15, .02, -.02); s.rotation.x = .5;
+  } else if (w === 'gladius') {    // short and broad
+    bx(Rr, MT.steel, .045, .05, .28, 0, -.36, .2); bx(Rr, MT.steel, .03, .04, .06, 0, -.355, .35); bx(Rr, MT.gold, .1, .03, .03, 0, -.35, .05); sp(Rr, MT.gold, .03, 0, -.335, -.03);
+  } else if (w === 'axe') {        // long-hafted war axe
+    bx(Rr, MT.wood, .03, .03, .62, 0, -.36, .24); bx(Rr, MT.steel, .022, .2, .13, 0, -.44, .5); bx(Rr, MT.steel, .022, .1, .05, 0, -.39, .58);
+  } else if (w === 'macua') {      // wooden blade set with obsidian
+    bx(Rr, MT.wood, .03, .07, .44, 0, -.38, .26); bx(Rr, UQ.obsid, .012, .1, .3, 0, -.395, .33); bx(Rr, MT.leather, .04, .04, .08, 0, -.36, .03);
+  } else if (w === 'falchion') {   // broad single-edged blade, two javelins on the back
+    bx(Rr, MT.steel, .025, .08, .34, 0, -.37, .24); bx(Rr, MT.leather, .08, .03, .03, 0, -.35, .05);
+    for (const x of [.04, -.02]) { const j = cy(P.torso, MT.wood, .01, .62, x, -.08, -.12); j.rotation.z = .25; cn(P.torso, MT.steel, .02, .08, x - .15, .5, -.12).rotation.z = .25; }
+  } else if (w === 'longbow') {    // a bow as tall as the man, a full quiver
+    mk(G.bow, P.armL, MT.wood, 1.3, 2.0, 2.0, 0, -.34, 0); P.bow = 1;
+    bx(P.torso, MT.leather, .09, .3, .07, -.07, .08, -.12); for (const x of [-.09, -.06]) bx(P.torso, cm, .02, .06, .02, x, .38, -.12);
+  } else if (w === 'bow') {        // the standard bow with fletching in his own colour
+    mk(G.bow, P.armL, MT.wood, 1.3, 1.4, 1.4, 0, -.34, 0); P.bow = 1;
+    bx(P.torso, MT.leather, .08, .28, .06, -.06, .08, -.12); for (const x of [-.08, -.05]) bx(P.torso, cm, .02, .06, .02, x, .36, -.12);
+  } else if (w === 'repeater') {   // crossbow with a magazine on top
+    bx(Rr, MT.wood, .04, .42, .05, 0, -.72, 0); bx(Rr, MT.steel, .3, .03, .03, 0, -.7, 0); bx(Rr, MT.dwood, .06, .2, .09, 0, -.62, .06); bx(Rr, cm, .065, .03, .095, 0, -.5, .06); P.gun = 1;
+  } else if (w === 'lance') {      // long lance with a pennon
+    cy(Rr, MT.wood, .016, 1.55, 0, -1.1, .03); cn(Rr, wm, .03, .16, 0, -1.1, .03).rotation.x = PI; bx(Rr, cm, .02, .1, .2, 0, -.96, .14); bx(Rr, MT.steel, .06, .04, .06, 0, -.3, .03);
+  } else if (w === 'tug') {        // light spear with a horsetail under the head
+    cy(Rr, MT.wood, .014, 1.2, 0, -.9, .03); cn(Rr, wm, .03, .14, 0, -.9, .03).rotation.x = PI; bx(Rr, cm, .05, .14, .05, 0, -.76, .03);
+  } else if (w === 'javelins') {   // a handful of throwing spears
+    for (const [x, z] of [[0, .03], [.03, .0], [-.03, .0]]) { cy(Rr, MT.wood, .011, 1.0, x, -.8, z); cn(Rr, wm, .022, .1, x, -.8, z).rotation.x = PI; }
+  } else {                         // 'dory': a long thrusting spear, a butt spike / counterweight in gold
+    cy(Rr, MT.wood, .015, 1.4, 0, -1.0, .03); cn(Rr, wm, .032, .16, 0, -1.0, .03).rotation.x = PI; sp(Rr, MT.gold, .032, 0, .4, .03);
+  }
+}
+function uShield(P, k, cloth) {
+  const cm = k.crest != null ? mat(k.crest, .75) : cloth, L = P.armL, s = k.shieldLook;
+  if (s === 'scutum') {            // tall curved rectangle, gold boss and edges
+    bx(L, cm, .04, .5, .3, .075, -.5, .02); bx(L, MT.gold, .045, .03, .31, .075, -.5, .02); bx(L, MT.gold, .045, .03, .31, .075, -.03, .02); sp(L, MT.gold, .045, .1, -.26, .02);
+    bx(L, MT.gold, .012, .3, .03, .1, -.4, .02);
+  } else if (s === 'aspis') {      // great round bronze shield, the player's colour in the middle
+    mk(G.wheel, L, MT.bronze, .035, .46, .46, .075, -.26, .02); mk(G.wheel, L, cloth, .04, .34, .34, .075, -.26, .02); mk(G.wheel, L, cm, .045, .14, .14, .075, -.26, .02);
+  } else if (s === 'wicker') {     // tall wicker shield with coloured bands
+    bx(L, UQ.wicker, .035, .46, .26, .07, -.48, .02); for (const y of [-.4, -.26, -.12]) bx(L, cm, .04, .04, .265, .07, y, .02);
+  } else if (s === 'chimalli') {   // round feathered shield, a fringe below
+    mk(G.wheel, L, cm, .035, .32, .32, .075, -.24, .02); mk(G.wheel, L, cloth, .04, .18, .18, .075, -.24, .02); for (const z of [-.08, .02, .12]) bx(L, UQ.feather, .03, .12, .05, .075, -.5, z);
+  } else if (s === 'kite') {       // almond shield: wide top, narrow foot, an emblem
+    bx(L, cloth, .035, .26, .26, .07, -.3, .02); bx(L, cloth, .035, .14, .18, .07, -.44, .02); bx(L, cloth, .035, .1, .1, .07, -.54, .02);
+    bx(L, cm, .04, .2, .04, .075, -.34, .02); bx(L, cm, .04, .04, .16, .075, -.24, .02);
+  } else {                         // 'hide': tall oval hide shield with a stripe
+    bx(L, XM.hide, .035, .42, .2, .07, -.46, .02); bx(L, XM.hide, .035, .3, .25, .07, -.4, .02); bx(L, cm, .04, .36, .04, .075, -.43, .02);
+  }
+}
+
 function makeHuman(g, color, k, P, age) {
   const A = Math.max(0, Math.min(4, age | 0)), V = !!k.villager;
   const cloth = mat(color, .85, 0);
@@ -1343,6 +1484,7 @@ function makeHuman(g, color, k, P, age) {
   else if (A === 3) { if (V) bx(P.torso, MT.white, .2, .04, .2, 0, .33, 0); else { bx(P.torso, cloth, .33, .09, .205, 0, -.02, 0); if (k.armor) bx(P.torso, MT.gold, .04, .2, .19, 0, .12, 0); } }
   else if (V) { bx(P.torso, cloth, .1, .3, .195, .105, .03, 0); bx(P.torso, cloth, .1, .3, .195, -.105, .03, 0); bx(P.torso, cloth, .31, .3, .05, 0, .03, -.07); }
   else { const b1 = bx(P.torso, MT.white, .045, .4, .195, .13, .0, 0); b1.rotation.z = .6; bx(P.torso, MT.gold, .03, .22, .19, 0, .08, 0); bx(P.torso, MT.leather, .2, .18, .07, 0, .12, -.12); }
+  if (k.body) uBody(P, k, cloth);
   P.head = piv(P.torso, 0, .37, 0); bx(P.head, MT.skin, .17, .17, .17, 0, 0, 0);
   let hs;
   if (V) hs = 'v' + A;
@@ -1351,7 +1493,8 @@ function makeHuman(g, color, k, P, age) {
   else if (A === 2) hs = k.armor ? 'great' : k.helm === 'hood' ? 'hood' : 'kettle';
   else if (A === 3) hs = k.helm === 'hat' ? 'hat' : 'morion';
   else hs = k.helm === 'kepi' ? 'kepi' : 'shako';
-  if (hs === 'v0') bx(P.head, XM.hair, .18, .05, .18, 0, .15, 0);
+  if (k.head) uHead(P.head, k, cloth);
+  else if (hs === 'v0') bx(P.head, XM.hair, .18, .05, .18, 0, .15, 0);
   else if (hs === 'v1') { bx(P.head, XM.hair, .18, .04, .18, 0, .15, 0); bx(P.head, cloth, .185, .035, .185, 0, .1, 0); }
   else if (hs === 'v2' || hs === 'hood') { bx(P.head, cloth, .19, .09, .19, 0, .12, -.01); bx(P.head, cloth, .19, .16, .04, 0, 0, -.09); }
   else if (hs === 'v3') { cy(P.head, MT.leather, .17, .02, 0, .16, 0); cy(P.head, MT.leather, .085, .07, 0, .17, 0); bx(P.head, cloth, .175, .02, .175, 0, .18, 0); }
@@ -1365,19 +1508,21 @@ function makeHuman(g, color, k, P, age) {
   else if (hs === 'kepi') { cy(P.head, cloth, .09, .08, 0, .16, 0); bx(P.head, MT.black, .12, .015, .08, 0, .16, .1); }
   else { cy(P.head, MT.black, .085, .15, 0, .16, 0); bx(P.head, MT.black, .12, .015, .07, 0, .16, .1); sp(P.head, cloth, .035, 0, .34, 0); bx(P.head, MT.gold, .05, .05, .01, 0, .2, .086); }
   // unique units: a crest on the helmet and / or a cape, in their own colour
-  if (k.crest != null) bx(P.head, mat(k.crest, .7), .05, .13, .24, 0, .3, -.01);
+  if (k.crest != null && !k.head) bx(P.head, mat(k.crest, .7), .05, .13, .24, 0, .3, -.01);
   if (k.cape != null) bx(P.torso, mat(k.cape, .9), .3, .5, .03, 0, .06, -.115);
   P.armL = piv(P.torso, .2, .33, 0); bx(P.armL, armM, .085, .32, .085, 0, -.32, 0); bx(P.armL, MT.skin, .07, .06, .07, 0, -.36, 0);
   P.armR = piv(P.torso, -.2, .33, 0); bx(P.armR, armM, .085, .32, .085, 0, -.32, 0); bx(P.armR, MT.skin, .07, .06, .07, 0, -.36, 0);
   if (!V && A === 1) { bx(P.armL, MT.bronze, .095, .08, .095, 0, -.3, 0); bx(P.armR, MT.bronze, .095, .08, .095, 0, -.3, 0); }
   if (A === 4 && !V) { bx(P.armL, MT.white, .095, .04, .095, 0, -.31, 0); bx(P.armR, MT.white, .095, .04, .095, 0, -.31, 0); }
   const w = k.weapon, wm = A === 0 ? MT.stone : A === 1 ? MT.bronze : MT.steel;
-  if (w === 'spear') { cy(P.armR, MT.wood, .014, 1.2, 0, -.9, .03); cn(P.armR, wm, .03, .14, 0, -.9, .03).rotation.x = PI; if (A >= 3) bx(P.armR, cloth, .02, .08, .1, 0, -.72, .08); }
+  if (k.wpn) uWeapon(P, k, wm, cloth);
+  else if (w === 'spear') { cy(P.armR, MT.wood, .014, 1.2, 0, -.9, .03); cn(P.armR, wm, .03, .14, 0, -.9, .03).rotation.x = PI; if (A >= 3) bx(P.armR, cloth, .02, .08, .1, 0, -.72, .08); }
   else if (w === 'sword') { bx(P.armR, wm, A === 0 ? .04 : .025, .05, A === 0 ? .36 : .46, 0, -.36, A === 0 ? .22 : .27); bx(P.armR, A === 0 ? MT.wood : A >= 3 ? MT.gold : MT.bronze, .12, .03, .03, 0, -.35, .05); }
   else if (w === 'bow') { mk(G.bow, P.armL, MT.wood, 1.3, 1.3, 1.3, 0, -.34, 0); P.bow = 1; bx(P.torso, MT.leather, .08, .28, .06, -.06, .08, -.12); }
   else if (w === 'xbow') { bx(P.armR, MT.wood, .04, .42, .05, 0, -.72, 0); bx(P.armR, MT.steel, .34, .03, .03, 0, -.7, 0); P.gun = 1; }
   else if (w === 'gun') { bx(P.armR, MT.wood, .04, .3, .05, 0, -.5, 0); cy(P.armR, MT.iron, .014, .42, 0, -.9, 0); if (A >= 4) cn(P.armR, MT.steel, .012, .12, 0, -.9, 0).rotation.x = PI; P.gun = 1; }
-  if (k.shield) {
+  if (k.shield && k.shieldLook) uShield(P, k, cloth);
+  else if (k.shield) {
     if (A === 0) { mk(G.wheel, P.armL, MT.dwood, .03, .3, .3, .07, -.24, .02); bx(P.armL, XM.hide, .035, .14, .14, .072, -.31, .02); }
     else if (A === 1) { mk(G.wheel, P.armL, MT.bronze, .03, .34, .34, .07, -.24, .02); mk(G.wheel, P.armL, cloth, .036, .25, .25, .07, -.24, .02); sp(P.armL, MT.bronze, .035, .09, -.24, .02); }
     else if (A === 2) { bx(P.armL, MT.wood, .035, .3, .26, .065, -.36, .02); bx(P.armL, MT.wood, .035, .08, .15, .065, -.43, .02); bx(P.armL, cloth, .04, .2, .2, .07, -.31, .02); bx(P.armL, MT.white, .05, .2, .04, .07, -.31, .02); }
