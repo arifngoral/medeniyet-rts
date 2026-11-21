@@ -41,13 +41,19 @@ Yapılanlar: Kolezyum, Süleymaniye (dokulu, 2026-11-22).
 
 ## Birimler (iskeletli, animasyonlu; ör. `piyade.py`)
 
-Kart resimlerinin tarzında, ayrıntılı: Gemini'ye kart resimlerinden ikisi yüklenip "bu tarzda, önden ve yandan" çizim istenir. :
-parçalar (, ,  çizgi boyunca boru: parmak / kaş / bıyık, , , ,  kavisli panel) alt bölümlemeyle yumuşatılır;
-her parça bir kemiğe ya da ağırlık işlevine bağlı (gövde ile tunik  işleviyle kalça -> bel -> göğüs boyunca birlikte bükülür: biri ötekinden
-taşmaz). Malzemeler işlemli (: örgü halkalı zırh, dokuma kumaş, damarlı deri, kalaslı tahta, aşınmış kenarlı çelik, sırma) ve
- ile ortam gölgesiyle birlikte tek 2048 dokuya pişirilir.  /  (: x öne eğilme, aşağı sarkan kemikte öne -x; z dönüş)
-eylemleri ayrı NLA izlerinde yazar;  tek glTF (iskelet +  /  /  / , doku JPEG). Takım rengi tunikteki mavi.
-Eller:  kabzanın / tutamağın çevresine kapanan parmaklar (kavranan eksen kola dik seçilmeli). Etek kendi kemiklerinde ( / ).
+Kart resimlerinin tarzında, ayrıntılı: Gemini'ye kart resimlerinden ikisi yüklenip "bu tarzda, önden ve yandan" çizim istenir.
+`karakter.py`: parçalar (`kure`, `tup`, `yol` çizgi boyunca boru: parmak / kaş / bıyık, `kabuk`, `kutu`, `halka`, `yay` kavisli panel)
+alt bölümlemeyle yumuşatılır; her parça bir kemiğe ya da bir ağırlık işlevine bağlı (gövde ile tunik `govde` işleviyle kalça -> bel -> göğüs
+boyunca birlikte bükülür: biri ötekinden taşmaz). Malzemeler işlemli (`MALZEME`: örgü halkalı zırh, dokuma kumaş, damarlı deri, kalaslı
+tahta, aşınmış kenarlı çelik, sırma) ve `pisir` ile ortam gölgesiyle birlikte tek 2048 dokuya pişirilir. `iskelet` / `eylem` (`poz`: x öne
+eğilme, aşağı sarkan kemikte öne -x; z dönüş) eylemleri ayrı NLA izlerinde yazar; `disa_aktar` tek glTF (iskelet + `bekle` / `yuru` /
+`saldir` / `ol`, doku JPEG). Takım rengi tunikteki mavi. Eller: `yumruk` kabzanın / tutamağın çevresine kapanan parmaklar (kavranan eksen
+kola dik seçilmeli). Etek kendi kemiklerinde (`etek_on` / `etek_arka`).
 
-\Büyük görünüm . Oyuna henüz bağlı değil (birimler hâlâ kodla çiziliyor, ); oyunda yüzlerce asker için
+```
+blender -b --factory-startup --python tools/lm-blender/piyade.py -- ham.glb [önizleme klasörü]
+gltf-transform meshopt ham.glb assets/models/birim/piyade.glb --level medium --quantize-normal 12
+blender --factory-startup --python tools/lm-blender/birim_canli.py -- piyade     (pencereli: animasyonlar sırayla oynar)
+```
+Büyük görünüm `model.html?id=piyade`. Oyuna henüz bağlı değil (birimler hâlâ kodla çiziliyor, `entities.js`); oyunda yüzlerce asker için
 düşük ayrıntılı bir sürüm (LOD) gerekecek. Piyade ~46 bin üçgen, 20 kemik, ~1,2 MB.
