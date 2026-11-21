@@ -30,6 +30,7 @@ OTURAK = [(0.80, 0.67, 0.50), (0.74, 0.61, 0.45)]
 BASAMAK = (0.60, 0.48, 0.35)
 DUVAR_IC = (0.70, 0.56, 0.41)
 KUM = (0.88, 0.62, 0.34)
+KUM_ACIK = (0.93, 0.72, 0.45)
 PODYUM = (0.63, 0.51, 0.39)
 TABAN_YAN, TABAN_UST = (0.64, 0.55, 0.44), (0.76, 0.67, 0.55)
 MAVI = (0.12, 0.33, 0.86)
@@ -91,31 +92,47 @@ def korniş(z):
     y.serit(halka(P, z + h / 2, c), r1, TAS_ACIK)
 
 
+def cerceve(a, b, z0):
+    """a wall face from a to b (seen from the side of nc = right of a->b): local u along it, v up, d into the wall"""
+    W = (b - a).length
+    e = (b - a) / W
+    nc = Vector((e.y, -e.x, 0))
+    def L(u, v, d=0.0):
+        return a + e * u - nc * d + Vector((0, 0, z0 + v))
+    return W, e, nc, L
+
+
+def kemerli(a, b, z0, H, v0=0.0, en=0.68, ust=0.017, derin=D, k_say=K, renk=TAS, korkuluk=None):
+    """one bay with a round-arched opening (front in convex pieces, reveal, dark back); korkuluk: sill height of a parapet"""
+    W, e, nc, L = cerceve(a, b, z0)
+    x0, x1 = (1 - en) / 2 * W, (1 + en) / 2 * W
+    R = (x1 - x0) / 2
+    hs = H - ust - R
+    kemer = [(x0 + R + R * math.cos(math.pi - math.pi * k / k_say), hs + R * math.sin(math.pi - math.pi * k / k_say)) for k in range(1, k_say)]
+    acik = [(x0, v0), (x0, hs)] + kemer + [(x1, hs), (x1, v0)]
+    y.yuz([L(0, 0), L(x0, 0), L(x0, H), L(0, H)], renk)
+    y.yuz([L(x1, 0), L(W, 0), L(W, H), L(x1, H)], renk)
+    if v0 > 0: y.yuz([L(x0, 0), L(x1, 0), L(x1, v0), L(x0, v0)], renk)
+    tepe = [(x0, hs)] + kemer + [(x1, hs)]
+    for k in range(len(tepe) - 1):
+        (ua, va), (ub, vb) = tepe[k], tepe[k + 1]
+        y.yuz([L(ua, va), L(ub, vb), L(ub, H), L(ua, H)], renk)
+    for k in range(len(acik)):
+        p, q = acik[k], acik[(k + 1) % len(acik)]
+        y.yuz([L(*p), L(*p, derin), L(*q, derin), L(*q)], TAS_ACIK if k == len(acik) - 1 else TAS_KOYU)
+    y.yuz([L(*acik[0], derin)] + [L(*acik[-1], derin)] + [L(*q, derin) for q in reversed(acik[1:-1])], DELIK)
+    if korkuluk:   # a low parapet standing in the opening, a little behind the face
+        d0, d1, h = derin * 0.35, derin * 0.6, v0 + korkuluk
+        y.yuz([L(x0, v0, d0), L(x1, v0, d0), L(x1, h, d0), L(x0, h, d0)], TAS_ACIK)
+        y.yuz([L(x0, h, d0), L(x1, h, d0), L(x1, h, d1), L(x0, h, d1)], TAS_ACIK)
+    return W, e, nc, L
+
+
 # ---- three tiers of arches ----
 z = ZB
 for t, H in enumerate(TIER):
     for i in range(N):
-        W, e, nc, L = bay_cerceve(i, z)
-        x0, x1 = 0.16 * W, 0.84 * W
-        R = (x1 - x0) / 2
-        hs = H - 0.017 - R
-        v0 = 0.0 if t == 0 else 0.012
-        kemer = [(x0 + R + R * math.cos(math.pi - math.pi * k / K), hs + R * math.sin(math.pi - math.pi * k / K)) for k in range(1, K)]
-        acik = [(x0, v0), (x0, hs)] + kemer + [(x1, hs), (x1, v0)]
-        # front in convex pieces: two piers, then vertical strips from the arch up to the cornice
-        y.yuz([L(0, 0), L(x0, 0), L(x0, H), L(0, H)], TAS)
-        y.yuz([L(x1, 0), L(W, 0), L(W, H), L(x1, H)], TAS)
-        if v0 > 0: y.yuz([L(x0, 0), L(x1, 0), L(x1, v0), L(x0, v0)], TAS)
-        tepe = [(x0, hs)] + kemer + [(x1, hs)]
-        for k in range(len(tepe) - 1):
-            (ua, va), (ub, vb) = tepe[k], tepe[k + 1]
-            y.yuz([L(ua, va), L(ub, vb), L(ub, H), L(ua, H)], TAS)
-        # reveal: jambs, soffit and sill, then the dark back
-        for k in range(len(acik)):
-            p, q = acik[k], acik[(k + 1) % len(acik)]
-            renk = TAS_ACIK if k == len(acik) - 1 else TAS_KOYU
-            y.yuz([L(*p), L(*p, D), L(*q, D), L(*q)], renk)
-        y.yuz([L(*acik[0], D)] + [L(*acik[-1], D)] + [L(*q, D) for q in reversed(acik[1:-1])], DELIK)
+        W, e, nc, L = kemerli(P[i], P[(i + 1) % N], z, H, v0=0.0 if t == 0 else 0.012, korkuluk=None if t == 0 else 0.018)
         kolon(L, e, nc, H)
     z += H
     korniş(z)
@@ -131,18 +148,16 @@ for i in range(N):
 z += ATTIC
 ZTOP = z
 korniş(ZTOP)
-y.serit(halka(P, ZTOP + COR[1] / 2), halka(Q, ZTOP + COR[1] / 2), TAS_ACIK)
-# the strip of the gallery wall between the cornice and the wall top
-y.serit(halka(Q, ZTOP + COR[1] / 2), halka(Q, ZTOP - GALLERY), DUVAR_IC)
-# gallery windows on the inside face
+# a thin attic wall on top, then a step down to the roof of the inner gallery (an arched colonnade above the seats)
+TA = 0.035
+ZT = ZTOP + COR[1] / 2
+ZG = ZTOP - 0.03
 ZSEAT = ZTOP - GALLERY
-for i in range(0, N, 2):
-    a, b = Q[i], Q[(i + 1) % N]
-    e = (b - a).normalized(); n = Vector((-e.y, e.x, 0))          # inward
-    W = (b - a).length
-    pp = lambda u, v: a + e * u + n * 0.002 + Vector((0, 0, v))
-    u0, u1, v0, v1 = 0.35 * W, 0.65 * W, ZSEAT + 0.03, ZSEAT + 0.075
-    y.yuz([pp(u1, v0), pp(u0, v0), pp(u0, v1), pp(u1, v1)], DELIK)
+y.serit(halka(P, ZT), halka(P, ZT, -TA), TAS_ACIK)
+y.serit(halka(P, ZT, -TA), halka(P, ZG, -TA), DUVAR_IC)
+y.serit(halka(P, ZG, -TA), halka(Q, ZG), TAS)
+for i in range(N):
+    kemerli(Q[(i + 1) % N], Q[i], ZSEAT, ZG - ZSEAT, en=0.6, ust=0.008, derin=0.03, k_say=4, renk=DUVAR_IC)
 
 # ---- seating: rings from the gallery wall down to the podium ----
 SA, SB = AA / (A - T), AB / (B - T)
@@ -162,6 +177,17 @@ for k in range(S):
     renk = DUVAR_IC if k in PREC else BASAMAK
     ust, alt = [Vector((p.x, p.y, zk)) for p in r_ic], [Vector((p.x, p.y, z2)) for p in r_ic]
     y.serit(ust, alt, renk)
+    # radial stairs: a light strip down every fifth bay, over the seat and its riser
+    for i in range(0, N, 5):
+        j = (i + 1) % N
+        f0, f1 = 0.4, 0.6
+        up = Vector((0, 0, 0.0015))
+        t0, t1 = r_dis[i].lerp(r_dis[j], f0), r_dis[i].lerp(r_dis[j], f1)
+        s0, s1 = r_ic[i].lerp(r_ic[j], f0), r_ic[i].lerp(r_ic[j], f1)
+        Z = lambda p, zz: Vector((p.x, p.y, zz))
+        y.yuz([Z(t0, zk) + up, Z(s0, zk) + up, Z(s1, zk) + up, Z(t1, zk) + up], TAS_ACIK)
+        inw = -(s0 + s1) / 2; inw.z = 0; inw = inw.normalized() * 0.0015
+        y.yuz([Z(s1, zk) + inw, Z(s0, zk) + inw, Z(s0, z2) + inw, Z(s1, z2) + inw], TAS_KOYU)
     if k in PREC:   # entrances (vomitoria) in the taller walls
         for i in range(0, N, 5):
             j = (i + 1) % N
@@ -176,6 +202,10 @@ for k in range(S):
 # ---- podium wall and the sand ----
 y.serit([Vector((p.x, p.y, Z_POD)) for p in POD], [Vector((p.x, p.y, Z_FLOOR)) for p in POD], PODYUM)
 y.yuz([Vector((p.x, p.y, Z_FLOOR)) for p in POD], KUM)
+# raked sand: a lighter oval in the middle
+y.yuz([Vector((p.x * 0.78, p.y * 0.72, Z_FLOOR + 0.001)) for p in POD], KUM_ACIK)
+# coping stone along the podium top (the last seat row outward of it is the front row)
+y.serit([Vector((p.x, p.y, Z_POD + 0.008)) for p in POD], [Vector((p.x, p.y, Z_POD)) for p in POD], TAS_ACIK)
 
 # ---- two blue banners on the wall top (front and back) ----
 for s in (-1, 1):

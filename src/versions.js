@@ -14,7 +14,7 @@ export const VERSIONS = [
     intro: 'Kolezyum artık ayrıntılı 3B bir model.',
     items: [
       ['Çağ binaları', [
-        'Kolezyum yeni modeliyle: üç kat kemer, pencereli attika, basamaklı oturma yerleri, kum arena; duvarın üstünde oyuncu renginde iki sancak. Gemini çizimine bakılarak Blender\'da kuruldu.',
+        'Kolezyum yeni modeliyle: üç kat kemer (üst katlarda korkuluklu), pencereli attika, iç tarafta kemerli üst galeri, merdiven yollu basamaklı oturma yerleri, kum arena; duvarın üstünde oyuncu renginde iki sancak. Gemini çizimine bakılarak Blender\'da kuruldu.',
       ]],
     ],
     showcase: [
