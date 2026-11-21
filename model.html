@@ -222,7 +222,22 @@ async function birimGoster(id) {
       const g = s.clone().convertLinearToSRGB();
       if (takimMavisi(g.r, g.g, g.b)) col.setXYZ(i, tc.r, tc.g, tc.b);
     }
-    o.material = new THREE.MeshStandardMaterial({ vertexColors: !!col, roughness: .85, metalness: 0, wireframe: document.getElementById('tel').checked });
+    // a baked texture: the team blue repainted in the chosen colour (as the game does for its models)
+    const map = o.material && o.material.map;
+    let yeniMap = null;
+    if (map && map.image) {
+      const im = map.image, w = im.width, h = im.height, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      const cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(im, 0, 0);
+      const d = cx.getImageData(0, 0, w, h), px = d.data, tg = tc.clone().convertLinearToSRGB();
+      for (let j = 0; j < px.length; j += 4) {
+        if (!takimMavisi(px[j] / 255, px[j + 1] / 255, px[j + 2] / 255)) continue;
+        const l = Math.max(.5, Math.min(1.3, (px[j] + px[j + 1] + px[j + 2]) / 3 / 140));
+        px[j] = Math.min(255, tg.r * 255 * l); px[j + 1] = Math.min(255, tg.g * 255 * l); px[j + 2] = Math.min(255, tg.b * 255 * l);
+      }
+      cx.putImageData(d, 0, 0);
+      yeniMap = new THREE.CanvasTexture(cv); yeniMap.flipY = map.flipY; yeniMap.colorSpace = THREE.SRGBColorSpace; yeniMap.anisotropy = 8;
+    }
+    o.material = new THREE.MeshStandardMaterial({ map: yeniMap, vertexColors: !yeniMap && !!col, roughness: .8, metalness: 0, wireframe: document.getElementById('tel').checked });
     ucgen += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3;
   });
   model = kok; sahne.add(kok);

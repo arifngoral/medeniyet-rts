@@ -243,14 +243,14 @@ def disa_aktar(ob, yol):
         bpy.ops.export_scene.gltf(**kw, export_colors=True)
 
 
-def onizle(yol, merkez=(0, 0, 0.2), boy=2.4, aci=(-35, 0, 0), cozunurluk=(1200, 800)):
+def onizle(yol, merkez=(0, 0, 0.2), boy=2.4, aci=(-35, 0, 0), cozunurluk=(1200, 800), renk='VERTEX'):
     """Orthographic workbench render with the vertex colours on a white background.
     aci: (azimuth degrees around z, ...) - camera looks from azimuth az, elevation el."""
     sc = bpy.context.scene
     sc.render.engine = 'BLENDER_WORKBENCH'
     sh = sc.display.shading
     sh.light = 'STUDIO'
-    sh.color_type = 'VERTEX'
+    sh.color_type = renk
     sh.show_cavity = True
     sh.cavity_type = 'WORLD'
     sh.show_shadows = True
