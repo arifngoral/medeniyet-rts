@@ -47,6 +47,93 @@ class Yapi:
         self.serit(ring(z0), ring(z1), renk)
         self.yuz(ring(z1), renk)
 
+    # a face whose winding is turned to face direction yon
+    def yuz_yon(self, pts, renk, yon, oyna=True):
+        pts = [Vector(p) for p in pts]
+        n = Vector((0, 0, 0))
+        for i in range(len(pts)):
+            a, b = pts[i], pts[(i + 1) % len(pts)]
+            n += Vector(((a.y - b.y) * (a.z + b.z), (a.z - b.z) * (a.x + b.x), (a.x - b.x) * (a.y + b.y)))
+        self.yuz(pts if n.dot(Vector(yon)) >= 0 else list(reversed(pts)), renk, oyna)
+
+    # a vertical n-sided prism (tower, drum, minaret shaft); kat: start angle
+    def prizma(self, c, r, z0, z1, renk, n=8, ust=True, ust_renk=None, kat=0.0):
+        ring = lambda z: [Vector((c[0] + r * math.cos(kat + 2 * math.pi * i / n), c[1] + r * math.sin(kat + 2 * math.pi * i / n), z)) for i in range(n)]
+        self.serit(ring(z0), ring(z1), renk)
+        if ust: self.yuz(ring(z1), ust_renk or renk)
+        return ring
+
+    # a cone (minaret cap, turret roof)
+    def koni(self, c, r, z0, h, renk, n=12):
+        ring = [Vector((c[0] + r * math.cos(2 * math.pi * i / n), c[1] + r * math.sin(2 * math.pi * i / n), z0)) for i in range(n)]
+        tepe = Vector((c[0], c[1], z0 + h))
+        for i in range(n):
+            self.yuz([ring[i], ring[(i + 1) % n], tepe], renk)
+
+    # a dome: half-ellipsoid of radius r, height h on z0; t0..t1 the part of the round it covers (a half dome: pi wide,
+    # closed by a flat face on its open side)
+    def kubbe(self, c, r, z0, h, renk, n=16, kat=5, t0=0.0, t1=2 * math.pi, kapak=None):
+        tam = abs(t1 - t0 - 2 * math.pi) < 1e-6
+        m = n if tam else n + 1
+        def ring(k):
+            ph = math.pi / 2 * k / kat
+            return [Vector((c[0] + r * math.cos(ph) * math.cos(t0 + (t1 - t0) * i / n), c[1] + r * math.cos(ph) * math.sin(t0 + (t1 - t0) * i / n), z0 + h * math.sin(ph))) for i in range(m)]
+        rings = [ring(k) for k in range(kat)]
+        for k in range(kat - 1):
+            self.serit(rings[k], rings[k + 1], renk, kapali=tam)
+        tepe = Vector((c[0], c[1], z0 + h))
+        top = rings[-1]
+        for i in range(n if tam else n):
+            self.yuz([top[i], top[(i + 1) % m], tepe], renk)
+        if not tam:   # the open side
+            yan = [rings[k][0] for k in range(kat)] + [tepe] + [rings[k][-1] for k in reversed(range(kat))]
+            orta = (t0 + t1) / 2
+            self.yuz_yon(yan, kapak or renk, (-math.cos(orta), -math.sin(orta), 0))
+        return tepe
+
+    # one bay of wall from a to b with a round-arched opening, seen from the right of a->b (nc); renkler: wall, reveal,
+    # sill, dark back. korkuluk: sill height of a parapet in the opening
+    def kemerli(self, a, b, z0, H, renkler, v0=0.0, en=0.68, ust=0.017, derin=0.03, k_say=6, korkuluk=None):
+        duvar, koyu, acik, delik = renkler
+        a, b = Vector(a), Vector(b)
+        W = (b - a).length
+        e = (b - a) / W
+        nc = Vector((e.y, -e.x, 0))
+        L = lambda u, v, d=0.0: a + e * u - nc * d + Vector((0, 0, z0 + v))
+        x0, x1 = (1 - en) / 2 * W, (1 + en) / 2 * W
+        R = (x1 - x0) / 2
+        hs = H - ust - R
+        kemer = [(x0 + R + R * math.cos(math.pi - math.pi * k / k_say), hs + R * math.sin(math.pi - math.pi * k / k_say)) for k in range(1, k_say)]
+        acikl = [(x0, v0), (x0, hs)] + kemer + [(x1, hs), (x1, v0)]
+        self.yuz([L(0, 0), L(x0, 0), L(x0, H), L(0, H)], duvar)
+        self.yuz([L(x1, 0), L(W, 0), L(W, H), L(x1, H)], duvar)
+        if v0 > 0: self.yuz([L(x0, 0), L(x1, 0), L(x1, v0), L(x0, v0)], duvar)
+        tp = [(x0, hs)] + kemer + [(x1, hs)]
+        for k in range(len(tp) - 1):
+            (ua, va), (ub, vb) = tp[k], tp[k + 1]
+            self.yuz([L(ua, va), L(ub, vb), L(ub, H), L(ua, H)], duvar)
+        for k in range(len(acikl)):
+            p, q = acikl[k], acikl[(k + 1) % len(acikl)]
+            self.yuz([L(*p), L(*p, derin), L(*q, derin), L(*q)], acik if k == len(acikl) - 1 else koyu)
+        self.yuz([L(*acikl[0], derin)] + [L(*acikl[-1], derin)] + [L(*q, derin) for q in reversed(acikl[1:-1])], delik)
+        if korkuluk:
+            d0, d1, h = derin * 0.35, derin * 0.6, v0 + korkuluk
+            self.yuz([L(x0, v0, d0), L(x1, v0, d0), L(x1, h, d0), L(x0, h, d0)], acik)
+            self.yuz([L(x0, h, d0), L(x1, h, d0), L(x1, h, d1), L(x0, h, d1)], acik)
+        return W, e, nc, L
+
+    # a dark window (round-headed if kemer) painted just in front of a wall: o a point on the wall, ex along it, n out
+    def pencere(self, o, ex, n, u, v, w, h, renk, kemer=True, k_say=4):
+        o, ex, n = Vector(o), Vector(ex), Vector(n)
+        P = lambda uu, vv: o + ex * uu + Vector((0, 0, vv)) + n * 0.003
+        R = w / 2
+        pts = [P(u, v), P(u + w, v)]
+        if kemer:
+            pts += [P(u + R + R * math.cos(math.pi * k / k_say), v + h - R + R * math.sin(math.pi * k / k_say)) for k in range(k_say + 1)]
+        else:
+            pts += [P(u + w, v + h), P(u, v + h)]
+        self.yuz_yon(pts, renk, n)
+
     def ucgen_sayisi(self):
         return sum(len(p) - 2 for p, _ in self.faces)
 

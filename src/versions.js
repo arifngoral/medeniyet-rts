@@ -10,14 +10,16 @@
 // Rule of thumb (same as the card game): changes made on the same day go into the same version.
 export const VERSIONS = [
   {
-    v: '1.2', date: '2026-11-22', title: 'Kolezyum',
-    intro: 'Kolezyum artık ayrıntılı 3B bir model.',
+    v: '1.2', date: '2026-11-22', title: 'Kolezyum ve Süleymaniye',
+    intro: 'Kolezyum ve Süleymaniye artık ayrıntılı 3B modeller.',
     items: [
       ['Çağ binaları', [
+        'Süleymaniye yeni modeliyle: pencereli kasnak üstünde büyük kubbe, önde ve arkada yarım kubbeler, köşelerde ağırlık kuleleri, basamak basamak inen küçük kubbeler, kubbeli revaklarla çevrili şadırvanlı avlu, dört minare (arkadakiler üç, öndekiler iki şerefeli). Gemini çizimine bakılarak Blender\'da kuruldu.',
         'Kolezyum yeni modeliyle: üç kat kemer (üst katlarda korkuluklu), pencereli attika, iç tarafta kemerli üst galeri, merdiven yollu basamaklı oturma yerleri, kum arena; duvarın üstünde oyuncu renginde iki sancak. Gemini çizimine bakılarak Blender\'da kuruldu.',
       ]],
     ],
     showcase: [
+      { id: 'lm_suleymaniye', kind: 'building', tags: ['yeni'], note: 'Blender\'da kurulan yeni model: kasnaklı büyük kubbe, yarım kubbeler, kubbeli avlu, dört minare.' },
       { id: 'lm_kolezyum', kind: 'building', tags: ['yeni'], note: 'Blender\'da kurulan yeni model: üç kat kemer, attika, oturma basamakları, kum arena.' },
     ],
   },

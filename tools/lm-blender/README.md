@@ -11,4 +11,4 @@ Hunyuan 3D yoluna (`tools/lm-glb/`) seçenek: bina Gemini çizimine bakılarak B
 3. **Üretim**: `"C:/Program Files/Blender Foundation/Blender 5.3/blender.exe" -b --factory-startup --python tools/lm-blender/kolezyum.py -- assets/models/lm/lm_kolezyum.glb onizleme.png`
    (konsolda `UCGEN` üçgen sayısı; hedef ~9 bin). Sonra id'yi `glb-models.js` `LM_GLB` listesine ekle, vitrinin "Çağ binaları" sekmesinde bak.
 
-Yapılanlar: Kolezyum (2026-11-22).
+Yapılanlar: Kolezyum, Süleymaniye (2026-11-22).
