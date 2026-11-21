@@ -65,7 +65,22 @@ function flat(A, idx, n) {
   }
   return out;
 }
+// A file built in Blender (tools/lm-blender) can ask to keep its own normals (glTF extras { yumusak: 1 }: smooth domes,
+// minarets and columns with sharp edges kept); every other file is drawn with flat normals per face as before
 function plainGeo(mesh) {
+  const g = plainGeo0(mesh), G = mesh.geometry, N = G.attributes.normal;
+  if (!(mesh.userData && mesh.userData.yumusak) || !N) return g;
+  const ix = G.index, n = ix ? ix.count : G.attributes.position.count, out = new Float32Array(n * 3);
+  const m = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld), v = new THREE.Vector3();
+  for (let i = 0; i < n; i++) {
+    const k = ix ? ix.getX(i) : i;
+    v.set(N.getX(k), N.getY(k), N.getZ(k)).applyMatrix3(m).normalize();
+    out[i * 3] = v.x; out[i * 3 + 1] = v.y; out[i * 3 + 2] = v.z;
+  }
+  g.setAttribute('normal', new THREE.BufferAttribute(out, 3));
+  return g;
+}
+function plainGeo0(mesh) {
   mesh.updateWorldMatrix(true, false);
   const G = mesh.geometry, ix = G.index ? G.index.array : null, n0 = ix ? G.index.count : G.attributes.position.count;
   const fp = flat(G.attributes.position, ix, n0), fc = flat(G.attributes.color, ix, n0), fu = flat(G.attributes.uv, ix, n0);
@@ -210,7 +225,7 @@ function prepShape(geo, piece, key) {
     //  wall face while the left one stood proud. Its feet's front and back edges are each stretched to a straight line)
     if (square) untaper(geo);
   }
-  geo.computeVertexNormals();   // non-indexed: flat normals per face
+  if (!geo.attributes.normal) geo.computeVertexNormals();   // non-indexed: flat normals per face (a file that kept its own normals: those)
   geo.computeBoundingBox();
 }
 function prepMask(geo, map) {

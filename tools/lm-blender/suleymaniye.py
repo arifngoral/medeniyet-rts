@@ -1,156 +1,256 @@
-# Süleymaniye (lm_suleymaniye): central dome on a windowed drum, half domes front and back, weight turrets, cascading
-# small domes, a front courtyard ringed by a domed arcade, four minarets at its corners.
+# Süleymaniye (lm_suleymaniye), textured and smooth-shaded (doku.py): prayer hall with two storeys of pointed
+# windows, an upper block under the dome, a 28-window drum with buttresses and the great dome, half domes on windowed
+# half drums, weight turrets, cascading small domes, a courtyard with a columned pointed arcade and a domed bay each,
+# a şadırvan kiosk, the portal and four minarets with corbelled balconies.
 # blender -b --python tools/lm-blender/suleymaniye.py -- <out.glb> [preview.png]
 import sys, os, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mathutils import Vector
-from ortak import Yapi, temizle, disa_aktar, onizle, argumanlar
+from ortak import Yapi, temizle, argumanlar
+from doku import nesne_dokulu, pisir_ve_aktar, onizle_dokulu
 
-TAS = (0.86, 0.82, 0.74)
-TAS_ACIK = (0.93, 0.90, 0.84)
-TAS_KOYU = (0.68, 0.63, 0.55)
-KURSUN = (0.60, 0.65, 0.72)        # lead domes and caps (dull blue-grey: not the team blue)
-DELIK = (0.20, 0.18, 0.17)
-ALTIN = (0.86, 0.68, 0.30)
-AVLU = (0.80, 0.77, 0.70)
-TABAN = (0.80, 0.77, 0.70)
-MAVI = (0.12, 0.33, 0.86)
-DIREK = (0.36, 0.26, 0.17)
-KEMER = (TAS, TAS_KOYU, TAS_ACIK, DELIK)
-
-y = Yapi(tohum=11)
+y = Yapi()
 X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
-
-# ---- platform ----
-Z0 = 0.04
-y.kutu((-0.7, -1.1, 0), X, Y, 1.4, 2.42, Z0, TABAN)
+PENCERE = ('tas', 'tas_koyu', 'tas_acik', 'cam')
+REVAK = ('tas', 'tas', 'tas_acik', 'tas_koyu')
 
 
-def blok(x0, x1, y0, y1, z0, h, renk=TAS, yuzler='onarkasagsolust', cati=TAS_ACIK):
-    y.kutu((x0, y0, z0), X, Y, x1 - x0, y1 - y0, h, renk, yuzler.replace('ust', ''))
-    if 'ust' in yuzler: y.kutu((x0, y0, z0), X, Y, x1 - x0, y1 - y0, h, cati, 'ust')
+def V(x, yy, z=0.0):
+    return Vector((x, yy, z))
 
 
-def pencereler(x0, x1, y0, y1, z, h, n, w, yanlar='onsagsolarka'):
-    """a row of n round-headed windows on the walls of a box"""
-    for yan, o, ex, nn, L in (('on', (x0, y0, 0), X, -Y, x1 - x0), ('arka', (x0, y1, 0), X, Y, x1 - x0),
-                               ('sol', (x0, y0, 0), Y, -X, y1 - y0), ('sag', (x1, y0, 0), Y, X, y1 - y0)):
-        if yan not in yanlar: continue
-        for i in range(n):
-            u = L * (i + 0.5) / n - w / 2
-            y.pencere(Vector(o) + Z * z, ex, nn, u, 0, w, h, DELIK)
+def korniş(x0, x1, y0, y1, z, h, c, key='tas_acik'):
+    """a moulding round a rectangle (corners CCW): underside, face, top"""
+    def r(o, zz):
+        return [V(x0 - o, y0 - o, zz), V(x1 + o, y0 - o, zz), V(x1 + o, y1 + o, zz), V(x0 - o, y1 + o, zz)]
+    y.serit(r(0, z), r(c, z), key)
+    y.serit(r(c, z), r(c, z + h), key)
+    y.serit(r(c, z + h), r(0, z + h), key)
 
 
-def kucuk_kubbe(cx, cy, z, r, h=None, finial=True, n=12):
-    tepe = y.kubbe((cx, cy), r, z, h or r * 0.85, KURSUN, n=n, kat=3)
-    if finial:
-        y.prizma((cx, cy), 0.006, tepe.z, tepe.z + r * 0.45, ALTIN, n=4)
+def halka_korniş(c, r, z, h, c2, n, key='tas_acik', kat=0.0):
+    def ring(rr, zz):
+        return [V(c[0] + rr * math.cos(kat + 2 * math.pi * i / n), c[1] + rr * math.sin(kat + 2 * math.pi * i / n), zz) for i in range(n)]
+    y.serit(ring(r, z), ring(r + c2, z), key)
+    y.serit(ring(r + c2, z), ring(r + c2, z + h), key)
+    y.serit(ring(r + c2, z + h), ring(r, z + h), key)
 
 
-# ---- prayer hall ----
-HX, HY0, HY1, HH = 0.6, 0.05, 1.25, 0.34
+def pencereli_duvar(kose, z0, H, sayilar, **kw):
+    """walls round a CCW polygon (corners kose), each side split into its count of window bays"""
+    for i, n in enumerate(sayilar):
+        a, b = kose[i], kose[(i + 1) % len(kose)]
+        for k in range(n):
+            y.kemerli(a.lerp(b, k / n), a.lerp(b, (k + 1) / n), z0, H, kw.get('renk', PENCERE),
+                      v0=kw.get('v0', 0.03), en=kw.get('en', 0.45), ust=kw.get('ust', 0.03), derin=kw.get('derin', 0.025),
+                      k_say=kw.get('k_say', 6), sivri=kw.get('sivri', 0.6))
+
+
+def dikdortgen(x0, x1, y0, y1):
+    return [V(x0, y0), V(x1, y0), V(x1, y1), V(x0, y1)]
+
+
+def cokgen(c, r, n, kat=0.0):
+    return [V(c[0] + r * math.cos(kat + 2 * math.pi * i / n), c[1] + r * math.sin(kat + 2 * math.pi * i / n)) for i in range(n)]
+
+
+def alem(cx, cy, z, olcek=1.0):
+    s = olcek
+    y.prizma((cx, cy), 0.005 * s, z, z + 0.03 * s, 'altin', n=6)
+    y.kubbe((cx, cy), 0.012 * s, z + 0.03 * s, 0.012 * s, 'altin', n=8, kat=3)
+    y.prizma((cx, cy), 0.003 * s, z + 0.04 * s, z + 0.07 * s, 'altin', n=4)
+
+
+def kucuk_kubbe(cx, cy, z, r, kasnak=0.025, n=16, son=True):
+    y.prizma((cx, cy), r * 1.02, z, z + kasnak, 'tas', n=12, ust=False)
+    halka_korniş((cx, cy), r * 1.02, z + kasnak - 0.006, 0.006, 0.006, 12)
+    t = y.kubbe((cx, cy), r, z + kasnak, r * 0.9, 'kursun', n=n, kat=5)
+    if son: alem(cx, cy, t.z, 0.7)
+
+
+# ---------------- platform ----------------
+Z0 = 0.05
+y.kutu((-0.74, -1.16, 0), X, Y, 1.48, 2.52, Z0, 'tas_koyu')
+for k in range(3):
+    y.kutu((-0.2, -1.16 - 0.03 * (k + 1), 0), X, Y, 0.4, 0.03, Z0 * (3 - k) / 4, 'tas_koyu', 'onsagsolust')
+y.yuz([V(-0.74, -1.16, Z0 + 0.001), V(0.74, -1.16, Z0 + 0.001), V(0.74, 1.36, Z0 + 0.001), V(-0.74, 1.36, Z0 + 0.001)], 'zemin')
+
+# ---------------- prayer hall ----------------
+HX, HY0, HY1 = 0.6, 0.05, 1.25
 CY = (HY0 + HY1) / 2
-blok(-HX, HX, HY0, HY1, Z0, HH)
-pencereler(-HX, HX, HY0, HY1, Z0 + 0.05, 0.08, 7, 0.06)
-pencereler(-HX, HX, HY0, HY1, Z0 + 0.18, 0.09, 7, 0.06)
-# side gallery domes along both long sides
+H1, H2 = 0.17, 0.15
+ZR = Z0 + H1 + H2           # hall roof
+hall = dikdortgen(-HX, HX, HY0, HY1)
+pencereli_duvar(hall, Z0, H1, [7, 7, 7, 7], en=0.4, v0=0.04, ust=0.035, sivri=0.5)
+pencereli_duvar(hall, Z0 + H1, H2, [7, 7, 7, 7], en=0.38, v0=0.03, ust=0.03, sivri=0.65)
+korniş(-HX, HX, HY0, HY1, Z0, 0.025, 0.012, 'tas_koyu')
+korniş(-HX, HX, HY0, HY1, Z0 + H1 - 0.004, 0.008, 0.008)
+korniş(-HX, HX, HY0, HY1, ZR - 0.012, 0.014, 0.014)
+y.yuz([V(-HX, HY0, ZR + 0.002), V(HX, HY0, ZR + 0.002), V(HX, HY1, ZR + 0.002), V(-HX, HY1, ZR + 0.002)], 'tas_acik')
+for sx in (-1, 1):            # corner buttresses
+    for yy in (HY0, HY1):
+        y.kutu((sx * HX - 0.025, yy - 0.025, Z0), X, Y, 0.05, 0.05, ZR - Z0 + 0.03, 'tas', 'onarkasagsolust')
+# side gallery domes
 for sx in (-1, 1):
     for k in range(5):
-        kucuk_kubbe(sx * 0.5, HY0 + 0.15 + k * 0.225, Z0 + HH, 0.07)
-# upper block under the dome (tympanum walls)
+        kucuk_kubbe(sx * 0.51, HY0 + 0.15 + k * 0.225, ZR, 0.07)
+
+# ---------------- upper block under the dome ----------------
 U = 0.42
-blok(-U, U, CY - U, CY + U, Z0 + HH, 0.18)
-pencereler(-U, U, CY - U, CY + U, Z0 + HH + 0.04, 0.10, 5, 0.06, 'sagsol')
-# cascading: small domes beside the half domes, low on the hall roof
+ZU = ZR + 0.2
+ust = dikdortgen(-U, U, CY - U, CY + U)
+pencereli_duvar(ust, ZR, 0.2, [5, 5, 5, 5], en=0.45, v0=0.035, ust=0.035, sivri=0.6)
+korniş(-U, U, CY - U, CY + U, ZU - 0.012, 0.014, 0.012)
+y.yuz([V(-U, CY - U, ZU + 0.002), V(U, CY - U, ZU + 0.002), V(U, CY + U, ZU + 0.002), V(-U, CY + U, ZU + 0.002)], 'tas_acik')
+# small domes on the roof beside the half domes
 for sx in (-1, 1):
-    for sy in (-1, 1):
-        kucuk_kubbe(sx * 0.25, CY + sy * 0.47, Z0 + HH, 0.1)
-# half domes front and back
-ZH = Z0 + HH + 0.05
-y.kubbe((0, CY - 0.33), 0.27, ZH, 0.18, KURSUN, n=12, kat=4, t0=math.pi, t1=2 * math.pi, kapak=TAS)
-y.kubbe((0, CY + 0.33), 0.27, ZH, 0.18, KURSUN, n=12, kat=4, t0=0, t1=math.pi, kapak=TAS)
-# weight turrets at the corners of the dome square
+    for yy in (HY0 + 0.11, HY1 - 0.11):
+        kucuk_kubbe(sx * 0.3, yy, ZR, 0.075)
+
+# ---------------- half domes on windowed half drums (front and back) ----------------
+for s in (-1, 1):
+    c = (0, CY + s * 0.33)
+    t0 = math.pi if s < 0 else 0.0
+    R = 0.27
+    yay = [V(c[0] + R * math.cos(t0 + math.pi * i / 8), c[1] + R * math.sin(t0 + math.pi * i / 8)) for i in range(9)]
+    for i in range(8):
+        y.kemerli(yay[i] + Z * 0, yay[i + 1], ZR, 0.11, PENCERE, v0=0.025, en=0.45, ust=0.02, derin=0.02, k_say=4, sivri=0.5)
+    zh = ZR + 0.11
+    halka_yay = lambda rr, zz: [V(c[0] + rr * math.cos(t0 + math.pi * i / 8), c[1] + rr * math.sin(t0 + math.pi * i / 8), zz) for i in range(9)]
+    y.serit(halka_yay(R, zh), halka_yay(R + 0.01, zh), 'tas_acik', kapali=False)
+    y.serit(halka_yay(R + 0.01, zh), halka_yay(R + 0.01, zh + 0.01), 'tas_acik', kapali=False)
+    y.kubbe(c, R + 0.005, zh + 0.01, 0.2, 'kursun', n=24, kat=8, t0=t0, t1=t0 + math.pi, kapak='tas')
+
+# ---------------- weight turrets ----------------
 for sx in (-1, 1):
     for sy in (-1, 1):
         c = (sx * U, CY + sy * U)
-        y.prizma(c, 0.06, Z0 + HH, Z0 + 0.66, TAS_ACIK, n=8, ust=False, kat=math.pi / 8)
-        kucuk_kubbe(c[0], c[1], Z0 + 0.66, 0.062, n=8)
-# drum with windows, then the great dome
-ZD = Z0 + 0.52
-ring = y.prizma((0, CY), 0.36, ZD, ZD + 0.11, TAS_ACIK, n=20, ust=False)
-for i in range(20):
-    a, b = ring(ZD)[i], ring(ZD)[(i + 1) % 20]
-    m = (a + b) / 2; nn = Vector((m.x, m.y - CY, 0)).normalized()
-    y.pencere(a, (b - a).normalized(), nn, (b - a).length * 0.3, 0.02, (b - a).length * 0.4, 0.07, DELIK, k_say=3)
-tepe = y.kubbe((0, CY), 0.37, ZD + 0.11, 0.33, KURSUN, n=20, kat=6)
-y.prizma((0, CY), 0.009, tepe.z, tepe.z + 0.06, ALTIN, n=4)
-y.kubbe((0, CY), 0.018, tepe.z + 0.06, 0.025, ALTIN, n=6, kat=2)
+        y.prizma(c, 0.07, ZR, ZU + 0.04, 'tas', n=8, ust=False, kat=math.pi / 8)
+        ok = cokgen(c, 0.07, 8, math.pi / 8)
+        for i in range(8):
+            y.kemerli(ok[i], ok[(i + 1) % 8], ZU + 0.04, 0.1, PENCERE, v0=0.02, en=0.45, ust=0.015, derin=0.012, k_say=4, sivri=0.6)
+        halka_korniş(c, 0.07, ZU + 0.04, 0.008, 0.008, 8, kat=math.pi / 8)
+        halka_korniş(c, 0.07, ZU + 0.14, 0.012, 0.01, 8, kat=math.pi / 8)
+        y.prizma(c, 0.07, ZU + 0.152, ZU + 0.153, 'tas_acik', n=8, ust=True, kat=math.pi / 8)
+        t = y.kubbe(c, 0.062, ZU + 0.152, 0.065, 'kursun', n=16, kat=5)
+        alem(c[0], c[1], t.z, 0.9)
 
-# ---- courtyard ----
+# ---------------- drum and the great dome ----------------
+ND, RD, HD = 28, 0.36, 0.12
+ZD = ZU
+dk = cokgen((0, CY), RD, ND)
+for i in range(ND):
+    y.kemerli(dk[i], dk[(i + 1) % ND], ZD, HD, PENCERE, v0=0.025, en=0.5, ust=0.018, derin=0.02, k_say=4, sivri=0.5)
+for i in range(ND):            # buttresses between the windows
+    a = math.atan2(dk[i].y - CY, dk[i].x)
+    e = V(-math.sin(a), math.cos(a)); n = V(math.cos(a), math.sin(a))
+    o = dk[i] - e * 0.012 + n * 0.018
+    y.kutu(o + Z * ZD, e, -n, 0.024, 0.02, HD - 0.01, 'tas_acik', 'onsagsol')
+halka_korniş((0, CY), RD, ZD + HD, 0.016, 0.02, ND)
+y.prizma((0, CY), RD, ZD + HD + 0.016, ZD + HD + 0.017, 'tas_acik', n=ND)
+tepe = y.kubbe((0, CY), RD + 0.005, ZD + HD + 0.016, 0.31, 'kursun', n=48, kat=12)
+alem(0, CY, tepe.z, 1.8)
+
+# ---------------- courtyard ----------------
 AX, AY0, AY1, AH = 0.6, -1.0, HY0, 0.2
-IX, IY0, IY1 = 0.44, -0.84, -0.11        # the open court
-blok(-AX, AX, AY0, AY1, Z0, AH, yuzler='onsagsol')
-pencereler(-AX, AX, AY0, AY1, Z0 + 0.05, 0.09, 6, 0.06, 'onsagsol')
-# arcade roof (a ring around the court)
-zr = Z0 + AH
+IX, IY0, IY1 = 0.43, -0.83, -0.12
+ZA = Z0 + AH
+# outer walls with windows (front, left, right)
+pencereli_duvar([V(-AX, AY1), V(-AX, AY0), V(AX, AY0), V(AX, AY1)], Z0, AH, [6, 7, 6], en=0.38, v0=0.05, ust=0.045, sivri=0.6)
+korniş(-AX, AX, AY0, AY1, Z0, 0.022, 0.01, 'tas_koyu')
+korniş(-AX, AX, AY0, AY1, ZA - 0.012, 0.014, 0.012)
 for q in ([(-AX, AY0), (AX, AY0), (IX, IY0), (-IX, IY0)], [(AX, AY0), (AX, AY1), (IX, IY1), (IX, IY0)],
           [(AX, AY1), (-AX, AY1), (-IX, IY1), (IX, IY1)], [(-AX, AY1), (-AX, AY0), (-IX, IY0), (-IX, IY1)]):
-    y.yuz_yon([Vector((p[0], p[1], zr)) for p in q], TAS_ACIK, Z)
-# arches facing the court
-def arkad(a, b, n):
-    a, b = Vector(a), Vector(b)
+    y.yuz_yon([V(p[0], p[1], ZA + 0.002) for p in q], 'tas_acik', Z)
+for sx in (-1, 1):
+    for yy in (AY0,):
+        y.kutu((sx * AX - 0.025, yy - 0.025, Z0), X, Y, 0.05, 0.05, AH + 0.02, 'tas', 'onarkasagsolust')
+# the arcade facing the court: pointed arches on columns, a dome over each bay
+EN, UST, SIV = 0.78, 0.03, 0.5
+def revak(a, b, n, ic):
     for i in range(n):
-        y.kemerli(a.lerp(b, i / n) + Z * Z0, a.lerp(b, (i + 1) / n) + Z * Z0, 0, AH, KEMER, en=0.7, ust=0.03, derin=0.05, k_say=5)
-arkad((IX, IY0, 0), (-IX, IY0, 0), 5)
-arkad((-IX, IY1, 0), (IX, IY1, 0), 5)
-arkad((-IX, IY0, 0), (-IX, IY1, 0), 4)
-arkad((IX, IY1, 0), (IX, IY0, 0), 4)
-# court floor and the fountain
-y.yuz([Vector((-IX, IY0, Z0 + 0.002)), Vector((IX, IY0, Z0 + 0.002)), Vector((IX, IY1, Z0 + 0.002)), Vector((-IX, IY1, Z0 + 0.002))], AVLU)
+        p, q = a.lerp(b, i / n), a.lerp(b, (i + 1) / n)
+        W = (q - p).length
+        y.kemerli(p + Z * Z0, q + Z * Z0, 0, AH, REVAK, en=EN, ust=UST, derin=0.15, k_say=6, sivri=SIV)
+        hs = AH - UST - SIV * EN * W
+        e = (q - p).normalized(); nc = V(e.y, -e.x)
+        # a column at the start of every bay (and the end of the last)
+        for u in ([0.0, 1.0] if i == n - 1 else [0.0]):
+            cc = p.lerp(q, u) + nc * 0.016
+            y.prizma((cc.x, cc.y), 0.015, Z0 + 0.012, Z0 + hs - 0.012, 'mermer', n=10, ust=False)
+            y.kutu(V(cc.x - 0.022, cc.y - 0.022, Z0), X, Y, 0.044, 0.044, 0.012, 'mermer', 'onarkasagsolust')
+            y.kutu(V(cc.x - 0.022, cc.y - 0.022, Z0 + hs - 0.014), X, Y, 0.044, 0.044, 0.016, 'mermer', 'onarkasagsolust')
+        m = p.lerp(q, 0.5) - nc * (0.17 / 2)
+        kucuk_kubbe(m.x, m.y, ZA, 0.07, kasnak=0.02, son=False)
+revak(V(IX, IY0), V(-IX, IY0), 5, True)
+revak(V(-IX, IY1), V(IX, IY1), 5, True)
+revak(V(-IX, IY0), V(-IX, IY1), 4, True)
+revak(V(IX, IY1), V(IX, IY0), 4, True)
+for sx in (-1, 1):            # corner bays
+    for yy in ((AY0 + IY0) / 2, (AY1 + IY1) / 2):
+        kucuk_kubbe(sx * (AX + IX) / 2, yy, ZA, 0.07, kasnak=0.02, son=False)
+# court paving and the şadırvan
+y.yuz([V(-IX, IY0, Z0 + 0.003), V(IX, IY0, Z0 + 0.003), V(IX, IY1, Z0 + 0.003), V(-IX, IY1, Z0 + 0.003)], 'mermer')
 FY = (IY0 + IY1) / 2
-y.prizma((0, FY), 0.07, Z0, Z0 + 0.06, TAS_ACIK, n=8, kat=math.pi / 8)
-kucuk_kubbe(0, FY, Z0 + 0.06, 0.07, n=8)
-# arcade domes
-mx, my0, my1 = 0.52, -0.92, -0.03
-for k in range(6):
-    xx = -mx + 2 * mx * k / 5
-    kucuk_kubbe(xx, my0, zr, 0.065, finial=False, n=10)
-    kucuk_kubbe(xx, my1, zr, 0.065, finial=False, n=10)
-for k in range(1, 4):
-    yy = my0 + (my1 - my0) * k / 4
-    for sx in (-1, 1):
-        kucuk_kubbe(sx * mx, yy, zr, 0.065, finial=False, n=10)
-# entrance portal on the front
-blok(-0.12, 0.12, AY0 - 0.04, AY0 + 0.04, Z0, 0.29)
-y.pencere((-0.12, AY0 - 0.04, Z0), X, -Y, 0.06, 0.0, 0.12, 0.2, DELIK, k_say=5)
-kucuk_kubbe(0, AY0, Z0 + 0.29, 0.07, n=10)
+y.prizma((0, FY), 0.08, Z0, Z0 + 0.035, 'mermer', n=8, kat=math.pi / 8)
+for k in range(8):
+    a = math.pi / 8 + 2 * math.pi * k / 8
+    y.prizma((0.065 * math.cos(a), FY + 0.065 * math.sin(a)), 0.006, Z0 + 0.035, Z0 + 0.11, 'mermer', n=6, ust=False)
+y.prizma((0, FY), 0.105, Z0 + 0.11, Z0 + 0.122, 'kursun', n=8, kat=math.pi / 8)
+t = y.kubbe((0, FY), 0.065, Z0 + 0.122, 0.06, 'kursun', n=16, kat=5)
+alem(0, FY, t.z, 0.8)
 
-# ---- minarets at the courtyard corners: two tall (three balconies) at the back, two shorter (two) at the front ----
+# ---------------- portal ----------------
+PY0, PY1, PH = AY0 - 0.05, AY0 + 0.02, 0.31
+y.kemerli(V(-0.14, PY0, 0), V(0.14, PY0, 0), Z0, PH, ('tas', 'tas_koyu', 'tas_acik', 'ahsap'), v0=0.0, en=0.6, ust=0.05, derin=0.05, k_say=8, sivri=0.6)
+y.kutu((-0.14, PY0, Z0), X, Y, 0.28, PY1 - PY0, PH, 'tas', 'sagsol')
+korniş(-0.14, 0.14, PY0, PY1, Z0 + PH - 0.014, 0.016, 0.012)
+y.yuz([V(-0.14, PY0, Z0 + PH), V(0.14, PY0, Z0 + PH), V(0.14, PY1, Z0 + PH), V(-0.14, PY1, Z0 + PH)], 'tas_acik')
+for sx in (-1, 1):
+    y.kutu((sx * 0.14 - 0.02, PY0 - 0.01, Z0), X, Y, 0.04, 0.04, PH + 0.03, 'tas_acik', 'onarkasagsolust')
+    y.koni((sx * 0.14, PY0 + 0.01), 0.02, Z0 + PH + 0.03, 0.04, 'kursun', n=8)
+
+# ---------------- minarets ----------------
 def minare(cx, cy, boy, serefe):
-    y.prizma((cx, cy), 0.06, Z0, Z0 + 0.24, TAS_ACIK, n=4, kat=math.pi / 4)
-    y.prizma((cx, cy), 0.032, Z0 + 0.24, Z0 + boy, TAS_ACIK, n=12, ust=False)
+    zt = ZA + 0.06
+    y.kutu((cx - 0.06, cy - 0.06, Z0), X, Y, 0.12, 0.12, zt - Z0, 'tas', 'onarkasagsolust')
+    korniş(cx - 0.06, cx + 0.06, cy - 0.06, cy + 0.06, zt - 0.01, 0.012, 0.008)
+    y.prizma((cx, cy), 0.052, zt, zt + 0.03, 'tas', n=8, kat=math.pi / 8)       # transition
+    top = Z0 + boy
+    y.prizma((cx, cy), 0.036, zt + 0.03, top, 'tas_acik', n=16, ust=False)
     for k in range(serefe):
-        zz = Z0 + 0.24 + (boy - 0.3) * (k + 1) / (serefe + 0.4)
-        y.prizma((cx, cy), 0.05, zz, zz + 0.016, TAS, n=12, ust_renk=TAS_ACIK)
-        y.prizma((cx, cy), 0.042, zz - 0.02, zz, TAS_KOYU, n=12, ust=False)
-    y.koni((cx, cy), 0.036, Z0 + boy, 0.17, KURSUN, n=12)
-    y.prizma((cx, cy), 0.004, Z0 + boy + 0.17, Z0 + boy + 0.21, ALTIN, n=4)
+        zz = zt + 0.03 + (top - zt - 0.12) * (k + 1) / (serefe + 0.25)
+        # corbelled (muqarnas-like) steps under the balcony
+        for j, (rr, hh) in enumerate(((0.042, 0.01), (0.05, 0.01), (0.058, 0.008))):
+            y.prizma((cx, cy), rr, zz - 0.028 + j * 0.01, zz - 0.028 + j * 0.01 + hh, 'tas', n=16, ust=False)
+            y.serit([V(cx + rr * math.cos(2 * math.pi * i / 16), cy + rr * math.sin(2 * math.pi * i / 16), zz - 0.028 + j * 0.01) for i in range(16)],
+                    [V(cx + (rr - 0.008) * math.cos(2 * math.pi * i / 16), cy + (rr - 0.008) * math.sin(2 * math.pi * i / 16), zz - 0.028 + j * 0.01) for i in range(16)], 'tas_koyu')
+        y.prizma((cx, cy), 0.062, zz - 0.004, zz, 'tas_acik', n=16)
+        # railing: outside and inside faces
+        dis = lambda zq: [V(cx + 0.06 * math.cos(2 * math.pi * i / 16), cy + 0.06 * math.sin(2 * math.pi * i / 16), zq) for i in range(16)]
+        ic = lambda zq: [V(cx + 0.056 * math.cos(2 * math.pi * i / 16), cy + 0.056 * math.sin(2 * math.pi * i / 16), zq) for i in range(16)]
+        y.serit(dis(zz), dis(zz + 0.02), 'tas_acik')
+        y.serit(ic(zz + 0.02), ic(zz), 'tas_acik')
+        y.serit(dis(zz + 0.02), ic(zz + 0.02), 'tas_acik')
+    halka_korniş((cx, cy), 0.036, top - 0.004, 0.008, 0.006, 16)
+    y.koni((cx, cy), 0.04, top + 0.004, 0.2, 'kursun', n=16)
+    alem(cx, cy, top + 0.2, 0.8)
 
 for sx in (-1, 1):
-    minare(sx * AX, AY1, 1.15, 3)
-    minare(sx * AX, AY0, 0.9, 2)
+    minare(sx * AX, AY1, 1.22, 3)
+    minare(sx * AX, AY0, 0.98, 2)
 
-# ---- blue banner on the portal ----
-y.silindir((0.09, AY0 - 0.02), 0.007, Z0 + 0.29, Z0 + 0.46, DIREK)
-y.kutu((0.096, AY0 - 0.022, Z0 + 0.39), X, Y, 0.09, 0.004, 0.06, MAVI)
+# ---------------- banner on the portal ----------------
+y.silindir((0.1, PY0 + 0.035), 0.006, Z0 + PH, Z0 + PH + 0.2, 'ahsap')
+y.kutu((0.106, PY0 + 0.033, Z0 + PH + 0.11), X, Y, 0.1, 0.004, 0.07, 'mavi')
 
 print('UCGEN', y.ucgen_sayisi())
 
 if __name__ == '__main__':
     arg = argumanlar()
     temizle()
-    ob = y.nesne('lm_suleymaniye')
+    ob, anahtar = nesne_dokulu(y, 'lm_suleymaniye')
     if arg:
-        disa_aktar(ob, os.path.abspath(arg[0]))
+        pisir_ve_aktar(ob, anahtar, os.path.abspath(arg[0]))
     if len(arg) > 1:
-        onizle(os.path.abspath(arg[1]), merkez=(0, 0.05, 0.4), boy=3.2, aci=(-35, 32))
+        onizle_dokulu(os.path.abspath(arg[1]), merkez=(0, 0.1, 0.45), boy=3.3, aci=(-35, 32))

@@ -18,6 +18,8 @@ class Yapi:
         self.oynama = oynama   # per-face brightness jitter (hand-painted look)
 
     def yuz(self, pts, renk, oyna=True):
+        if isinstance(renk, str):   # a material key (doku.py): no jitter, the texture varies
+            self.faces.append(([tuple(p) for p in pts], renk)); return
         k = 1 + (self.rng.uniform(-self.oynama, self.oynama) if oyna else 0)
         self.faces.append(([tuple(p) for p in pts], tuple(min(1, c * k) for c in renk)))
 
@@ -93,7 +95,8 @@ class Yapi:
 
     # one bay of wall from a to b with a round-arched opening, seen from the right of a->b (nc); renkler: wall, reveal,
     # sill, dark back. korkuluk: sill height of a parapet in the opening
-    def kemerli(self, a, b, z0, H, renkler, v0=0.0, en=0.68, ust=0.017, derin=0.03, k_say=6, korkuluk=None):
+    def kemerli(self, a, b, z0, H, renkler, v0=0.0, en=0.68, ust=0.017, derin=0.03, k_say=6, korkuluk=None, sivri=0.0):
+        """sivri > 0: a pointed (Ottoman) arch, its rise = sivri x span (0.6 is typical); 0: round"""
         duvar, koyu, acik, delik = renkler
         a, b = Vector(a), Vector(b)
         W = (b - a).length
@@ -102,8 +105,19 @@ class Yapi:
         L = lambda u, v, d=0.0: a + e * u - nc * d + Vector((0, 0, z0 + v))
         x0, x1 = (1 - en) / 2 * W, (1 + en) / 2 * W
         R = (x1 - x0) / 2
-        hs = H - ust - R
-        kemer = [(x0 + R + R * math.cos(math.pi - math.pi * k / k_say), hs + R * math.sin(math.pi - math.pi * k / k_say)) for k in range(1, k_say)]
+        if sivri:
+            w = x1 - x0; hr = sivri * w
+            hs = H - ust - hr
+            rho = (w * w / 4 + hr * hr) / w
+            c = x0 + rho
+            ta = math.atan2(hr, (x0 + w / 2) - c)
+            yari = k_say // 2
+            sol = [(c + rho * math.cos(math.pi - (math.pi - ta) * k / yari), hs + rho * math.sin(math.pi - (math.pi - ta) * k / yari)) for k in range(1, yari + 1)]
+            sag = [(x0 + x1 - u, v) for u, v in reversed(sol[:-1])]
+            kemer = sol + sag
+        else:
+            hs = H - ust - R
+            kemer = [(x0 + R + R * math.cos(math.pi - math.pi * k / k_say), hs + R * math.sin(math.pi - math.pi * k / k_say)) for k in range(1, k_say)]
         acikl = [(x0, v0), (x0, hs)] + kemer + [(x1, hs), (x1, v0)]
         self.yuz([L(0, 0), L(x0, 0), L(x0, H), L(0, H)], duvar)
         self.yuz([L(x1, 0), L(W, 0), L(W, H), L(x1, H)], duvar)
