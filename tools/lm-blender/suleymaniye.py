@@ -219,7 +219,12 @@ AX, AY0, AY1, AH = 0.6, -1.0, HY0, 0.2
 IX, IY0, IY1 = 0.43, -0.83, -0.12
 ZA = Z0 + AH
 # outer walls with windows (front, left, right)
-pencereli_duvar([V(-AX, AY1), V(-AX, AY0), V(AX, AY0), V(AX, AY1)], Z0, AH, [6, 7, 6], en=0.38, v0=0.05, ust=0.045, sivri=0.6)
+# (behind the portal the wall is plain: windows there poked through its door as the view moved)
+PX = 0.14
+APK = dict(en=0.38, v0=0.05, ust=0.045, sivri=0.6)
+pencereli_duvar([V(-AX, AY1), V(-AX, AY0), V(-PX, AY0)], Z0, AH, [6, 3], **APK)
+pencereli_duvar([V(PX, AY0), V(AX, AY0), V(AX, AY1)], Z0, AH, [3, 6], **APK)
+duz_duvar(V(-PX, AY0), V(PX, AY0), Z0, AH)
 korniş(-AX, AX, AY0, AY1, Z0, 0.022, 0.01, 'tas_koyu')
 korniş(-AX, AX, AY0, AY1, ZA - 0.012, 0.014, 0.012)
 for q in ([(-AX, AY0), (AX, AY0), (IX, IY0), (-IX, IY0)], [(AX, AY0), (AX, AY1), (IX, IY1), (IX, IY0)],
@@ -262,7 +267,7 @@ alem(0, FY, t.z, 0.8)
 # ---------------- portal ----------------
 y.bolum('Taçkapı')
 PY0, PY1, PH = AY0 - 0.05, AY0 + 0.02, 0.31
-y.kemerli(V(-0.14, PY0, 0), V(0.14, PY0, 0), Z0, PH, ('tas', 'tas_koyu', 'tas_acik', 'ahsap'), v0=0.0, en=0.6, ust=0.05, derin=0.05, k_say=10, sivri=0.6,
+y.kemerli(V(-0.14, PY0, 0), V(0.14, PY0, 0), Z0, PH, ('tas', 'tas_koyu', 'tas_acik', 'ahsap'), v0=0.0, en=0.6, ust=0.05, derin=0.034, k_say=10, sivri=0.6,   # (door 0.016 in front of the courtyard wall)
           cerceve=(0.014, ['mermer', 'kirmizi']))
 y.kutu((-0.14, PY0, Z0), X, Y, 0.28, PY1 - PY0, PH, 'tas', 'sagsol')
 korniş(-0.14, 0.14, PY0, PY1, Z0 + PH - 0.014, 0.016, 0.012)
