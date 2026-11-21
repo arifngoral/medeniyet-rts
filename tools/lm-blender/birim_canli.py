@@ -26,10 +26,13 @@ def kur():
     if not area: return 0.3
     with bpy.context.temp_override(window=win, area=area, region=reg):
         for ob in list(bpy.data.objects): bpy.data.objects.remove(ob)
-        govde = mod.k.nesne(AD)
-        arm = iskelet(AD, mod.kemik)
-        bagla(govde, arm)
-        for ad, kr in mod.ANIM: eylem(arm, ad, kr)
+        if hasattr(mod, 'kur'):          # (units on the human body: built whole, procedural materials shown unbaked)
+            govde, arm = mod.kur(doku=False)
+        else:
+            govde = mod.k.nesne(AD)
+            arm = iskelet(AD, mod.kemik)
+            bagla(govde, arm)
+            for ad, kr in mod.ANIM: eylem(arm, ad, kr)
         arm.show_in_front = True
         arm.data.display_type = 'STICK'
         sp = area.spaces.active

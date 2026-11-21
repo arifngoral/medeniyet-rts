@@ -42,6 +42,18 @@ Yapılanlar: Kolezyum, Süleymaniye (dokulu, 2026-11-22).
 ## Birimler (iskeletli, animasyonlu; ör. `piyade.py`)
 
 Kart resimlerinin tarzında, ayrıntılı: Gemini'ye kart resimlerinden ikisi yüklenip "bu tarzda, önden ve yandan" çizim istenir.
+
+**Gerçek insan gövdesi (`insan.py`, şimdiki yol):** parçalardan kurulan beden boğum boğum, parmaklar yamuk, ayaklar kütük gibi çıkıyordu.
+Taban Blender'ın **Human Base Meshes** paketindeki stilize erkek gövdesi (CC0; blender.org "Demo Files" > Human Base Meshes v1.4.1,
+`download.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip`, 50 MB). İçindeki
+`human_base_meshes_bundle.blend` `.blender-varlik/` klasörüne konur (git'e girmez; başka yer: `HBM_YOL`). `govde_yukle` gövdeyi ve gözleri
+yükler; `bolge_olcek` kart oranları (kafa ×1,2, eller ×1,25, gövde ×1,12 tıknaz), `yumruk` parmakları avuca büker (kabza / tutamak
+`avuc()` ekseninde), `bolge_kopya` kıyafeti gövdenin kendi yüzeyinden çıkarır (bölge seçilir, normal boyunca itilir, kenarı yumuşatılır,
+kalınlık verilir: zırh gömlek, astar, eldiven, pantolon, çizme, tunik, sakal, saç). Ağırlıklar: gövdeye Blender'ın otomatik ağırlığı
+(`oto_agirlik`), kıyafetlere gövdeden aktarılır (`agirlik_aktar`), SONRA kıyafet altında kalan deri silinir (önce silinirse kıyafet uzak
+deriden ağırlık alıp gerilir). Miğfer, kemer, çizme burnu, kılıç, kalkan, etek parçaları `karakter.py` parçalarıyla. Animasyonlar ortak:
+`animasyon.py`. Eski parça yolu `piyade_parca.py` olarak duruyor.
+
 `karakter.py`: parçalar (`kure`, `tup`, `yol` çizgi boyunca boru: parmak / kaş / bıyık, `kabuk`, `kutu`, `halka`, `yay` kavisli panel)
 alt bölümlemeyle yumuşatılır; her parça bir kemiğe ya da bir ağırlık işlevine bağlı (gövde ile tunik `govde` işleviyle kalça -> bel -> göğüs
 boyunca birlikte bükülür: biri ötekinden taşmaz). Malzemeler işlemli (`MALZEME`: örgü halkalı zırh, dokuma kumaş, damarlı deri, kalaslı
@@ -56,4 +68,4 @@ gltf-transform meshopt ham.glb assets/models/birim/piyade.glb --level medium --q
 blender --factory-startup --python tools/lm-blender/birim_canli.py -- piyade     (pencereli: animasyonlar sırayla oynar)
 ```
 Büyük görünüm `model.html?id=piyade`. Oyuna henüz bağlı değil (birimler hâlâ kodla çiziliyor, `entities.js`); oyunda yüzlerce asker için
-düşük ayrıntılı bir sürüm (LOD) gerekecek. Piyade ~46 bin üçgen, 20 kemik, ~1,2 MB.
+düşük ayrıntılı bir sürüm (LOD) gerekecek. Piyade (insan gövdesiyle) ~77 bin üçgen, 20 kemik, ~1,7 MB.
