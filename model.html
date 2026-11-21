@@ -120,7 +120,7 @@ function boya(kaynak) {
     }
     cx.putImageData(d, 0, 0);
     const t = new THREE.CanvasTexture(cnv); t.colorSpace = THREE.SRGBColorSpace; t.flipY = kaynak.flipY;
-    mat = new THREE.MeshStandardMaterial({ map: t, roughness: .9, flatShading: true });
+    mat = new THREE.MeshStandardMaterial({ map: t, roughness: .9, flatShading: kaynak.duz });
   } else {
     const col = g.attributes.color;
     if (col) {
@@ -128,7 +128,7 @@ function boya(kaynak) {
       for (let i = 0; i < col.count; i++) if (kaynak.mavi[i]) col.setXYZ(i, lin.r, lin.g, lin.b);
       col.needsUpdate = true;
     }
-    mat = new THREE.MeshStandardMaterial({ vertexColors: !!col, roughness: .92, metalness: 0, flatShading: true });
+    mat = new THREE.MeshStandardMaterial({ vertexColors: !!col, roughness: .92, metalness: 0, flatShading: kaynak.duz });
   }
   mat.wireframe = document.getElementById('tel').checked;
   const m = new THREE.Mesh(g, mat); m.castShadow = m.receiveShadow = true;
@@ -140,14 +140,28 @@ async function getir(id) {
   const gltf = await yukle.loadAsync('./assets/models/lm/' + id + '.glb');
   let mesh = null; gltf.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
   mesh.updateWorldMatrix(true, false);
-  let geo = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
+  // a plain float, non-indexed copy (the shrunk files hold quantized attributes: transforming those in place clamps
+  // them to -1..1 and cut the models in half)
+  const src = mesh.geometry, ix = src.index, n = ix ? ix.count : src.attributes.position.count;
+  let geo = new THREE.BufferGeometry();
+  for (const ad of ['position', 'normal', 'uv', 'color']) {
+    const A = src.attributes[ad]; if (!A) continue;
+    const s = A.itemSize, out = new Float32Array(n * s);
+    for (let i = 0; i < n; i++) {
+      const v = ix ? ix.getX(i) : i;
+      out[i * s] = A.getX(v); if (s > 1) out[i * s + 1] = A.getY(v); if (s > 2) out[i * s + 2] = A.getZ(v); if (s > 3) out[i * s + 3] = A.getW(v);
+    }
+    geo.setAttribute(ad, new THREE.BufferAttribute(out, s));
+  }
   geo.applyMatrix4(mesh.matrixWorld);
+  const duz = !geo.attributes.normal || !(mesh.userData && mesh.userData.yumusak);
+  if (duz) geo.deleteAttribute('normal');
   geo.computeBoundingBox();
   const b = geo.boundingBox, side = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) || 1, k = 3 / side;
   geo.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2);
   geo.scale(k, k, k);
-  geo.computeVertexNormals();
-  const r = { geo, img: null, mavi: null, flipY: false, ucgen: geo.attributes.position.count / 3 };
+  if (duz) geo.computeVertexNormals(); else geo.normalizeNormals();
+  const r = { geo, img: null, mavi: null, flipY: false, duz, ucgen: geo.attributes.position.count / 3 };
   const map = mesh.material && mesh.material.map;
   if (map && map.image) {
     const im = map.image, w = im.width, h = im.height, cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
