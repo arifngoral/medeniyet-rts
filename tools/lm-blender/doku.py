@@ -11,7 +11,8 @@ MALZEME = {
     'tas_koyu': ('tas',  (0.70, 0.65, 0.56), {'tugla': 9.0}),
     'tas_acik': ('duz',  (0.92, 0.89, 0.82), {}),
     'mermer':   ('duz',  (0.95, 0.94, 0.90), {'leke': 0.04}),
-    'kursun':   ('kursun', (0.52, 0.57, 0.64), {}),
+    'kursun':   ('kursun', (0.55, 0.60, 0.67), {}),
+    'kursun2':  ('kursun', (0.50, 0.545, 0.61), {}),     # every other lead sheet (ortak.py kubbe)
     'kirmizi':  ('duz',  (0.66, 0.30, 0.22), {'leke': 0.05}),
     'altin':    ('duz',  (0.90, 0.70, 0.28), {'leke': 0.03}),
     'koyu':     ('duz',  (0.13, 0.11, 0.10), {'leke': 0.02}),
@@ -292,7 +293,8 @@ def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
     lin = {k: np.array([srgb2lin(c) for c in MALZEME[k][1]], np.float32) for k in anahtarlar}
     for p in me.polygons:
         k = anahtarlar[p.material_index]
-        oy = 0 if k == 'mavi' else MALZEME[k][2].get('leke', 0.05) * 0.6
+        # (a shade per face only on flat stone: on a curved surface it made a mosaic of triangles)
+        oy = MALZEME[k][2].get('leke', 0.05) * 0.6 if k in ('tas', 'tas_koyu', 'tas_acik', 'zemin') else 0
         c = lin[k] * float(1 + rng.uniform(-oy, oy))
         renk[p.loop_start:p.loop_start + p.loop_total, :3] = c
         if k == 'mavi': mavi[p.loop_start:p.loop_start + p.loop_total] = True

@@ -81,12 +81,16 @@ class Yapi:
             ph = math.pi / 2 * k / kat
             return [Vector((c[0] + r * math.cos(ph) * math.cos(t0 + (t1 - t0) * i / n), c[1] + r * math.cos(ph) * math.sin(t0 + (t1 - t0) * i / n), z0 + h * math.sin(ph))) for i in range(m)]
         rings = [ring(k) for k in range(kat)]
+        # lead domes: the sheets run from the base to the crown, every other one a shade darker (as on the real domes)
+        rk = (lambda i: renk + '2' if i % 2 else renk) if renk == 'kursun' else (lambda i: renk)
         for k in range(kat - 1):
-            self.serit(rings[k], rings[k + 1], renk, kapali=tam)
+            for i in range(n):
+                j = (i + 1) % m
+                self.yuz([rings[k][i], rings[k][j], rings[k + 1][j], rings[k + 1][i]], rk(i))
         tepe = Vector((c[0], c[1], z0 + h))
         top = rings[-1]
-        for i in range(n if tam else n):
-            self.yuz([top[i], top[(i + 1) % m], tepe], renk)
+        for i in range(n):
+            self.yuz([top[i], top[(i + 1) % m], tepe], rk(i))
         if not tam:   # the open side
             yan = [rings[k][0] for k in range(kat)] + [tepe] + [rings[k][-1] for k in reversed(range(kat))]
             orta = (t0 + t1) / 2

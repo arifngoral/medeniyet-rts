@@ -90,10 +90,10 @@ def alem(cx, cy, z, olcek=1.0):
     y.prizma((cx, cy), 0.003 * s, z + 0.04 * s, z + 0.07 * s, 'altin', n=4)
 
 
-def kucuk_kubbe(cx, cy, z, r, kasnak=0.025, n=16, son=True):
-    y.prizma((cx, cy), r * 1.02, z, z + kasnak, 'tas', n=12, ust=False)
-    halka_korniş((cx, cy), r * 1.02, z + kasnak - 0.006, 0.006, 0.006, 12)
-    t = y.kubbe((cx, cy), r, z + kasnak, r * 0.9, 'kursun', n=n, kat=5)
+def kucuk_kubbe(cx, cy, z, r, kasnak=0.025, n=28, son=True):
+    y.prizma((cx, cy), r * 1.02, z, z + kasnak, 'tas', n=28, ust=False)
+    halka_korniş((cx, cy), r * 1.02, z + kasnak - 0.006, 0.006, 0.006, 28)
+    t = y.kubbe((cx, cy), r, z + kasnak, r * 0.9, 'kursun', n=n, kat=8)
     if son: alem(cx, cy, t.z, 0.7)
 
 
@@ -178,7 +178,7 @@ for s in (-1, 1):
     halka_yay = lambda rr, zz: [V(c[0] + rr * math.cos(t0 + math.pi * i / 8), c[1] + rr * math.sin(t0 + math.pi * i / 8), zz) for i in range(9)]
     y.serit(halka_yay(R, zh), halka_yay(R + 0.01, zh), 'tas_acik', kapali=False)
     y.serit(halka_yay(R + 0.01, zh), halka_yay(R + 0.01, zh + 0.01), 'tas_acik', kapali=False)
-    y.kubbe(c, R + 0.005, zh + 0.01, 0.2, 'kursun', n=24, kat=8, t0=t0, t1=t0 + math.pi, kapak='tas')
+    y.kubbe(c, R + 0.005, zh + 0.01, 0.2, 'kursun', n=48, kat=14, t0=t0, t1=t0 + math.pi, kapak='tas')
 
 # ---------------- weight turrets ----------------
 y.bolum('Ağırlık kuleleri')
@@ -192,12 +192,12 @@ for sx in (-1, 1):
         halka_korniş(c, 0.07, ZU + 0.04, 0.008, 0.008, 8, kat=math.pi / 8)
         halka_korniş(c, 0.07, ZU + 0.14, 0.012, 0.01, 8, kat=math.pi / 8)
         y.prizma(c, 0.07, ZU + 0.152, ZU + 0.153, 'tas_acik', n=8, ust=True, kat=math.pi / 8)
-        t = y.kubbe(c, 0.062, ZU + 0.152, 0.065, 'kursun', n=16, kat=5)
+        t = y.kubbe(c, 0.062, ZU + 0.152, 0.065, 'kursun', n=28, kat=8)
         alem(c[0], c[1], t.z, 0.9)
 
 # ---------------- drum and the great dome ----------------
-y.bolum('Kasnak: 28 pencere ve payandalar')
-ND, RD, HD = 28, 0.36, 0.12
+y.bolum('Kasnak: 32 pencere ve payandalar')
+ND, RD, HD = 32, 0.36, 0.12
 ZD = ZU
 dk = cokgen((0, CY), RD, ND)
 for i in range(ND):
@@ -210,7 +210,7 @@ for i in range(ND):            # buttresses between the windows
 y.bolum('Büyük kubbe')
 halka_korniş((0, CY), RD, ZD + HD, 0.016, 0.02, ND)
 y.prizma((0, CY), RD, ZD + HD + 0.016, ZD + HD + 0.017, 'tas_acik', n=ND)
-tepe = y.kubbe((0, CY), RD + 0.005, ZD + HD + 0.016, 0.31, 'kursun', n=48, kat=12)
+tepe = y.kubbe((0, CY), RD + 0.005, ZD + HD + 0.016, 0.31, 'kursun', n=96, kat=22)
 alem(0, CY, tepe.z, 1.8)
 
 # ---------------- courtyard ----------------
@@ -256,7 +256,7 @@ for k in range(8):
     a = math.pi / 8 + 2 * math.pi * k / 8
     y.prizma((0.065 * math.cos(a), FY + 0.065 * math.sin(a)), 0.006, Z0 + 0.035, Z0 + 0.11, 'mermer', n=6, ust=False)
 y.prizma((0, FY), 0.105, Z0 + 0.11, Z0 + 0.122, 'kursun', n=8, kat=math.pi / 8)
-t = y.kubbe((0, FY), 0.065, Z0 + 0.122, 0.06, 'kursun', n=16, kat=5)
+t = y.kubbe((0, FY), 0.065, Z0 + 0.122, 0.06, 'kursun', n=28, kat=8)
 alem(0, FY, t.z, 0.8)
 
 # ---------------- portal ----------------
@@ -298,7 +298,7 @@ def minare(cx, cy, boy, serefe):
         y.serit(ic(zz + 0.02), ic(zz), 'tas_acik')
         y.serit(dis(zz + 0.02), ic(zz + 0.02), 'tas_acik')
     halka_korniş((cx, cy), 0.036, top - 0.004, 0.008, 0.006, 16)
-    y.koni((cx, cy), 0.04, top + 0.004, 0.2, 'kursun', n=16)
+    y.koni((cx, cy), 0.04, top + 0.004, 0.2, 'kursun', n=24)
     alem(cx, cy, top + 0.2, 0.8)
 
 y.bolum('Minareler (yivli gövde, mukarnaslı şerefeler)')

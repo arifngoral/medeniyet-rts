@@ -14,7 +14,7 @@ export const VERSIONS = [
     intro: 'Kolezyum ve Süleymaniye artık ayrıntılı 3B modeller.',
     items: [
       ['Çağ binaları', [
-        'Süleymaniye yeni modeliyle (yakınlaşınca da keskin taş deseni, pişirilmiş gölgeler, yumuşak kubbeler; iki katlı sütunlu yan revaklar, kırmızı-beyaz taşlı kemerler, mermer çerçeveli pencereler, yuvarlak üst pencereler, yivli minareler): 28 pencereli kasnak üstünde büyük kubbe, önde ve arkada yarım kubbeler, köşelerde ağırlık kuleleri, basamak basamak inen küçük kubbeler, sütunlu sivri kemerli revaklarla çevrili, köşklü şadırvanlı avlu, taçkapı, dört minare (arkadakiler üç, öndekiler iki şerefeli, mukarnas basamaklı). Gemini çizimine bakılarak Blender\'da kuruldu.',
+        'Süleymaniye yeni modeliyle (yakınlaşınca da keskin taş deseni, pişirilmiş gölgeler, dilim dilim kurşun levhalı pürüzsüz kubbeler, 32 pencereli kasnak; iki katlı sütunlu yan revaklar, kırmızı-beyaz taşlı kemerler, mermer çerçeveli pencereler, yuvarlak üst pencereler, yivli minareler): kasnak üstünde büyük kubbe, önde ve arkada yarım kubbeler, köşelerde ağırlık kuleleri, basamak basamak inen küçük kubbeler, sütunlu sivri kemerli revaklarla çevrili, köşklü şadırvanlı avlu, taçkapı, dört minare (arkadakiler üç, öndekiler iki şerefeli, mukarnas basamaklı). Gemini çizimine bakılarak Blender\'da kuruldu.',
         'Kolezyum yeni modeliyle: üç kat kemer (üst katlarda korkuluklu), pencereli attika, iç tarafta kemerli üst galeri, merdiven yollu basamaklı oturma yerleri, kum arena; duvarın üstünde oyuncu renginde iki sancak. Gemini çizimine bakılarak Blender\'da kuruldu.',
       ]],
     ],

@@ -14,7 +14,7 @@ Yakınlaşınca da keskin: renkler ve pişirilmiş ortam gölgesi KÖŞE RENKLER
 `karo_desen`; taş yüzlere model biriminde kutu izdüşümüyle serilir, `KARO` = 4 sıra; öteki malzemeler desenin düz beyaz noktasını okur). Dosya
 `extras { detay: 1, yumusak: 1 }`; oyun (`glb-models.js` `prepare` / `look`) köşe rengi × deseni çizer, sancak mavisini köşe renginden boyar.
 Canlı izleme: `blender --factory-startup --python tools/lm-blender/canli.py -- suleymaniye cikti.glb [hız]` (pencereli; bölüm adları `Yapi.bolum`).
-Sıkıştırma aşağıdaki gibi (jpeg + meshopt). Süleymaniye ~37 bin üçgen, ~1,5 MB.
+Sıkıştırma aşağıdaki gibi (jpeg + meshopt). Süleymaniye ~58 bin üçgen, ~1,9 MB (meshopt: `--quantize-color 12 --quantize-normal 12`, yoksa kubbelerde basamak olur). Eğri yüzlere yüz başına ton farkı verilmez (mozaik gibi görünüyordu); kurşun kubbeler meridyen şeritli (`kursun` / `kursun2`).
 
 ## Dokulu yol (atlas; eski, yakında pikselleşiyordu)
 
@@ -26,7 +26,7 @@ ve `extras.yumusak = 1` ile dışa aktarır: oyun (`glb-models.js` `plainGeo`) o
 ```
 blender -b --factory-startup --python tools/lm-blender/suleymaniye.py -- ham.glb onizleme.png
 gltf-transform jpeg ham.glb j.glb --quality 70
-gltf-transform meshopt j.glb assets/models/lm/lm_suleymaniye.glb --level medium
+gltf-transform meshopt j.glb assets/models/lm/lm_suleymaniye.glb --level medium --quantize-color 12 --quantize-normal 12
 ```
 (`gltf-transform`: geçici bir klasörde `npm i @gltf-transform/cli@4`.) Süleymaniye ~27 bin üçgen, ~1 MB.
 
