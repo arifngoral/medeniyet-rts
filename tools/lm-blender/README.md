@@ -68,4 +68,6 @@ gltf-transform meshopt ham.glb assets/models/birim/piyade.glb --level medium --q
 blender --factory-startup --python tools/lm-blender/birim_canli.py -- piyade     (pencereli: animasyonlar sırayla oynar)
 ```
 Büyük görünüm `model.html?id=piyade`. Oyuna henüz bağlı değil (birimler hâlâ kodla çiziliyor, `entities.js`); oyunda yüzlerce asker için
-düşük ayrıntılı bir sürüm (LOD) gerekecek. Piyade (insan gövdesiyle) ~77 bin üçgen, 20 kemik, ~1,7 MB.
+düşük ayrıntılı bir sürüm (LOD) gerekecek. Piyade (insan gövdesiyle) ~75 bin üçgen, 20 kemik, ~1,8 MB. Yüz ölçülerek düzenlenir
+(`kur_govde`: burun, gülümseyen ağız köşeleri, yanak, kısık göz kapakları `it` ile; sakal yanağa doğru incelir, bıyık tek parça),
+miğfer kafa ölçüsüyle (eğik kenarlı kettle, içte deri astar), çizme ayağın ölçülen şeklinden kesit kesit (`Karakter.bot`) + gövde borusu.

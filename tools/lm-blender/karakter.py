@@ -415,3 +415,45 @@ def disa_aktar(arm, govde, yol):
                               export_texcoords=True, export_materials='EXPORT', export_skins=True, export_animations=True,
                               export_animation_mode='ACTIONS', export_force_sampling=True, export_frame_step=1,
                               export_image_format='JPEG', export_jpeg_quality=88)
+
+
+def _karakter_ek():
+    """extra primitives (added to Karakter below)"""
+
+    def bot(self, kesitler, malz, kemik, n=16, alt=1, duz=0.006):
+        """a boot (or a sole): sections along y [(y, centre x, half width, bottom z, top z)], a flat bottom and a
+        rounded top, closed at both ends"""
+        vs = []
+        for y, cx, w, z0, z1 in kesitler:
+            for i in range(n):
+                t = 2 * math.pi * i / n
+                st = math.sin(t)
+                z = z0 + (z1 - z0) * (st ** 0.75) if st >= 0 else z0 + duz * st
+                vs.append(Vector((cx + w * math.cos(t), y, z)))
+        m = len(kesitler); fs = []
+        for j in range(m - 1):
+            for i in range(n):
+                a, b = j * n + i, j * n + (i + 1) % n
+                fs.append((a, b, b + n, a + n))
+        fs.append(tuple(reversed(range(n)))); fs.append(tuple(range((m - 1) * n, m * n)))
+        self.ekle(vs, fs, malz, kemik, alt)
+
+    def siperlik(self, c, r0, z0, r1, z1, kalin, malz, kemik, n=40, ey=1.0, alt=1):
+        """a sloping brim: a solid ring from radius r0 at z0 out to r1 at z1, kalin thick (a kettle hat)"""
+        c = Vector(c)
+        def ring(r, z):
+            return [Vector((c.x + r * math.cos(2 * math.pi * i / n), c.y + r * ey * math.sin(2 * math.pi * i / n), z)) for i in range(n)]
+        R = [ring(r0, z0), ring(r1, z1), ring(r1, z1 - kalin), ring(r0, z0 - kalin)]
+        vs = [p for r in R for p in r]; fs = []
+        for k in range(4):
+            a, b = k * n, ((k + 1) % 4) * n
+            for i in range(n):
+                j = (i + 1) % n
+                fs.append((a + i, a + j, b + j, b + i))
+        self.ekle(vs, fs, malz, kemik, alt)
+
+    Karakter.bot = bot
+    Karakter.siperlik = siperlik
+
+
+_karakter_ek()

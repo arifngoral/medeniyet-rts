@@ -152,3 +152,14 @@ def oto_agirlik(govde, arm, haric=()):
     md = [m for m in govde.modifiers if m.type == 'ARMATURE']
     for m in md: govde.modifiers.remove(m)
     govde.parent = None
+
+
+def it(merkez, yer, ic, dis, kosul=None):
+    """push the vertices near merkez by yer (full within ic, fading out to dis): a smile, a cheek, an eyelid"""
+    m = Vector(merkez); y = Vector(yer)
+    def f(c):
+        if kosul is not None and not kosul(c): return c
+        d = (c - m).length
+        if d >= dis: return c
+        return c + y * (1 - yumusak(ic, dis, d))
+    return f

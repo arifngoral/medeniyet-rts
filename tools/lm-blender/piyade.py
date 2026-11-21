@@ -10,14 +10,14 @@ import bpy, bmesh
 import numpy as np
 from mathutils import Vector, Matrix
 from karakter import Karakter, iskelet, bagla, eylem, disa_aktar, pisir, yumusak, malzeme
-from insan import govde_yukle, deform, bolge_olcek, yumruk, bolge_kopya, agirlik_aktar, sabit_agirlik, islev_agirlik, birlestir, oto_agirlik
+from insan import govde_yukle, deform, bolge_olcek, yumruk, it, bolge_kopya, agirlik_aktar, sabit_agirlik, islev_agirlik, birlestir, oto_agirlik
 from animasyon import ANIM
 from ortak import argumanlar
 
 # ---------------- the body, reshaped ----------------
 GENIS = 1.12             # trunk and limbs a little stockier
 BAS = 1.2                # bigger head
-EL = 1.25                # bigger hands
+EL = 1.0                 # hands as they are (the gloves add a little)
 J = {}                   # joints (after the reshaping)
 for s, ad in ((1, 'sol'), (-1, 'sag')):
     J['omuz_' + ad] = Vector((s * 0.19 * GENIS, 0.015 * GENIS, 1.39))
@@ -28,7 +28,7 @@ for s, ad in ((1, 'sol'), (-1, 'sag')):
     J['diz_' + ad] = Vector((s * 0.088 * GENIS, -0.012, 0.50))
     J['topuk_' + ad] = Vector((s * 0.098 * GENIS, 0.014, 0.10))
     J['parmak_' + ad] = Vector((s * 0.13 * GENIS, -0.17, 0.03))
-S0, R0 = 0.118, 0.045     # the fist: where the fingers start to bend (from the wrist), bend radius
+S0, R0 = 0.1, 0.037       # the fist: where the fingers start to bend (from the wrist), bend radius
 
 
 def kur_govde():
@@ -36,6 +36,15 @@ def kur_govde():
     hep = [govde] + gozler
     deform(hep, bolge_olcek((0, -0.02, 1.47), BAS, lambda c: yumusak(1.43, 1.53, c.z)))
     deform(hep, bolge_olcek((0, 0, 0), (GENIS, GENIS, 1), lambda c: 1 - yumusak(1.42, 1.5, c.z)))
+    # the face (landmarks measured on the reshaped head: eyes (+-0.05, -0.112, 1.667) r 0.046, nose tip (0, -0.207, 1.613),
+    # mouth line z 1.525, chin 1.465): a bigger round nose, a smile, full cheeks, eyes smiling under the lids
+    on = lambda c: c.y < -0.11
+    deform([govde], bolge_olcek((0, -0.172, 1.613), 1.12, lambda c: (1 - yumusak(0.03, 0.06, (c - Vector((0, -0.19, 1.613))).length)) if c.y < -0.13 else 0))
+    for s in (1, -1):
+        deform([govde], it((s * 0.042, -0.165, 1.527), (s * 0.002, 0.003, 0.008), 0.012, 0.032, on))      # corners of the mouth up
+        deform([govde], it((s * 0.068, -0.158, 1.585), (0, -0.006, 0.006), 0.01, 0.036, on))              # cheeks
+        deform([govde], it((s * 0.05, -0.15, 1.627), (0, -0.003, 0.012), 0.008, 0.026, on))               # lower lid up
+        deform([govde], it((s * 0.05, -0.152, 1.71), (0, -0.002, -0.011), 0.008, 0.026, on))                   # upper lid down
     for s, ad in ((1, 'sol'), (-1, 'sag')):
         B = J['bilek_' + ad]
         deform([govde], bolge_olcek(B, EL, lambda c, s=s: yumusak(0.95, 0.9, c.z) * (1 if c.x * s > 0.37 else 0)))
@@ -110,12 +119,11 @@ def kur(doku=True):
     giysi.append(bolge_kopya(govde, 'astar', 'astar', astar, lambda c: 0.009, 0.004))
     def eld_ofset(c):
         t = kol(c) or 1
-        return 0.006 if t > 1.0 else 0.016 + 0.026 * yumusak(0.76, 0.66, t)          # the gauntlet flares at its cuff
+        return 0.004 if t > 1.0 else 0.016 + 0.026 * yumusak(0.76, 0.66, t)          # the gauntlet flares at its cuff
     giysi.append(bolge_kopya(govde, 'eldiven', 'deri', eldiven, eld_ofset, 0.005))
     giysi.append(bolge_kopya(govde, 'pantolon', 'pantolon', pantolon, lambda c: 0.01, 0.005))
-    giysi.append(bolge_kopya(govde, 'cizme', 'deri_k', lambda c, n: cizme(c, n) and c.z > 0.13, lambda c: 0.021, 0.006, duzle=2))
     giysi.append(bolge_kopya(govde, 'cizme_agiz', 'deri', cizme_agiz, lambda c: 0.04, 0.006, duzle=3))
-    giysi.append(bolge_kopya(govde, 'tunik', 'mavi', tunik, lambda c: 0.042, 0.008, duzle=8))
+    giysi.append(bolge_kopya(govde, 'tunik', 'mavi', tunik, lambda c: 0.042, 0.008, duzle=8, kenar=16))
     # ---- the head: measure the face, add beard, moustache, brows, hair ----
     burun = hco[hco[:, 1].argmin()]                      # the nose tip (frontmost point)
     tepe = hco[:, 2].max()
@@ -123,13 +131,19 @@ def kur(doku=True):
     gr = [np.ptp(np.array([v.co[:] for v in g.data.vertices])[:, 0]) / 2 for g in gozler]
     zb = burun[2]
     def sakal(c, n):
-        yan = min(1.0, abs(c.x) / 0.13)
-        return zb - 0.165 < c.z < zb - 0.04 + 0.055 * yan and c.y < 0.02 + 0.03 * yan and abs(c.x) < 0.16
+        ax = abs(c.x)
+        if c.z < 1.455 or c.z > 1.66 or c.y > 0.02: return False
+        if ax > 0.132 and c.y > -0.035: return False                                  # the ears
+        if c.z > 1.556 + 0.55 * max(0.0, ax - 0.03): return False                     # up the cheeks (the lips under it)
+        if c.z < 1.49 and c.y > -0.06: return False                                   # stops at the neck
+        return True
     def sakal_kal(c):
-        return 0.008 + 0.03 * yumusak(zb - 0.07, zb - 0.16, c.z) * (1 - 0.5 * min(1, abs(c.x) / 0.12))
-    giysi.append(bolge_kopya(govde, 'sakal', 'sakal', sakal, sakal_kal, 0.006))
+        ust = 1.556 + 0.55 * max(0.0, abs(c.x) - 0.03)
+        kenar = yumusak(0.0, 0.03, ust - c.z)
+        return (0.002 + 0.013 * kenar) + 0.022 * yumusak(1.535, 1.47, c.z) * (1 - 0.4 * min(1.0, abs(c.x) / 0.1))
+    giysi.append(bolge_kopya(govde, 'sakal', 'sakal', sakal, sakal_kal, 0.003, kenar=8))
     def sac(c, n):
-        return zb - 0.02 < c.z < zb + 0.11 and c.y > 0.0 and kol(c) is None
+        return 1.5 < c.z < 1.745 and c.y > 0.035 and abs(c.x) < 0.175 and kol(c) is None
     giysi.append(bolge_kopya(govde, 'sac', 'sakal', sac, lambda c: 0.012, 0.006))
     # weights while the whole skin is there (the clothes take theirs from the skin right under them)
     arm = iskelet('piyade', kemikler())
@@ -149,25 +163,32 @@ def kur(doku=True):
         for p in g.data.polygons:      # front: pupil, a brown iris round it, white elsewhere
             on = p.center.y < m.y - 0.3 * r
             rr = math.hypot(p.center.x - m.x, p.center.z - m.z)
-            p.material_index = (1 if rr < 0.17 * r else 2 if rr < 0.36 * r else 0) if on else 0
+            p.material_index = (1 if rr < 0.27 * r else 2 if rr < 0.6 * r else 0) if on else 0
     # ---- parts made of primitives: moustache, brows, helmet, belt, pouch, sword, shield, skirt flaps ----
     k = Karakter()
     xn, yn = burun[0], burun[1]
-    k.yol([(-0.075, yn + 0.045, zb - 0.07), (-0.045, yn + 0.018, zb - 0.042), (-0.015, yn + 0.008, zb - 0.032), (0.015, yn + 0.008, zb - 0.032),
-           (0.045, yn + 0.018, zb - 0.042), (0.075, yn + 0.045, zb - 0.07)], [0.007, 0.014, 0.017, 0.017, 0.014, 0.007], 'sakal', 'kafa', n=8, ey=0.75)
+    for s in (1, -1):
+        k.yol([(s * 0.014, -0.181, 1.716), (s * 0.05, -0.186, 1.728), (s * 0.09, -0.166, 1.72)], [0.013, 0.016, 0.009], 'sakal', 'kafa', n=8, ey=0.75)   # brows (standing out of the brow ridge)
+    bp = [(-0.088, -0.155, 1.556), (-0.07, -0.18, 1.543), (-0.046, -0.199, 1.545), (-0.022, -0.211, 1.552), (0, -0.214, 1.556),
+          (0.022, -0.211, 1.552), (0.046, -0.199, 1.545), (0.07, -0.18, 1.543), (0.088, -0.155, 1.556)]
+    k.yol(bp, [0.008, 0.015, 0.02, 0.022, 0.022, 0.022, 0.02, 0.015, 0.008], 'sakal', 'kafa', n=12, ey=0.8)
     for m, r in zip(gm, gr):
         s = 1 if m.x > 0 else -1
-        k.yol([m + Vector((-s * r * 0.8, -r * 0.55, r * 1.25)), m + Vector((0, -r * 0.75, r * 1.55)), m + Vector((s * r * 1.0, -r * 0.4, r * 1.3))],
-              [0.009, 0.012, 0.008], 'sakal', 'kafa', n=8, ey=0.7)
+        k.kure(m + Vector((-s * 0.12 * r, -0.985 * r, 0.22 * r)), 0.0055, 'goz_ak', 'kafa', n=8, k=5, sub=0)   # catchlight
     # kettle helmet: crown over the head, a ridge, a narrow brim
-    hz = gm[0].z + 0.075; hr = (np.ptp(hco[:, 0]) / 2) * 1.08
-    hy = (hco[:, 1].min() + hco[:, 1].max()) / 2 + 0.015
-    k.kure((0, hy, hz), hr, 'celik', 'kafa', n=28, k=10, olcek=(1, 1.08, (tepe - hz + 0.03) / hr), alt=0.0, ust=1.0)
-    k.yol([(0, hy + hr * 1.08 * math.cos(a), hz + (tepe - hz + 0.03) * math.sin(a) + 0.006) for a in [math.radians(x) for x in range(-8, 189, 14)]],
-          0.011, 'celik_k', 'kafa', n=6)
-    k.halka((0, hy, hz + 0.004), (0, 0, 1), hr * 1.02, 0.011, 'celik_k', 'kafa', n=28, m=6, alt=1)
-    k.tup((0, hy, hz - 0.006), (0, hy, hz + 0.01), hr * 1.3, hr * 1.02, 'celik', 'kafa', n=36, ey=1.06, alt=0)
-    k.halka((0, hy, hz - 0.005), (0, 0, 1), hr * 1.3, 0.01, 'celik_k', 'kafa', n=36, m=6, alt=1)
+    # kettle hat: the crown hugs the skull (measured: brow level z 1.73, centre y -0.021, half widths 0.161 / 0.153, top 1.864),
+    # a ridge front to back, a band with rivets, a brim sloping down all round with a rolled edge
+    HY, HZ, CR, CRY, CT = -0.021, 1.794, 0.166, 0.16, tepe + 0.06
+    k.kure((0, HY, HZ - 0.004), CR, 'celik', 'kafa', n=36, k=12, olcek=(1, CRY / CR, (CT - HZ) / CR), alt=0.0, ust=1.0)
+    k.yol([(0, HY + CRY * math.cos(a), HZ + (CT - HZ) * math.sin(a) + 0.004) for a in [math.radians(x) for x in range(12, 170, 12)]],
+          0.012, 'celik_k', 'kafa', n=8)
+    k.halka((0, HY, HZ + 0.008), (0, 0, 1), CR + 0.003, 0.01, 'celik_k', 'kafa', n=36, m=6, alt=1)
+    for i in range(12):
+        a = 2 * math.pi * i / 12
+        k.kure((math.cos(a) * (CR + 0.012), HY + math.sin(a) * (CRY + 0.012), HZ + 0.008), 0.0065, 'celik_k', 'kafa', n=6, k=4, sub=0)
+    k.siperlik((0, HY, 0), CR - 0.004, HZ, CR + 0.058, HZ - 0.04, 0.008, 'celik', 'kafa', n=48, ey=CRY / CR, alt=1)
+    k.halka((0, HY, HZ - 0.044), (0, 0, 1), CR + 0.058, 0.009, 'celik_k', 'kafa', n=48, m=6, alt=1)
+    k.tup((0, HY, HZ - 0.045), (0, HY, HZ + 0.01), CR - 0.012, CR - 0.01, 'deri_k', 'kafa', n=36, ey=CRY / CR, alt=0)   # leather liner inside the brim
     # belt round the waist (measured), brass buckle, pouch
     bx = np.abs(w[:, 0]).max(); by0, by1 = w[:, 1].min(), w[:, 1].max(); byc = (by0 + by1) / 2; bry = (by1 - by0) / 2
     k.tup((0, byc, 0.9), (0, byc, 0.965), bx + 0.05, bx + 0.05, 'deri', 'kalca', n=32, ey=(bry + 0.05) / (bx + 0.05), alt=1)
@@ -183,20 +204,26 @@ def kur(doku=True):
         ey = abs(yy - byc + (-0.035 if yy < byc else 0.035)) / 0.4
         k.yay(0.52, 0.95, 0.41, 0.4, a0, a1, 'mavi', etek(bone), ex=1.0, ey=ey, merkez=(0, byc), kalin=0.014, n=12, egim=0.03, kat=4)
         k.yay(0.505, 0.545, 0.418, 0.417, a0, a1, 'sirma', etek(bone), ex=1.0, ey=ey * 1.02, merkez=(0, byc), kalin=0.02, n=12, egim=0.03)
-    for s, ad in ((1, 'sol'), (-1, 'sag')):          # boot feet (over the bare foot, which is removed)
-        x = s * 0.148
-        k.kure((x, -0.06, 0.075), 0.1, 'deri_k', 'ayak_' + ad, n=16, k=10, olcek=(0.78, 1.5, 0.75), alt=-0.35)
-        k.tup((x, 0.012, 0.06), (x, 0.012, 0.2), 0.085, 0.082, 'deri_k', 'baldir_' + ad, n=14)
-        k.kutu((x, -0.065, 0.016), (0.165, 0.32, 0.032), 'taban', 'ayak_' + ad, alt=1)
+    # boots: lofted over the measured foot (heel y 0.073 to toes -0.218, widest 0.15 at the ball, instep 0.195 high at the
+    # ankle), a sole under them; the heel follows the shin, the rest the foot
+    AYAK = [(0.098, 0.112, 0.056, 0.022, 0.15), (0.055, 0.116, 0.072, 0.022, 0.205), (0.005, 0.124, 0.079, 0.022, 0.19),
+            (-0.05, 0.136, 0.083, 0.022, 0.135), (-0.11, 0.146, 0.082, 0.022, 0.1), (-0.17, 0.146, 0.074, 0.022, 0.08),
+            (-0.215, 0.138, 0.058, 0.022, 0.064), (-0.245, 0.13, 0.032, 0.026, 0.048)]
+    for s, ad in ((1, 'sol'), (-1, 'sag')):
+        ag = lambda p, ad=ad: {'baldir_' + ad: yumusak(0.0, 0.06, p.y), 'ayak_' + ad: 1 - yumusak(0.0, 0.06, p.y)}
+        k.bot([(y, s * cx, w, z0, z1) for y, cx, w, z0, z1 in AYAK], 'deri_k', ag, n=18)
+        k.tup((s * 0.114, 0.03, 0.1), (s * 0.112, 0.022, 0.4), 0.078, 0.074, 'deri_k', 'baldir_' + ad, n=28, ey=1.08, kapak=True, alt=0)   # the shaft
+        k.bot([(y, s * cx, w + 0.008, 0.0, 0.026 if y > 0.0 else 0.022) for y, cx, w, z0, z1 in AYAK[:-1]] + [(-0.252, s * 0.13, 0.03, 0.0, 0.02)],
+              'taban', ag, n=18, duz=0.002)
     # sword in the right fist, pointing forward and down
     c, g = avuc('sag')
     wv = (g + Vector((0, 0, -0.45))).normalized()
     q = Vector((0, 0, 1)) - wv * wv.z; q.normalize()      # the blade's flat faces sideways: broad from the front
-    k.tup(c - wv * 0.075, c + wv * 0.075, 0.02, 0.02, 'deri_k', 'el_sag', n=8)
-    k.kure(c - wv * 0.095, 0.03, 'pirinc', 'el_sag', n=10, k=6)
-    cg = c + wv * 0.088
+    k.tup(c - wv * 0.085, c + wv * 0.09, 0.02, 0.02, 'deri_k', 'el_sag', n=8)
+    k.kure(c - wv * 0.105, 0.03, 'pirinc', 'el_sag', n=10, k=6)
+    cg = c + wv * 0.1
     k.yol([cg - q * 0.12 + wv * 0.015, cg - q * 0.05, cg, cg + q * 0.05, cg + q * 0.12 + wv * 0.015], [0.013, 0.015, 0.017, 0.015, 0.013], 'celik_k', 'el_sag', n=6)
-    k.tup(c + wv * 0.1, c + wv * 0.8, 0.058, 0.048, 'celik', 'el_sag', n=4, ey=0.18, yon=q, alt=0)
+    k.tup(c + wv * 0.112, c + wv * 0.8, 0.058, 0.048, 'celik', 'el_sag', n=4, ey=0.18, yon=q, alt=0)
     k.tup(c + wv * 0.8, c + wv * 0.92, 0.048, 0.002, 'celik', 'el_sag', n=4, ey=0.18, yon=q, alt=0)
     # shield: the left fist holds its handle behind the boards
     c, g = avuc('sol')
