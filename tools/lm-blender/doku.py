@@ -6,21 +6,73 @@ import bpy, bmesh, math
 import numpy as np
 
 # material key -> (kind, sRGB colour, options)
+# (team blue: the game repaints every colour of hue 200-245 with saturation > 0.55 in the player's colour (glb-models.js
+#  isTeamBlue), so a blue that must stay blue (glazed tile, paint) is kept out of that range: 'lacivert', 'turkuaz')
 MALZEME = {
+    # stone
     'tas':      ('tas',  (0.87, 0.82, 0.71), {'tugla': 9.0}),
     'tas_koyu': ('tas',  (0.70, 0.65, 0.56), {'tugla': 9.0}),
     'tas_acik': ('duz',  (0.92, 0.89, 0.82), {}),
     'mermer':   ('duz',  (0.95, 0.94, 0.90), {'leke': 0.04}),
+    'kirec':    ('tas',  (0.89, 0.87, 0.81), {}),          # light limestone (Greek, Roman, Egyptian casing)
+    'kum':      ('tas',  (0.86, 0.73, 0.52), {}),          # sandstone (Egypt, India, Persia)
+    'kum_koyu': ('tas',  (0.72, 0.58, 0.40), {}),
+    'kum_acik': ('duz',  (0.92, 0.83, 0.65), {}),
+    'kirmizi_tas': ('tas', (0.70, 0.36, 0.27), {}),        # red sandstone (Red Fort, Amber)
+    'granit':   ('tas',  (0.63, 0.60, 0.58), {}),          # grey castle stone (England, France, Korea walls)
+    'granit_koyu': ('tas', (0.46, 0.44, 0.43), {}),
+    'bazalt':   ('duz',  (0.34, 0.33, 0.32), {}),
+    'zemin':    ('tas',  (0.80, 0.77, 0.70), {'tugla': 5.0, 'yatay': True}),
+    'toprak':   ('duz',  (0.58, 0.47, 0.34), {'leke': 0.08}),
+    'cimen':    ('duz',  (0.42, 0.52, 0.27), {'leke': 0.08}),   # turf roof, lawn
+    'su':       ('duz',  (0.28, 0.46, 0.52), {'leke': 0.03}),
+    # brick, earth, plaster
+    'tugla':    ('tas',  (0.68, 0.37, 0.26), {}),
+    'tugla_koyu': ('tas', (0.52, 0.28, 0.20), {}),
+    'kerpic':   ('duz',  (0.74, 0.53, 0.35), {'leke': 0.09}),   # mud brick (Mali, Persia, Mesopotamia)
+    'kerpic_koyu': ('duz', (0.60, 0.41, 0.27), {'leke': 0.09}),
+    'siva':     ('duz',  (0.94, 0.92, 0.87), {'leke': 0.03}),   # white plaster (Japan, Korea, Spain, Greece)
+    'siva_krem': ('duz', (0.91, 0.84, 0.68), {'leke': 0.04}),
+    'siva_oker': ('duz', (0.85, 0.63, 0.37), {'leke': 0.05}),
+    'siva_kirmizi': ('duz', (0.66, 0.26, 0.20), {'leke': 0.04}),  # Chinese / Kremlin red walls
+    # metal, roofs
     'kursun':   ('kursun', (0.55, 0.60, 0.67), {}),
     'kursun2':  ('kursun', (0.50, 0.545, 0.61), {}),     # every other lead sheet (ortak.py kubbe)
-    'kirmizi':  ('duz',  (0.66, 0.30, 0.22), {'leke': 0.05}),
+    'bakir':    ('duz',  (0.45, 0.66, 0.57), {'leke': 0.06}),   # green copper roof (patina)
+    'bakir2':   ('duz',  (0.41, 0.61, 0.53), {'leke': 0.06}),
     'altin':    ('duz',  (0.90, 0.70, 0.28), {'leke': 0.03}),
+    'bronz':    ('duz',  (0.62, 0.45, 0.25), {'leke': 0.04}),
+    'demir':    ('duz',  (0.30, 0.30, 0.32), {'leke': 0.03}),
+    'kiremit':  ('duz',  (0.68, 0.34, 0.22), {}),          # terracotta roof tiles (patterned as courses)
+    'kiremit2': ('duz',  (0.62, 0.30, 0.20), {}),
+    'kiremit_koyu': ('duz', (0.33, 0.34, 0.37), {'leke': 0.04}),   # dark grey East Asian tiles
+    'kiremit_koyu2': ('duz', (0.29, 0.30, 0.33), {'leke': 0.04}),
+    'kiremit_sari': ('duz', (0.88, 0.66, 0.20), {'leke': 0.04}),   # imperial yellow glaze (China)
+    'kiremit_yesil': ('duz', (0.30, 0.52, 0.36), {'leke': 0.04}),  # green glaze
+    'arduvaz':  ('duz',  (0.36, 0.38, 0.43), {'leke': 0.04}),      # slate (France, England)
+    'saz':      ('duz',  (0.72, 0.60, 0.37), {'leke': 0.08}),      # thatch
+    'saz_koyu': ('duz',  (0.58, 0.47, 0.29), {'leke': 0.08}),
+    # wood, lacquer, cloth
+    'ahsap':    ('duz',  (0.40, 0.27, 0.17), {}),
+    'ahsap_acik': ('duz', (0.62, 0.46, 0.30), {}),
+    'ahsap_koyu': ('duz', (0.27, 0.18, 0.12), {}),
+    'ahsap_dikey': ('duz', (0.48, 0.33, 0.21), {}),        # vertical boards
+    'kutuk':    ('duz',  (0.52, 0.37, 0.24), {}),          # logs
+    'lake':     ('duz',  (0.68, 0.17, 0.12), {'leke': 0.03}),     # red lacquer (China, Japan, Korea)
+    'lake_koyu': ('duz', (0.42, 0.10, 0.08), {'leke': 0.03}),
+    'kece':     ('duz',  (0.93, 0.90, 0.83), {'leke': 0.04}),     # felt (Mongol ger)
+    'kumas':    ('duz',  (0.85, 0.80, 0.68), {'leke': 0.04}),     # canvas tent
+    # paint, glaze
+    'kirmizi':  ('duz',  (0.66, 0.30, 0.22), {'leke': 0.05}),
+    'boya_kirmizi': ('duz', (0.72, 0.22, 0.16), {'leke': 0.03}),
+    'boya_sari': ('duz', (0.90, 0.72, 0.30), {'leke': 0.03}),
+    'boya_yesil': ('duz', (0.24, 0.50, 0.38), {'leke': 0.03}),
+    'turkuaz':  ('duz',  (0.18, 0.60, 0.58), {'leke': 0.03}),     # glazed tile (Persia, Timurid)
+    'lacivert': ('duz',  (0.28, 0.22, 0.52), {'leke': 0.03}),     # deep blue glaze / paint (kept off team blue)
+    'beyaz':    ('duz',  (0.96, 0.95, 0.92), {'leke': 0.02}),
     'koyu':     ('duz',  (0.13, 0.11, 0.10), {'leke': 0.02}),
     'cam':      ('duz',  (0.22, 0.30, 0.34), {'leke': 0.03}),
-    'ahsap':    ('duz',  (0.40, 0.27, 0.17), {}),
-    'kiremit':  ('duz',  (0.66, 0.33, 0.22), {}),
-    'zemin':    ('tas',  (0.80, 0.77, 0.70), {'tugla': 5.0, 'yatay': True}),
-    'mavi':     ('duz',  (0.10, 0.32, 0.88), {'leke': 0.0, 'aosuz': True}),
+    'mavi':     ('duz',  (0.10, 0.32, 0.88), {'leke': 0.0, 'aosuz': True}),   # TEAM COLOUR (banners)
 }
 
 
@@ -236,7 +288,22 @@ def parca_nesne(yuzler, ad, aci=38):
 # Colours and baked AO go into the vertex colours; the texture is one small tiling pattern of stone courses (512 px)
 # box-projected in model units over the stone faces; every other material samples a plain spot of it (white), so
 # only its vertex colour shows. The game multiplies the two (glb-models.js, extras detay = 1).
-DESENLI = {'tas': 1.0, 'tas_koyu': 1.0, 'zemin': 1.6}     # key -> pattern scale (paving: larger slabs)
+# key -> (pattern scale, stretch along the course, vertical): the one tile serves every coursed material - ashlar at
+# scale 1, bricks small, roof tiles as thin courses running along the eaves, boards and logs stretched long, upright
+# boards turned. A wall / roof face lays its courses along its own horizontal edge (u: along it, v: up the slope), a
+# flat face in plan (x, y): the courses stay level on any wall and parallel to the eaves on any roof.
+DESENLI = {
+    'tas': (1.0, 1, 0), 'tas_koyu': (1.0, 1, 0), 'zemin': (1.6, 1, 0),
+    'kirec': (1.1, 1, 0), 'kum': (1.2, 1, 0), 'kum_koyu': (1.2, 1, 0), 'kirmizi_tas': (1.0, 1, 0),
+    'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0),
+    'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0),
+    'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
+    'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
+    'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0),
+    'ahsap_dikey': (0.5, 4, 1),
+}
+DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
+           'granit_koyu', 'tugla', 'tugla_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 
@@ -294,7 +361,7 @@ def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
     for p in me.polygons:
         k = anahtarlar[p.material_index]
         # (a shade per face only on flat stone: on a curved surface it made a mosaic of triangles)
-        oy = MALZEME[k][2].get('leke', 0.05) * 0.6 if k in ('tas', 'tas_koyu', 'tas_acik', 'zemin') else 0
+        oy = MALZEME[k][2].get('leke', 0.05) * 0.6 if k in DUZ_TON else 0
         c = lin[k] * float(1 + rng.uniform(-oy, oy))
         renk[p.loop_start:p.loop_start + p.loop_total, :3] = c
         if k == 'mavi': mavi[p.loop_start:p.loop_start + p.loop_total] = True
@@ -327,9 +394,16 @@ def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
         k = anahtarlar[p.material_index]
         s, e = p.loop_start, p.loop_start + p.loop_total
         if k in DESENLI:
-            n = p.normal; ax = int(np.argmax(np.abs([n.x, n.y, n.z])))
-            c = co[lv[s:e]] / (KARO * DESENLI[k])
-            uv[s:e] = c[:, [0, 1]] if ax == 2 else (c[:, [1, 2]] if ax == 0 else c[:, [0, 2]])
+            olc, uzat, dikey = DESENLI[k]
+            n = p.normal
+            c = co[lv[s:e]] / (KARO * olc)
+            if abs(n.z) > 0.94:          # flat (paving, a flat roof): in plan
+                q = c[:, [0, 1]].copy()
+            else:                        # wall / roof: u along the face's level edge, v up its slope
+                t = np.array([-n.y, n.x], np.float32); t /= max(1e-6, float(np.hypot(t[0], t[1])))
+                q = np.stack([c[:, 0] * t[0] + c[:, 1] * t[1], c[:, 2] / max(0.3, (1 - n.z * n.z) ** 0.5)], 1)
+            q[:, 0] /= uzat              # (stretch: longer blocks / boards)
+            uv[s:e] = q[:, ::-1] if dikey else q
         else:
             uv[s:e] = DUZ_UV
     uvl.data.foreach_set('uv', uv.ravel())

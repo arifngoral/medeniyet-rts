@@ -8,6 +8,35 @@ Kota ya da oturum gerekmez, üçgen sayısı baştan denetlenir.
 2. **Betik** `tools/lm-blender/<ad>.py`. Ortak araçlar `ortak.py`: `Yapi.yuz` / `yuz_yon` / `serit` / `kutu` / `prizma` / `koni` / `kubbe` (yarım kubbe:
    `t0`, `t1`) / `kemerli` (derinliği olan kemer açıklığı; `sivri` > 0 sivri kemer, `v0` pencere denizliği, `korkuluk`) / `pencere`.
 
+## Bina üretimi: parça kütüphanesi ve düzenek (2026-11-22)
+
+Her çağ binası `tools/lm-blender/bina/<id>.py` betiği: `Yapi` + `parcalar.py` parçalarıyla kurulur, sonunda `bina_ortak.calistir(y, '<id>')`.
+`node tools/lm-blender/uret.mjs <id>` betiği Blender'da (arka planda) çalıştırır, detay yoluyla dışa aktarır, `gltf-transform` ile sıkıştırıp
+`assets/models/lm/<id>.glb`'ye yazar; üçgen sayısını, boyutu, dosya boyunu yazar. Önizlemeler `.blender-varlik/onizleme/<id>/` (git'e girmez):
+`_1_on` (oyunun bakışı), `_2_arka`, `_3_yan`, `_4_yakin`; `LM_YAKIN="x,y,z,boy[,açı];..."` verilirse istenen yerlerin yakın çekimleri tek
+paftada (`_5_pafta`). `_` ile başlayan id deneme sayfasıdır, oyuna yazılmaz: `_katalog` (bütün parçalar), `_suleymaniye_ref` (kalite ölçütü).
+Bitmemiş model `model.html?id=<id>` ile adresten açılır (listeye `LM_GLB` ekleyince girer).
+
+- **Ölçek**: en uzun kenar ~2,2–2,6 birim (Süleymaniye 2,5); taş deseni, gölge mesafesi ve parçaların varsayılan boyları buna göre. Ayak izi
+  kabaca kare (oyun en uzun kenarı 1'e indirir). 20–60 bin üçgen, ~2 MB altı. Her binada en az bir `sancak` (mavi = oyuncu rengi).
+- **Yüzler tek taraflı** (oyun arka yüzü çizmez): a→b duvarı a→b'nin SAĞINA bakar; saat yönü tersine dolaşılan çokgen dışa bakar. Parçalar
+  yüzlerini kendisi doğru çevirir; elle yüz eklerken `y.yuz_yon(pts, anahtar, dış_yön)` kullan. Aynı düzlemde iki yüz üst üste gelmesin
+  (titreşir): öne alınan süs en az ~0,002 birim önde olsun.
+- **Malzemeler** `doku.py` `MALZEME`: taş (`tas`, `kirec`, `kum`, `granit`, `kirmizi_tas`, `mermer`), tuğla, kerpiç, sıva (`siva`, `siva_krem`,
+  `siva_oker`, `siva_kirmizi`), çatı (`kiremit`, `kiremit_koyu` Doğu Asya, `kiremit_sari` / `_yesil` sırlı, `arduvaz`, `bakir` yeşil bakır,
+  `kursun`, `saz`, `cimen`), ahşap (`ahsap`, `_acik`, `_koyu`, `ahsap_dikey`, `kutuk`, `lake`), boya / sır (`boya_*`, `turkuaz`, `lacivert`),
+  `altin`, `bronz`, `kece`, `kumas`, `su`. Desenli olanlar (`DESENLI`) aynı 512 px karoyu yüzün kendi yatay kenarına göre serer: taşta sıra,
+  tuğlada küçük, kiremitte saçağa paralel ince sıra, tahtada uzun. Mavi tonlu sır / boya `lacivert` / `turkuaz` olmalı: oyun ton 200–245 arası
+  doygun maviyi oyuncu rengine boyar.
+- **Parçalar** (`parcalar.py`, her işlevin açıklaması içinde): `parca(y, konum, aci, olcek)` (orijinde kur, yerine koy / döndür), `duvarlar`,
+  `duz_duvar`, `silme` / `kornis` (profiller `SILME`), `donel` (dönel yüzey), `kure`, `boru`, `cubuk`; pencereler `pencereli_duvar`, `dikdortgen_acik`,
+  `kafes`, `yarik`, `kapi`; sütunlar `sutun` (osmanli, dor, iyon, korint, toskan, misir, pers, ahsap), `sutunlu_revak`, `peristil`, `alinlik`,
+  `arkad`, `kemer_dizisi`; kubbeler `kubbe_kasnakli`, `yarim_kubbe`, `kucuk_kubbe`, `sogan_kubbe`, `alem`, `minare`, `sadirvan`, `tackapi`;
+  savunma `mazgal`, `parapet`, `konsol_halka`, `sur`, `kule_yuvarlak`, `kule_kare`, `kale_kapisi`; çatılar `cati_kirma` (kare planda piramit;
+  `kivrim` / `yukari` Doğu Asya kıvrığı), `cati_besik`, `cati_irimoya`, `pagoda_kati`, `sorin`; `piramit`, `basamakli_piramit`, `dikilitas`;
+  ahşap `kutuk_duvar`, `kutuk_ev`, `uzun_ev`, `kirma_dikme`; `cadir_otag`, `cadir`; `kerpic_duvar`, `kerpic_kule`; `sancak`, `zemin`, `merdiven`,
+  `havuz`, `agac`.
+
 ## Detay yolu (yeni modeller; ör. `suleymaniye.py`)
 
 Yakınlaşınca da keskin: renkler ve pişirilmiş ortam gölgesi KÖŞE RENKLERİNDE, doku yalnız 512 px tekrarlanan kesme taş deseni (`doku.py` `detayli_aktar`,

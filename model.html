@@ -76,6 +76,8 @@ const ids = [...LM_GLB];
 const BIRIMLER = [['piyade', 'Piyade']];
 const ANIM_AD = { bekle: 'Bekleme', yuru: 'Yürüme', saldir: 'Saldırı', ol: 'Ölüm' };
 const birimMi = (id) => BIRIMLER.some((b) => b[0] === id);
+// (a model not in the list yet - one being built in tools/lm-blender - opens by its id in the address)
+if (qs.get('id') && !ids.includes(qs.get('id')) && !birimMi(qs.get('id')) && /^[\w-]+$/.test(qs.get('id'))) ids.push(qs.get('id'));
 let secili = (ids.includes(qs.get('id')) || birimMi(qs.get('id'))) ? qs.get('id') : ids[ids.length - 1];
 let mixer = null, animSec = 'bekle';
 const saat = new THREE.Clock();
