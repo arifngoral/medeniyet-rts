@@ -315,7 +315,7 @@ export function glbVersion() { return version; }
 // Generated models of the age-up buildings (concept image -> Hunyuan 3D -> shrunk like the others): assets/models/lm/<id>.glb,
 // the same in every era. Only the ones listed here have a file; the others keep their procedural model (render/lm/).
 // A file is loaded the first time its building is drawn; the building is drawn again once it is in (glbVersion()).
-export const LM_GLB = new Set(['lm_ayasofya', 'lm_himeji', 'lm_tacmahal', 'lm_aziz_basil']);
+export const LM_GLB = new Set(['lm_ayasofya', 'lm_himeji', 'lm_tacmahal', 'lm_aziz_basil', 'lm_kolezyum']);
 const LM_STARTED = new Set();
 export function loadLandmarkGlb(id) {
   if (!LM_GLB.has(id) || LM_STARTED.has(id) || !enabled()) return;

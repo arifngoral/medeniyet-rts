@@ -10,6 +10,18 @@
 // Rule of thumb (same as the card game): changes made on the same day go into the same version.
 export const VERSIONS = [
   {
+    v: '1.2', date: '2026-11-22', title: 'Kolezyum',
+    intro: 'Kolezyum artık ayrıntılı 3B bir model.',
+    items: [
+      ['Çağ binaları', [
+        'Kolezyum yeni modeliyle: üç kat kemer, pencereli attika, basamaklı oturma yerleri, kum arena; duvarın üstünde oyuncu renginde iki sancak. Gemini çizimine bakılarak Blender\'da kuruldu.',
+      ]],
+    ],
+    showcase: [
+      { id: 'lm_kolezyum', kind: 'building', tags: ['yeni'], note: 'Blender\'da kurulan yeni model: üç kat kemer, attika, oturma basamakları, kum arena.' },
+    ],
+  },
+  {
     v: '1.1', date: '2026-11-21', title: 'Denge',
     intro: 'Medeniyetler ilk kez kendi aralarında ölçüldü (herkes herkese, 1520 maç) ve uçtakiler ayarlandı.',
     items: [
