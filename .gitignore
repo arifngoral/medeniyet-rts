@@ -14,3 +14,4 @@ drafts/
 
 # large local assets for tools/lm-blender (Blender Human Base Meshes, CC0; see tools/lm-blender/README.md)
 .blender-varlik/
+__pycache__/
