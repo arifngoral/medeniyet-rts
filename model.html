@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model · Medeniyet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* A large viewer for the generated age-up building models (assets/models/lm/*.glb): drag to turn, wheel to zoom.
+   View only: the models as the game reads them, the banner blue repainted in the chosen player colour. */
+:root { --gold-2: #ffe1a0; --line: #d9a64a5c; --mline: #d9a64ad9; --ink: #fff3d6; --dim: #e2cfa8; --bg: #1a0f07; --display: 'Cinzel', Georgia, serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
+#sahne { position: fixed; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+.panel { position: fixed; top: 16px; left: 16px; z-index: 2; width: 250px; max-height: calc(100% - 32px); overflow: auto; padding: 14px; background: #1a0f07e0;
+  border: 1px solid var(--mline); box-shadow: inset 0 0 0 3px #1a0f07, inset 0 0 0 4px var(--line), 0 14px 30px #0009; }
+.panel h1 { margin: 0 0 2px; font: 800 1.2rem var(--display); letter-spacing: .06em; color: var(--gold-2); }
+.panel p { margin: 0 0 12px; font-size: 12px; color: var(--dim); line-height: 1.4; }
+.panel h2 { margin: 14px 0 6px; font: 700 .66rem var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }
+.liste button { display: block; width: 100%; text-align: left; margin: 0 0 4px; padding: 8px 10px; font: 600 13px 'Inter', sans-serif; color: var(--ink);
+  background: #120a04a6; border: 1px solid var(--line); cursor: pointer; }
+.liste button small { display: block; font-weight: 400; color: var(--dim); font-size: 11px; }
+.liste button:hover { border-color: var(--mline); }
+.liste button.sec { border-color: var(--gold-2); background: #3a2410; }
+.renkler { display: flex; flex-wrap: wrap; gap: 6px; }
+.renkler button { width: 26px; height: 26px; border: 2px solid #0008; cursor: pointer; padding: 0; }
+.renkler button.sec { border-color: var(--gold-2); }
+label.kutu { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px; cursor: pointer; }
+a.geri { display: inline-block; margin-top: 14px; color: var(--gold-2); font: 700 .68rem var(--display); letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+  border: 1px solid var(--mline); padding: 7px 12px; margin-right: 6px; }
+.bilgi { position: fixed; right: 16px; bottom: 14px; z-index: 2; font-size: 12px; color: var(--dim); text-shadow: 0 1px 2px #000; }
+@media (max-width: 640px) { .panel { width: auto; right: 16px; max-height: 42%; } }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="sahne"></canvas>
+<div class="panel">
+  <h1>Model</h1>
+  <p>Üretilmiş çağ binası modelleri büyük ekranda. Sürükle: çevir · Tekerlek: yakınlaş · Sağ tık: kaydır.</p>
+  <h2>Bina</h2>
+  <div class="liste" id="liste"></div>
+  <h2>Oyuncu rengi</h2>
+  <div class="renkler" id="renkler"></div>
+  <label class="kutu"><input type="checkbox" id="don" checked> Yavaşça dönsün</label>
+  <label class="kutu"><input type="checkbox" id="tel"> Tel kafes</label>
+  <a class="geri" href="vitrin.html?tab=cag">Vitrin</a><a class="geri" href="./">Oyuna dön</a>
+</div>
+<div class="bilgi" id="bilgi"></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { BUILDINGS } from './src/data.js';
+import { CIVS } from './src/civs.js';
+import { LM_OF } from './src/landmarks.js';
+import { LM_GLB } from './src/render/glb-models.js';
+
+const RENKLER = ['#3b6fd8', '#d23c32', '#7a3fb0', '#2f9e4f', '#e0a020', '#1fa7a8', '#e06aa8', '#ececec'];
+const qs = new URLSearchParams(location.search);
+const ids = [...LM_GLB];
+let secili = ids.includes(qs.get('id')) ? qs.get('id') : ids[ids.length - 1];
+let renk = RENKLER[1];
+
+// the banner blue (the same test as glb-models.js isTeamBlue), on sRGB 0..1
+function takimMavisi(r, g, b) {
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), sat = mx > 0 ? (mx - mn) / mx : 0;
+  if (sat <= .55 || mx <= .45 || b !== mx) return false;
+  const d = mx - mn; let h = (r - g) / d + 4; h *= 60; if (h < 0) h += 360;
+  return h > 200 && h < 245;
+}
+
+const cv = document.getElementById('sahne');
+const ren = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+ren.setPixelRatio(Math.min(devicePixelRatio, 2));
+ren.shadowMap.enabled = true; ren.shadowMap.type = THREE.PCFSoftShadowMap;
+const sahne = new THREE.Scene();
+sahne.background = new THREE.Color(0x2a1a0e);
+sahne.fog = new THREE.Fog(0x2a1a0e, 12, 30);
+const kam = new THREE.PerspectiveCamera(35, 1, 0.05, 100);
+kam.position.set(-4.2, 3.4, 4.6);
+const kon = new OrbitControls(kam, cv);
+kon.enableDamping = true; kon.target.set(0, 0.5, 0); kon.minDistance = 1.2; kon.maxDistance = 14; kon.maxPolarAngle = Math.PI * 0.49;
+kon.autoRotate = true; kon.autoRotateSpeed = 0.6;
+sahne.add(new THREE.HemisphereLight(0xfff1dc, 0x4a3420, 1.4));
+const gunes = new THREE.DirectionalLight(0xfff0d8, 2.2);
+gunes.position.set(-4, 7, 3); gunes.castShadow = true;
+gunes.shadow.mapSize.set(2048, 2048);
+Object.assign(gunes.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 1, far: 20 });
+gunes.shadow.bias = -0.0005;
+sahne.add(gunes);
+const zemin = new THREE.Mesh(new THREE.CircleGeometry(6, 64), new THREE.MeshStandardMaterial({ color: 0x6b5a3c, roughness: 1 }));
+zemin.rotation.x = -Math.PI / 2; zemin.receiveShadow = true; sahne.add(zemin);
+
+const yukle = new GLTFLoader(); yukle.setMeshoptDecoder(MeshoptDecoder);
+const onbellek = new Map();
+let model = null;
+
+function boya(kaynak) {
+  // a copy of the model with the banner blue in the chosen colour; base on y = 0, longest side 3 (as glb-models.js, larger)
+  const c = new THREE.Color(renk), g = kaynak.geo.clone();
+  let mat;
+  if (kaynak.img) {
+    const { w, h, px } = kaynak.img, cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
+    const cx = cnv.getContext('2d'), d = cx.createImageData(w, h); d.data.set(px);
+    const R = Math.round(c.r * 255), G = Math.round(c.g * 255), B = Math.round(c.b * 255);
+    for (let j = 0; j < px.length; j += 4) if (kaynak.mavi[j >> 2]) {
+      const l = (px[j] * .3 + px[j + 1] * .59 + px[j + 2] * .11) / 170;
+      d.data[j] = Math.min(255, R * l); d.data[j + 1] = Math.min(255, G * l); d.data[j + 2] = Math.min(255, B * l);
+    }
+    cx.putImageData(d, 0, 0);
+    const t = new THREE.CanvasTexture(cnv); t.colorSpace = THREE.SRGBColorSpace; t.flipY = kaynak.flipY;
+    mat = new THREE.MeshStandardMaterial({ map: t, roughness: .9, flatShading: true });
+  } else {
+    const col = g.attributes.color;
+    if (col) {
+      const lin = c.clone(); // THREE.Color from a hex string is linear in three r160 (ColorManagement on)
+      for (let i = 0; i < col.count; i++) if (kaynak.mavi[i]) col.setXYZ(i, lin.r, lin.g, lin.b);
+      col.needsUpdate = true;
+    }
+    mat = new THREE.MeshStandardMaterial({ vertexColors: !!col, roughness: .92, metalness: 0, flatShading: true });
+  }
+  mat.wireframe = document.getElementById('tel').checked;
+  const m = new THREE.Mesh(g, mat); m.castShadow = m.receiveShadow = true;
+  return m;
+}
+
+async function getir(id) {
+  if (onbellek.has(id)) return onbellek.get(id);
+  const gltf = await yukle.loadAsync('./assets/models/lm/' + id + '.glb');
+  let mesh = null; gltf.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
+  mesh.updateWorldMatrix(true, false);
+  let geo = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
+  geo.applyMatrix4(mesh.matrixWorld);
+  geo.computeBoundingBox();
+  const b = geo.boundingBox, side = Math.max(b.max.x - b.min.x, b.max.z - b.min.z) || 1, k = 3 / side;
+  geo.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2);
+  geo.scale(k, k, k);
+  geo.computeVertexNormals();
+  const r = { geo, img: null, mavi: null, flipY: false, ucgen: geo.attributes.position.count / 3 };
+  const map = mesh.material && mesh.material.map;
+  if (map && map.image) {
+    const im = map.image, w = im.width, h = im.height, cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
+    const cx = cnv.getContext('2d', { willReadFrequently: true }); cx.drawImage(im, 0, 0);
+    const px = cx.getImageData(0, 0, w, h).data, mavi = new Uint8Array(w * h);
+    for (let i = 0, j = 0; i < w * h; i++, j += 4) mavi[i] = takimMavisi(px[j] / 255, px[j + 1] / 255, px[j + 2] / 255) ? 1 : 0;
+    r.img = { w, h, px }; r.mavi = mavi; r.flipY = map.flipY;
+  } else if (geo.attributes.color) {
+    const c = geo.attributes.color, mavi = new Uint8Array(c.count), s = new THREE.Color();
+    for (let i = 0; i < c.count; i++) {
+      s.setRGB(c.getX(i), c.getY(i), c.getZ(i), THREE.LinearSRGBColorSpace);
+      const srgb = s.clone().convertLinearToSRGB();
+      mavi[i] = takimMavisi(srgb.r, srgb.g, srgb.b) ? 1 : 0;
+    }
+    r.mavi = mavi;
+  }
+  onbellek.set(id, r);
+  return r;
+}
+
+async function goster() {
+  const r = await getir(secili);
+  if (model) { sahne.remove(model); model.material.dispose(); model.geometry.dispose(); }
+  model = boya(r); sahne.add(model);
+  r.geo.computeBoundingBox();
+  const h = r.geo.boundingBox.max.y;
+  kon.target.set(0, Math.min(h * 0.4, 1.2), 0);
+  const b = BUILDINGS[secili], lm = LM_OF[secili], civ = lm && CIVS[lm.civ];
+  document.getElementById('bilgi').textContent = (b ? b.name : secili) + (civ ? ' · ' + civ.name : '') + ' · ' + r.ucgen.toLocaleString('tr-TR') + ' üçgen';
+  history.replaceState(null, '', '?id=' + secili);
+}
+
+const liste = document.getElementById('liste');
+for (const id of ids) {
+  const b = BUILDINGS[id], lm = LM_OF[id], civ = lm && CIVS[lm.civ];
+  const bt = document.createElement('button');
+  bt.innerHTML = (b ? b.name : id) + '<small>' + (civ ? civ.name : '') + '</small>';
+  bt.onclick = () => { secili = id; for (const x of liste.children) x.classList.toggle('sec', x === bt); goster(); };
+  if (id === secili) bt.classList.add('sec');
+  liste.appendChild(bt);
+}
+const renkler = document.getElementById('renkler');
+for (const c of RENKLER) {
+  const bt = document.createElement('button'); bt.style.background = c; bt.title = c;
+  bt.onclick = () => { renk = c; for (const x of renkler.children) x.classList.toggle('sec', x === bt); goster(); };
+  if (c === renk) bt.classList.add('sec');
+  renkler.appendChild(bt);
+}
+document.getElementById('don').onchange = (e) => { kon.autoRotate = e.target.checked; };
+document.getElementById('tel').onchange = () => goster();
+
+function boyut() {
+  const w = innerWidth, h = innerHeight;
+  ren.setSize(w, h, false); kam.aspect = w / h; kam.updateProjectionMatrix();
+}
+addEventListener('resize', boyut); boyut();
+ren.setAnimationLoop(() => { kon.update(); ren.render(sahne, kam); });
+goster();
+</script>
+</body>
+</html>
