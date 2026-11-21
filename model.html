@@ -128,7 +128,7 @@ function boya(kaynak) {
       for (let i = 0; i < col.count; i++) if (kaynak.mavi[i]) col.setXYZ(i, lin.r, lin.g, lin.b);
       col.needsUpdate = true;
     }
-    mat = new THREE.MeshStandardMaterial({ vertexColors: !!col, roughness: .92, metalness: 0, flatShading: kaynak.duz });
+    mat = new THREE.MeshStandardMaterial({ vertexColors: !!col, map: kaynak.detay || null, roughness: .92, metalness: 0, flatShading: kaynak.duz });
   }
   mat.wireframe = document.getElementById('tel').checked;
   const m = new THREE.Mesh(g, mat); m.castShadow = m.receiveShadow = true;
@@ -162,7 +162,10 @@ async function getir(id) {
   geo.scale(k, k, k);
   if (duz) geo.computeVertexNormals(); else geo.normalizeNormals();
   const r = { geo, img: null, mavi: null, flipY: false, duz, ucgen: geo.attributes.position.count / 3 };
-  const map = mesh.material && mesh.material.map;
+  const map0 = mesh.material && mesh.material.map;
+  // (detail files: vertex colours x a small tiling stone pattern, as the game draws them)
+  if (mesh.userData && mesh.userData.detay && map0 && geo.attributes.color) { r.detay = map0; map0.wrapS = map0.wrapT = THREE.RepeatWrapping; map0.anisotropy = 8; }
+  const map = r.detay ? null : map0;
   if (map && map.image) {
     const im = map.image, w = im.width, h = im.height, cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
     const cx = cnv.getContext('2d', { willReadFrequently: true }); cx.drawImage(im, 0, 0);

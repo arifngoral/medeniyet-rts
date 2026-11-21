@@ -95,7 +95,7 @@ class Yapi:
 
     # one bay of wall from a to b with a round-arched opening, seen from the right of a->b (nc); renkler: wall, reveal,
     # sill, dark back. korkuluk: sill height of a parapet in the opening
-    def kemerli(self, a, b, z0, H, renkler, v0=0.0, en=0.68, ust=0.017, derin=0.03, k_say=6, korkuluk=None, sivri=0.0):
+    def kemerli(self, a, b, z0, H, renkler, v0=0.0, en=0.68, ust=0.017, derin=0.03, k_say=6, korkuluk=None, sivri=0.0, cerceve=None):
         """sivri > 0: a pointed (Ottoman) arch, its rise = sivri x span (0.6 is typical); 0: round"""
         duvar, koyu, acik, delik = renkler
         a, b = Vector(a), Vector(b)
@@ -134,6 +134,32 @@ class Yapi:
             d0, d1, h = derin * 0.35, derin * 0.6, v0 + korkuluk
             self.yuz([L(x0, v0, d0), L(x1, v0, d0), L(x1, h, d0), L(x0, h, d0)], acik)
             self.yuz([L(x0, h, d0), L(x1, h, d0), L(x1, h, d1), L(x0, h, d1)], acik)
+        if cerceve:
+            # a raised frame round the jambs and the arch (cerceve = (width, material or [alternating materials for the
+            # arch stones])), and a sill ledge under the opening
+            f, mlz = cerceve
+            mlz = mlz if isinstance(mlz, (list, tuple)) else [mlz]
+            xm = (x0 + x1) / 2
+            d = -0.0025
+            def dis(p):
+                u, v = p
+                if v <= hs + 1e-9:
+                    return (u - f if u < xm else u + f, v)
+                k = Vector((u - xm, v - hs)).normalized()
+                return (u + k.x * f, v + k.y * f)
+            yol = [(x0, v0), (x0, hs)] + kemer + [(x1, hs), (x1, v0)]
+            for k in range(len(yol) - 1):
+                p, q = yol[k], yol[k + 1]
+                tas = mlz[0] if (p[1] <= hs + 1e-9 and q[1] <= hs + 1e-9) else mlz[k % len(mlz)]
+                self.yuz_yon([L(*p, d), L(*q, d), L(*dis(q), d), L(*dis(p), d)], tas, nc)
+                # the frame's outer edge, so it reads as raised
+                orta = (L(*dis(p), 0) + L(*dis(q), 0)) / 2
+                self.yuz_yon([L(*dis(p), d), L(*dis(q), d), L(*dis(q), 0), L(*dis(p), 0)], mlz[0], orta - L(xm, (v0 + hs) / 2, 0))
+            if v0 > 0:
+                ss = 0.008
+                Zv = Vector((0, 0, 1))
+                self.yuz_yon([L(x0 - f, v0, -ss), L(x1 + f, v0, -ss), L(x1 + f, v0, 0), L(x0 - f, v0, 0)], mlz[0], Zv)
+                self.yuz_yon([L(x0 - f, v0 - 0.006, -ss), L(x1 + f, v0 - 0.006, -ss), L(x1 + f, v0, -ss), L(x0 - f, v0, -ss)], mlz[0], nc)
         return W, e, nc, L
 
     # a dark window (round-headed if kemer) painted just in front of a wall: o a point on the wall, ex along it, n out
@@ -147,6 +173,21 @@ class Yapi:
         else:
             pts += [P(u + w, v + h), P(u, v + h)]
         self.yuz_yon(pts, renk, n)
+
+    # a round window (oculus) with a raised frame ring: centre o on the wall, ex along it, n out
+    def oculus(self, o, ex, n, r, renk, cerceve_renk, f=0.007, k=12):
+        o, ex, n = Vector(o), Vector(ex), Vector(n)
+        up = Vector((0, 0, 1))
+        P = lambda rr, t, d: o + ex * (rr * math.cos(t)) + up * (rr * math.sin(t)) + n * d
+        self.yuz_yon([P(r, 2 * math.pi * i / k, 0.002) for i in range(k)], renk, n)
+        for i in range(k):
+            t0, t1 = 2 * math.pi * i / k, 2 * math.pi * (i + 1) / k
+            self.yuz_yon([P(r, t0, 0.0035), P(r, t1, 0.0035), P(r + f, t1, 0.0035), P(r + f, t0, 0.0035)], cerceve_renk, n)
+
+    # sections (bolum): the live view (canli.py) builds the model part by part and names each
+    def bolum(self, ad):
+        if not hasattr(self, 'bolumler'): self.bolumler = []
+        self.bolumler.append((len(self.faces), ad))
 
     def ucgen_sayisi(self):
         return sum(len(p) - 2 for p, _ in self.faces)

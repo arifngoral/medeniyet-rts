@@ -129,10 +129,13 @@ function prepare(scene, piece, key, done) {
   let mesh = null; scene.traverse(o => { if (o.isMesh && !mesh) mesh = o; });   // (the shrunk files hold one primitive)
   if (!mesh) return done(null);
   const geo = plainGeo(mesh), map = mesh.material && mesh.material.map;
+  // (extras { detay: 1 }: the colours and shading are in the vertex colours, the texture is a small tiling detail
+  //  pattern (stone courses) laid over them, tools/lm-blender: sharp at any zoom)
+  const detay = !!(mesh.userData && mesh.userData.detay) && map && geo.attributes.color && geo.attributes.uv;
   prepLater(() => {
     try { prepShape(geo, piece, key); } catch (err) { console.warn('[glb] prepare failed', key, err); return done(null); }
     prepLater(() => {
-      try { done(prepMask(geo, map)); } catch (err) { console.warn('[glb] prepare failed', key, err); done(null); }
+      try { done(prepMask(geo, detay ? null : map, detay ? map : null)); } catch (err) { console.warn('[glb] prepare failed', key, err); done(null); }
     }, true);
   }, true);
 }
@@ -228,8 +231,9 @@ function prepShape(geo, piece, key) {
   if (!geo.attributes.normal) geo.computeVertexNormals();   // non-indexed: flat normals per face (a file that kept its own normals: those)
   geo.computeBoundingBox();
 }
-function prepMask(geo, map) {
-  const r = { geo, img: null, blue: null, map: null };
+function prepMask(geo, map, detay) {
+  const r = { geo, img: null, blue: null, map: null, detay: detay || null };
+  if (detay) { detay.wrapS = detay.wrapT = THREE.RepeatWrapping; detay.anisotropy = 8; detay.needsUpdate = true; }
   if (map && map.image) {
     // texture: keep its pixels on a canvas so each player can get a repainted copy
     const im = map.image, w = im.width, h = im.height;
@@ -385,6 +389,11 @@ function look(key, color) {
       }
     }
     VC_GEO.set(k, g);
+  }
+  if (base.detay) {   // (one material per model: the detail pattern is the same for every player)
+    let m = MATS.get(key);
+    if (!m) { m = new THREE.MeshStandardMaterial({ vertexColors: true, map: base.detay, roughness: .92, metalness: 0 }); MATS.set(key, m); }
+    return { geo: g, mat: m };
   }
   return { geo: g, mat: VC_MAT };
 }

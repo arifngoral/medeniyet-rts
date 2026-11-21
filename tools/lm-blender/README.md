@@ -8,7 +8,15 @@ Kota ya da oturum gerekmez, üçgen sayısı baştan denetlenir.
 2. **Betik** `tools/lm-blender/<ad>.py`. Ortak araçlar `ortak.py`: `Yapi.yuz` / `yuz_yon` / `serit` / `kutu` / `prizma` / `koni` / `kubbe` (yarım kubbe:
    `t0`, `t1`) / `kemerli` (derinliği olan kemer açıklığı; `sivri` > 0 sivri kemer, `v0` pencere denizliği, `korkuluk`) / `pencere`.
 
-## Dokulu yol (yeni modeller; ör. `suleymaniye.py`)
+## Detay yolu (yeni modeller; ör. `suleymaniye.py`)
+
+Yakınlaşınca da keskin: renkler ve pişirilmiş ortam gölgesi KÖŞE RENKLERİNDE, doku yalnız 512 px tekrarlanan kesme taş deseni (`doku.py` `detayli_aktar`,
+`karo_desen`; taş yüzlere model biriminde kutu izdüşümüyle serilir, `KARO` = 4 sıra; öteki malzemeler desenin düz beyaz noktasını okur). Dosya
+`extras { detay: 1, yumusak: 1 }`; oyun (`glb-models.js` `prepare` / `look`) köşe rengi × deseni çizer, sancak mavisini köşe renginden boyar.
+Canlı izleme: `blender --factory-startup --python tools/lm-blender/canli.py -- suleymaniye cikti.glb [hız]` (pencereli; bölüm adları `Yapi.bolum`).
+Sıkıştırma aşağıdaki gibi (jpeg + meshopt). Süleymaniye ~37 bin üçgen, ~1,5 MB.
+
+## Dokulu yol (atlas; eski, yakında pikselleşiyordu)
 
 Yüzlere renk yerine malzeme adı verilir (`doku.py` `MALZEME`: `tas` derzli kesme taş, `kursun`, `altin`, `mermer`, `cam`, `ahsap`, `zemin`, `mavi` sancak ...).
 `nesne_dokulu` yüzleri kaynaştırır, açıya göre keskin kenarlı yumuşak gölgeler (kubbe, minare yuvarlak; köşeler keskin), UV açar;
