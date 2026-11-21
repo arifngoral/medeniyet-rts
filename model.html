@@ -46,9 +46,12 @@ a.geri { display: inline-block; margin-top: 14px; color: var(--gold-2); font: 70
 <canvas id="sahne"></canvas>
 <div class="panel">
   <h1>Model</h1>
-  <p>Üretilmiş çağ binası modelleri büyük ekranda. Sürükle: çevir · Tekerlek: yakınlaş · Sağ tık: kaydır.</p>
+  <p>Üretilmiş çağ binası ve birim modelleri büyük ekranda. Sürükle: çevir · Tekerlek: yakınlaş · Sağ tık: kaydır.</p>
   <h2>Bina</h2>
   <div class="liste" id="liste"></div>
+  <h2>Birim</h2>
+  <div class="liste" id="birimler"></div>
+  <div id="animkutu" hidden><h2>Animasyon</h2><div class="liste" id="animler"></div></div>
   <h2>Oyuncu rengi</h2>
   <div class="renkler" id="renkler"></div>
   <label class="kutu"><input type="checkbox" id="don" checked> Yavaşça dönsün</label>
@@ -69,7 +72,13 @@ import { LM_GLB } from './src/render/glb-models.js';
 const RENKLER = ['#3b6fd8', '#d23c32', '#7a3fb0', '#2f9e4f', '#e0a020', '#1fa7a8', '#e06aa8', '#ececec'];
 const qs = new URLSearchParams(location.search);
 const ids = [...LM_GLB];
-let secili = ids.includes(qs.get('id')) ? qs.get('id') : ids[ids.length - 1];
+// rigged units (assets/models/birim/<id>.glb, tools/lm-blender/karakter.py): played with their own actions
+const BIRIMLER = [['piyade', 'Piyade']];
+const ANIM_AD = { bekle: 'Bekleme', yuru: 'Yürüme', saldir: 'Saldırı', ol: 'Ölüm' };
+const birimMi = (id) => BIRIMLER.some((b) => b[0] === id);
+let secili = (ids.includes(qs.get('id')) || birimMi(qs.get('id'))) ? qs.get('id') : ids[ids.length - 1];
+let mixer = null, animSec = 'bekle';
+const saat = new THREE.Clock();
 let renk = RENKLER[1];
 
 // the banner blue (the same test as glb-models.js isTeamBlue), on sRGB 0..1
@@ -185,9 +194,66 @@ async function getir(id) {
   return r;
 }
 
+function kaldir() {
+  if (!model) return;
+  sahne.remove(model);
+  model.traverse((o) => { if (o.isMesh) { o.material.dispose(); if (!o.isSkinnedMesh) o.geometry.dispose(); } });
+  model = null; mixer = null;
+}
+
+async function birimGoster(id) {
+  const gltf = await yukle.loadAsync('./assets/models/birim/' + id + '.glb');
+  kaldir();
+  const kok = gltf.scene;
+  // (the box of the skinned mesh as posed: its quantized geometry's own box is not in model units)
+  kok.updateMatrixWorld(true);
+  const box = new THREE.Box3();
+  kok.traverse((o) => { if (o.isSkinnedMesh) { o.skeleton.update(); o.computeBoundingBox(); box.union(o.boundingBox.clone().applyMatrix4(o.matrixWorld)); } });
+  const k = 2.6 / (box.max.y - box.min.y || 1);
+  kok.scale.setScalar(k); kok.position.y = -box.min.y * k;
+  const tc = new THREE.Color(renk), s = new THREE.Color();
+  let ucgen = 0;
+  kok.traverse((o) => {
+    if (!o.isMesh) return;
+    o.castShadow = o.receiveShadow = true; o.frustumCulled = false;
+    const col = o.geometry.attributes.color;
+    if (col) for (let i = 0; i < col.count; i++) {
+      s.setRGB(col.getX(i), col.getY(i), col.getZ(i), THREE.LinearSRGBColorSpace);
+      const g = s.clone().convertLinearToSRGB();
+      if (takimMavisi(g.r, g.g, g.b)) col.setXYZ(i, tc.r, tc.g, tc.b);
+    }
+    o.material = new THREE.MeshStandardMaterial({ vertexColors: !!col, roughness: .85, metalness: 0, wireframe: document.getElementById('tel').checked });
+    ucgen += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3;
+  });
+  model = kok; sahne.add(kok);
+  mixer = new THREE.AnimationMixer(kok);
+  const kutu = document.getElementById('animler'); kutu.innerHTML = '';
+  const oynat = (ad) => {
+    animSec = ad; mixer.stopAllAction();
+    const c = gltf.animations.find((a) => a.name === ad); if (!c) return;
+    const a = mixer.clipAction(c);
+    if (ad === 'ol') { a.setLoop(THREE.LoopOnce); a.clampWhenFinished = true; }
+    a.reset().play();
+    for (const x of kutu.children) x.classList.toggle('sec', x.dataset.ad === ad);
+  };
+  for (const ad of ['bekle', 'yuru', 'saldir', 'ol']) {
+    if (!gltf.animations.some((a) => a.name === ad)) continue;
+    const bt = document.createElement('button'); bt.dataset.ad = ad; bt.textContent = ANIM_AD[ad] || ad;
+    bt.onclick = () => oynat(ad); kutu.appendChild(bt);
+  }
+  document.getElementById('animkutu').hidden = false;
+  oynat(gltf.animations.some((a) => a.name === animSec) ? animSec : 'bekle');
+  kon.target.set(0, 1.25, 0);
+  const ad = (BIRIMLER.find((b) => b[0] === id) || [id, id])[1];
+  document.getElementById('bilgi').textContent = ad + ' · ' + Math.round(ucgen).toLocaleString('tr-TR') + ' üçgen · ' + gltf.animations.length + ' animasyon';
+  history.replaceState(null, '', '?id=' + id);
+}
+
 async function goster() {
+  if (birimMi(secili)) return birimGoster(secili);
+  document.getElementById('animkutu').hidden = true;
   const r = await getir(secili);
-  if (model) { sahne.remove(model); model.material.dispose(); model.geometry.dispose(); }
+  kaldir();
   model = boya(r); sahne.add(model);
   r.geo.computeBoundingBox();
   const h = r.geo.boundingBox.max.y;
@@ -197,12 +263,20 @@ async function goster() {
   history.replaceState(null, '', '?id=' + secili);
 }
 
-const liste = document.getElementById('liste');
+const liste = document.getElementById('liste'), birimler = document.getElementById('birimler');
+const tumSec = (bt) => { for (const x of [...liste.children, ...birimler.children]) x.classList.toggle('sec', x === bt); };
+for (const [id, ad] of BIRIMLER) {
+  const bt = document.createElement('button');
+  bt.innerHTML = ad + '<small>İskeletli, animasyonlu</small>';
+  bt.onclick = () => { secili = id; tumSec(bt); goster(); };
+  if (id === secili) bt.classList.add('sec');
+  birimler.appendChild(bt);
+}
 for (const id of ids) {
   const b = BUILDINGS[id], lm = LM_OF[id], civ = lm && CIVS[lm.civ];
   const bt = document.createElement('button');
   bt.innerHTML = (b ? b.name : id) + '<small>' + (civ ? civ.name : '') + '</small>';
-  bt.onclick = () => { secili = id; for (const x of liste.children) x.classList.toggle('sec', x === bt); goster(); };
+  bt.onclick = () => { secili = id; tumSec(bt); goster(); };
   if (id === secili) bt.classList.add('sec');
   liste.appendChild(bt);
 }
@@ -221,7 +295,7 @@ function boyut() {
   ren.setSize(w, h, false); kam.aspect = w / h; kam.updateProjectionMatrix();
 }
 addEventListener('resize', boyut); boyut();
-ren.setAnimationLoop(() => { kon.update(); ren.render(sahne, kam); });
+ren.setAnimationLoop(() => { const dt = saat.getDelta(); if (mixer) mixer.update(dt); kon.update(); ren.render(sahne, kam); });
 goster();
 </script>
 </body>

@@ -38,3 +38,19 @@ Yüzlere sRGB renk verilir, `Yapi.nesne(ad, dikey)` dokusuz köşe renkli tek me
 Sonra id'yi `glb-models.js` `LM_GLB` listesine ekle; büyük görünüm `model.html?id=<id>`, oyundaki hâli vitrinin "Çağ binaları" sekmesi.
 
 Yapılanlar: Kolezyum, Süleymaniye (dokulu, 2026-11-22).
+
+## Birimler (iskeletli, animasyonlu; ör. `piyade.py`)
+
+Kart resimlerinin tarzında: Gemini'ye kart resimlerinden ikisi yüklenip "bu tarzda, önden ve yandan" çizim istenir. `karakter.py`: parçalar
+(`kure`, `tup`, `kutu`, `halka`, `yay` kavisli panel) her biri tek bir kemiğe bağlı (katı bağlama: eklemler yuvarlak dirsek / dizle örtülür),
+köşe renkli. `iskelet` kemikleri kurar; `eylem` anahtar kareleri armatür eksenlerinde verilen açılarla yazar (`poz`: x öne eğilme, aşağı sarkan
+kemikte öne -x; z dönüş), her eylem kendi NLA izinde; `disa_aktar` hepsini tek glTF dosyasına yazar (iskelet + `bekle` / `yuru` / `saldir` / `ol`).
+Takım rengi tunikteki mavi. Tunik eteği ayrı kemiklerde (`etek_on` / `etek_arka`): bacaklarla birlikte açılır.
+
+```
+blender -b --factory-startup --python tools/lm-blender/piyade.py -- ham.glb [önizleme klasörü]
+gltf-transform meshopt ham.glb assets/models/birim/piyade.glb --level medium --quantize-color 12 --quantize-normal 12
+blender --factory-startup --python tools/lm-blender/birim_canli.py -- piyade     (pencereli: animasyonlar sırayla oynar)
+```
+Büyük görünüm `model.html?id=piyade` (animasyon düğmeleri). Oyuna henüz bağlı değil (birimler hâlâ kodla çiziliyor, `entities.js`).
+Piyade ~7,7 bin üçgen, 20 kemik, 132 KB.
