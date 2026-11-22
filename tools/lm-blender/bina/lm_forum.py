@@ -174,11 +174,11 @@ def revak_hafif(a, b, n, z0, H, tur='toskan', r=0.013, key='kirec', triglif=None
     he = H * 0.26
     D = r * 3.2
     z = z0 + H
-    o = a - e * (r * 1.6) + nc * (D / 2)
+    o = a - e * (r * 1.6) + nc * (D / 2) + Z * z
     L = W + r * 3.2
-    kutu(y, o, e, L, D, he * 0.42, key, 'onarkasagsol')
-    y.yuz_yon([o + Z * z, o + e * L + Z * z, o + e * L - nc * D + Z * z, o - nc * D + Z * z], key, -Z)
-    kutu(y, o + Z * (he * 0.42) - nc * 0.002, e, L, D - 0.004, he * 0.4, key, 'onarkasagsol')
+    kutu(y, o, e, L, D, he * 0.42, key, 'onarkasagsolust')
+    y.yuz_yon([o, o + e * L, o + e * L - nc * D, o - nc * D], key, -Z)
+    kutu(y, o + Z * (he * 0.42) - nc * 0.002, e, L, D - 0.004, he * 0.4, key, 'onarkasagsolust')
     if triglif:
         k = n * 2
         for i in range(k + 1):
@@ -270,10 +270,11 @@ def rostrum(p, n, zc, key='bronz'):
         yuz_dis(y, [base[i], base[(i + 1) % 3], tip + Z * (zc - 0.006)], key, (p.x - n.x * 0.01, p.y - n.y * 0.01, zc))
     boru(y, [tip - n * 0.006 + Z * (zc - 0.008), p + n * 0.056 + Z * (zc - 0.011)], 0.0055, key, n=6, r_son=0.0025)   # the ram
     for dz in (-0.006, 0.0, 0.006):                                                                              # its fins
-        y.yuz_yon([p + n * 0.04 - e * 0.0075 + Z * (zc - 0.0115 + dz), p + n * 0.04 + e * 0.0075 + Z * (zc - 0.0115 + dz),
-                   p + n * 0.054 + e * 0.003 + Z * (zc - 0.0115 + dz), p + n * 0.054 - e * 0.003 + Z * (zc - 0.0115 + dz)], key, -Z)
-        y.yuz_yon([p + n * 0.04 - e * 0.0075 + Z * (zc - 0.0097 + dz), p + n * 0.04 + e * 0.0075 + Z * (zc - 0.0097 + dz),
-                   p + n * 0.054 + e * 0.003 + Z * (zc - 0.0097 + dz), p + n * 0.054 - e * 0.003 + Z * (zc - 0.0097 + dz)], key, Z)
+        f0 = [p + n * 0.04 - e * 0.0075, p + n * 0.04 + e * 0.0075, p + n * 0.054 + e * 0.003, p + n * 0.054 - e * 0.003]
+        za, zb = zc - 0.0115 + dz, zc - 0.0097 + dz
+        y.yuz_yon([q + Z * za for q in f0], key, -Z); y.yuz_yon([q + Z * zb for q in f0], key, Z)
+        for i in range(4):   # (the rims: a closed fin)
+            yuz_dis(y, [f0[i] + Z * za, f0[(i + 1) % 4] + Z * za, f0[(i + 1) % 4] + Z * zb, f0[i] + Z * zb], key, sum(f0, V(0, 0)) / 4 + Z * za)
     boru(y, [p + n * 0.004 + Z * (zc + 0.015), p + n * 0.012 + Z * (zc + 0.03), p + n * 0.017 + Z * (zc + 0.042),
              p + n * 0.011 + Z * (zc + 0.051), p + n * 0.003 + Z * (zc + 0.048), p + n * 0.004 + Z * (zc + 0.041)], 0.0032, key, n=5,
          r_son=0.002)                                                                                            # the stem post
@@ -392,6 +393,8 @@ for (xa_, xb_, n) in ((-0.94, -AX, 5), (AX, PX1, 3)):
     revak_hafif(V(xb_, FY1), V(xa_, FY1), n, ZF, HF, 'toskan', r=0.013, key='kirec')
     y.yuz_yon([V(xa_, FY0, ZF + HF + 0.004), V(xb_, FY0, ZF + HF + 0.004), V(xb_, FY1, ZF + HF + 0.004), V(xa_, FY1, ZF + HF + 0.004)],
               'ahsap_koyu', -Z)   # coffered ceiling
+    duz_duvar(y, V(xa_, FY1), V(xa_, FY0), ZF + HF, zt, 'kirec')   # the ends between the ceiling and the gable
+    duz_duvar(y, V(xb_, FY0), V(xb_, FY1), ZF + HF, zt, 'kirec')
     for k in range(1, n):
         xx = xa_ + (xb_ - xa_) * k / n
         cubuk(y, V(xx, FY0, ZF + HF + 0.002), V(xx, FY1, ZF + HF + 0.002), 0.008, 'ahsap', 0.004)
@@ -421,6 +424,7 @@ for yy, s in ((AY0, -1), (AY1, 1)):
 y.bolum('Zafer takı: saçaklık, attika, yazıt, kuadriga')
 ZAE = ZA + HA
 kornis(y, -AX - 0.01, AX + 0.01, AY0 - 0.012, AY1 + 0.012, ZAE - 0.05, 0.05, 0.014, 'mermer', 'tac')
+y.yuz_yon(dikdortgen(-AX - 0.01, AX + 0.01, AY0 - 0.012, AY1 + 0.012, ZAE), 'mermer', Z)   # (the arch's top under the attic)
 duvarlar(y, dikdortgen(-AX + 0.005, AX - 0.005, AY0 + 0.0, AY1 - 0.0, 0), ZAE, ZAE + 0.08, 'mermer', ust='mermer')
 kornis(y, -AX - 0.0, AX + 0.0, AY0 - 0.004, AY1 + 0.004, ZAE + 0.075, 0.012, 0.01, 'mermer', 'tac')
 yazi(V(0, AY0 + 0.0, ZAE + 0.022), X, -Y, 'S.P.Q.R', 0.036)
@@ -464,16 +468,18 @@ for k in range(nb):
               'ahsap', nc_)
     kutu(y, Lk(0.28, -0.15, -0.012), e_, 0.06, 0.012, 0.035, 'kirec', 'onsagsolust')
 silme(y, [V(LX0, LY1), V(LX0, LY0)], Z0 + 0.145, 0.012, 0.008, 'kirec', 'tac', kapali=False)
-for a, b in ((V(LX0 + 0.012, LY0), V(LX0 + 0.012, LY1)),):
+for a, b in ((V(LX0 + 0.022, LY0), V(LX0 + 0.022, LY1)),):
     duz_duvar(y, a, b, Z0 + 0.02, zl, 'siva_krem')
     for k in range(nb):
         p = a.lerp(b, (k + 0.5) / nb)
         y.yuz_yon([p + V(0.001, -0.02, Z0 + 0.02), p + V(0.001, 0.02, Z0 + 0.02), p + V(0.001, 0.02, Z0 + 0.11), p + V(0.001, -0.02, Z0 + 0.11)], 'koyu', X)
 for yy, s in ((LY0, -1), (LY1, 1)):
-    duz_duvar(y, V(LX0, yy) if s < 0 else V(LX0 + 0.012, yy), V(LX0 + 0.012, yy) if s < 0 else V(LX0, yy), Z0, zl, 'tugla_roma')
+    duz_duvar(y, V(LX0, yy) if s < 0 else V(LX0 + 0.022, yy), V(LX0 + 0.022, yy) if s < 0 else V(LX0, yy), Z0, zl, 'tugla_roma')
 cati_besik(y, LX0 - 0.02, LX1 + 0.045, LY0, LY1, zl, 0.07, 0.02, 'kiremit', ucluk_key='kirec', alinlik_key='mermer', mahya='kiremit2', ns=3, nr=2)
 cati_kiremit_serit(LX0 - 0.02, LX1 + 0.045, LY0 - 0.01, LY1 + 0.01, zl, 0.07, 'y')
-y.yuz_yon([V(LX0 + 0.012, LY0, zl - 0.03), V(LX1, LY0, zl - 0.03), V(LX1, LY1, zl - 0.03), V(LX0 + 0.012, LY1, zl - 0.03)], 'ahsap_koyu', -Z)
+y.yuz_yon([V(LX0 + 0.022, LY0, zl - 0.03), V(LX1, LY0, zl - 0.03), V(LX1, LY1, zl - 0.03), V(LX0 + 0.022, LY1, zl - 0.03)], 'ahsap_koyu', -Z)
+duz_duvar(y, V(LX0 + 0.022, LY0), V(LX1, LY0), zl - 0.03, zl, 'kirec')   # the ends between the ceiling and the gable
+duz_duvar(y, V(LX1, LY1), V(LX0 + 0.022, LY1), zl - 0.03, zl, 'kirec')
 
 # ================================================================ basilica
 y.bolum('Bazilika: iki katlı kemerli cephe')
@@ -489,8 +495,9 @@ for a, b, n in yuzler:
     e = (b - a).normalized(); nn = V(e.y, -e.x)
     for k in range(n):
         p, q = a.lerp(b, k / n), a.lerp(b, (k + 1) / n)
-        y.kemerli(p, q, ZB1, H1, ARK, v0=0.0, en=0.6, ust=0.03, derin=0.05, k_say=10)
-        y.kemerli(p, q, ZB1 + H1, H2, ARK, v0=0.0, en=0.58, ust=0.025, derin=0.05, k_say=10, korkuluk=0.035)
+        dr = 0.03 if (k in (0, n - 1) if n == NB else k == 0) else 0.05   # (the corner bays: shallower, or one's reveal shows in the other's arch)
+        y.kemerli(p, q, ZB1, H1, ARK, v0=0.0, en=0.6, ust=0.03, derin=dr, k_say=10)
+        y.kemerli(p, q, ZB1 + H1, H2, ARK, v0=0.0, en=0.58, ust=0.025, derin=dr, k_say=10, korkuluk=0.035)
     for k in range(0 if n == NB else 1, n + 1):
         p = a.lerp(b, k / n) + nn * 0.008
         sutun_hafif(p.x, p.y, ZB1, ZB1 + H1 - 0.02, 0.011, 'kirec', 'toskan')

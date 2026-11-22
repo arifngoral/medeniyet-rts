@@ -109,12 +109,13 @@ def kule(cx, cy, w):
         e, nc = nc_of(a, b)
         m = a.lerp(b, 0.5) + nc * 0.005 + Z * (zt + 0.075)
         y.oculus(m - nc * 0.03, e, nc, 0.016, 'cam', TRIM, f=0.006, k=12)
-        kutu(y, m - nc * 0.03 - e * 0.028 - Z * 0.055, e, 0.056, 0.05, 0.087, DUV, 'onsagsol')
+        kutu(y, m - nc * 0.03 - e * 0.028 - Z * 0.055, e, 0.056, 0.05, 0.087, DUV, 'onarkasagsol')   # (closed: near the hips its back pokes out of the next slope)
         A, B = m - nc * 0.03 - e * 0.032 + Z * 0.032, m - nc * 0.03 + e * 0.032 + Z * 0.032
         T = (A + B) / 2 + Z * 0.03
         for pp, qq in ((A, T), (T, B)):
             y.yuz_yon([pp, qq, qq - nc * 0.055, pp - nc * 0.055], 'kiremit', Z + nc * 0.3)
         y.yuz_yon([A + Z * 0.0, B, T], TRIM, nc)
+        y.yuz_yon([A - nc * 0.055, B - nc * 0.055, T - nc * 0.055], DUV, -nc)   # (the back of its little gable)
     kure(y, (cx, cy, tepe + 0.012), 0.012, 'bronz', n=8, kat=4)
     y.prizma((cx, cy), 0.003, tepe, tepe + 0.05, 'bronz', n=4)
     return zt

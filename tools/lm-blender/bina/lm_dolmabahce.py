@@ -173,6 +173,11 @@ def demir_parmaklik(a, b, z, h, ayak=0.14, vazo_adim=1):
                            pp + e * 0.0013 + nc * (sg * 0.001) + Z * (z + h - 0.006), pp - e * 0.0013 + nc * (sg * 0.001) + Z * (z + h - 0.006)], 'demir', nc * sg)
             y.yuz_yon([pp - e * 0.003 + nc * 0.002 + Z * (z + h - 0.006), pp + e * 0.003 + nc * 0.002 + Z * (z + h - 0.006), pp + Z * (z + h + 0.002)], 'altin', nc)
             y.yuz_yon([pp - e * 0.003 - nc * 0.002 + Z * (z + h - 0.006), pp + e * 0.003 - nc * 0.002 + Z * (z + h - 0.006), pp + Z * (z + h + 0.002)], 'altin', -nc)
+            for se in (1, -1):    # (the bar's and the spearhead's sides: seen slantwise they showed the faces' backs)
+                y.yuz_yon([pp + e * (se * 0.0013) + nc * 0.001 + Z * (z + 0.025), pp + e * (se * 0.0013) - nc * 0.001 + Z * (z + 0.025),
+                           pp + e * (se * 0.0013) - nc * 0.001 + Z * (z + h - 0.006), pp + e * (se * 0.0013) + nc * 0.001 + Z * (z + h - 0.006)], 'demir', e * se)
+                y.yuz_yon([pp + e * (se * 0.003) + nc * 0.002 + Z * (z + h - 0.006), pp + e * (se * 0.003) - nc * 0.002 + Z * (z + h - 0.006),
+                           pp + Z * (z + h + 0.002)], 'altin', e * se + Z * 0.4)
 
 
 # ---------------------------------------------------------------- platform

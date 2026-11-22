@@ -77,6 +77,14 @@ def yuz_dis(y, pts, key, merkez):
     y.yuz_yon(pts, key, c - Vector(merkez))
 
 
+def iki_yuzlu(y, pts, key, yon, kil=0.0005):
+    """a face toward yon and its back a hair (kil) behind it: a thin sheet that is seen from both sides (an exact
+    reversed twin flickers in the preview's back-face check)"""
+    pts = [Vector(p) for p in pts]; yon = Vector(yon).normalized()
+    y.yuz_yon(pts, key, yon)
+    y.yuz_yon([p - yon * kil for p in pts], key, -yon)
+
+
 def kutu(y, o, ex, w, d, h, key, yuzler='onarkasagsolust'):
     """a box from o: w along ex (horizontal), d to its LEFT (Z x ex), h up. 'on' faces the right of ex"""
     ex = Vector(ex); ex.z = 0; ex.normalize()
@@ -356,12 +364,12 @@ def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None,
                     tip = p0 + d * (r * 0.32)
                     yp = [p0 - t * w + Z * (zb + hc * h0), p0 + t * w + Z * (zb + hc * h0), tip + t * w * 0.7 + Z * (zb + hc * h1), tip - t * w * 0.7 + Z * (zb + hc * h1)]
                     y.yuz_yon(yp, bk, d)
-                    y.yuz_yon(yp[::-1], bk, -d)   # (two-sided: a leaf is seen from behind; doku.nesne_dokulu keeps such a reversed twin)
+                    y.yuz_yon([q - d * 0.0005 for q in yp[::-1]], bk, -d)   # (two-sided: a leaf is seen from behind; the back a hair in, or the welder drops it)
             kutu_merkez(y, c, r * 2.8, r * 2.8, hc * 0.18, bk, z0=zb + hc * 0.82)
     elif tur == 'misir':
         hc = H * 0.2
         zb = z1 - hc
-        donel(y, c, [(r * 1.35, z0), (r * 1.35, z0 + H * 0.03), (r * 1.15, z0 + H * 0.045)], bk, n=16)
+        donel(y, c, [(r * 1.35, z0), (r * 1.35, z0 + H * 0.03), (r * 1.15, z0 + H * 0.045), (r * 0.7, z0 + H * 0.045)], bk, n=16)   # (closed: the disc's top round the shaft's foot)
         # bundle shaft: 8 lobes, narrowing at the foot
         prev = None
         for k, t in enumerate((0, 0.06, 0.2, 0.6, 1.0)):
@@ -483,7 +491,6 @@ def alinlik(y, a, b, z, h, derin=0.06, key='mermer', ic_key=None, c=0.012, cati_
     for p, q, pi, qi in ((A, B, Ai, Bi), (B, T, Bi, Ti), (T, A, Ti, Ai)):
         y.yuz_yon([p, q, qi, pi], key, nc)
         y.yuz_yon([pi, qi, qi - nc * 0.006, pi - nc * 0.006], key, ((pi + qi) / 2 - (p + q) / 2))   # (faces the tympanum: the reveal round the recess)
-        y.yuz_yon([pi, qi, qi - nc * 0.006, pi - nc * 0.006], key, ((p + q) / 2 - (pi + qi) / 2))   # (and its back: seen over the frame from above)
     # the raking cornices project (front lip)
     for p, q in ((B, T), (T, A)):
         d = (q - p).normalized()
@@ -969,7 +976,7 @@ def cati_besik(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
         # fascia + soffit along the eave
         p0, p1 = V(cx - a, cy + sy * b, z), V(cx + a, cy + sy * b, z)
         y.yuz_yon([p0, p1, p1 - Z * kalinlik, p0 - Z * kalinlik], alt_key, V(0, sy))
-        y.yuz_yon([p0 - Z * kalinlik, p1 - Z * kalinlik, V(cx + a, cy + sy * wb, z), V(cx - a, cy + sy * wb, z)], alt_key, -Z)
+        iki_yuzlu(y, [p0 - Z * kalinlik, p1 - Z * kalinlik, V(cx + a, cy + sy * wb, z), V(cx - a, cy + sy * wb, z)], alt_key, -Z)   # (two-sided: its top shows past the verge)
         # the roof's edge at the gables (verge) and the underside of the overhang
         for sx in (-1, 1):
             pts = [V(cx + sx * a, cy + sy * b * (1 - r), zf(r)) for r in rr]
@@ -978,7 +985,7 @@ def cati_besik(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
             if us > 0.001:
                 for k in range(len(pts) - 1):
                     qa, qb = pts[k] - Z * kalinlik, pts[k + 1] - Z * kalinlik
-                    y.yuz_yon([qa, qb, qb - V(sx * us, 0), qa - V(sx * us, 0)], alt_key, -Z)
+                    iki_yuzlu(y, [qa, qb, qb - V(sx * us, 0), qa - V(sx * us, 0)], alt_key, -Z)
     # gable walls (the triangle above the wall top, on the wall line)
     for sx in (-1, 1):
         xg = cx + sx * (a - us)
@@ -1501,7 +1508,13 @@ def sancak(y, x, yy, z, boy=0.2, en=0.1, yuk=0.065, aci=0.0, direk_key='ahsap', 
                 c0, c1 = (v0 + v1) / 2, (v0 + v1) / 2
                 tip = 1 if i == n - 1 else 0
                 q = [P(u0, v0, 1), P(u1, v0 + (c0 - v0) * 0.4 * tip, 1), P(u1, v1 - (v1 - c1) * 0.4 * tip, 1), P(u0, v1, 1)]
-                y.yuz_yon(q, 'mavi', nn); y.yuz_yon([P(u0, v0, -1), P(u1, v0, -1), P(u1, v1, -1), P(u0, v1, -1)], 'mavi', -nn)
+                y.yuz_yon(q, 'mavi', nn)
+                y.yuz_yon([P(u0, v0, -1), P(u1, v0 + (c0 - v0) * 0.4 * tip, -1), P(u1, v1 - (v1 - c1) * 0.4 * tip, -1), P(u0, v1, -1)], 'mavi', -nn)   # (the back cut like the front)
+                qb = [P(u0, v0, -1), P(u1, v0 + (c0 - v0) * 0.4 * tip, -1), P(u1, v1 - (v1 - c1) * 0.4 * tip, -1), P(u0, v1, -1)]
+                for k, yon in ((0, -Z), (2, Z)) + (((1, e),) if tip else ()):   # (the rims, as on the plain flag)
+                    y.yuz_yon([q[k], q[k + 1], qb[k + 1], qb[k]], 'mavi', yon)
+            if i == n - 2:   # the notch's inner edge
+                y.yuz_yon([P(u0, yuk * 0.45, 1), P(u0, yuk * 0.55, 1), P(u0, yuk * 0.55, -1), P(u0, yuk * 0.45, -1)], 'mavi', e)
             continue
         y.yuz_yon([P(u0, 0, 1), P(u1, 0, 1), P(u1, yuk, 1), P(u0, yuk, 1)], 'mavi', nn)
         y.yuz_yon([P(u0, 0, -1), P(u1, 0, -1), P(u1, yuk, -1), P(u0, yuk, -1)], 'mavi', -nn)
@@ -1510,6 +1523,8 @@ def sancak(y, x, yy, z, boy=0.2, en=0.1, yuk=0.065, aci=0.0, direk_key='ahsap', 
         y.yuz_yon([P(u0, 0, 1), P(u1, 0, 1), P(u1, 0, -1), P(u0, 0, -1)], 'mavi', -Z)
         if i == n - 1:
             y.yuz_yon([P(1, 0, 1), P(1, yuk, 1), P(1, yuk, -1), P(1, 0, -1)], 'mavi', e)
+        if i == 0:   # the edge at the pole (the pole's flats leave a gap there)
+            y.yuz_yon([P(0, 0, 1), P(0, yuk, 1), P(0, yuk, -1), P(0, 0, -1)], 'mavi', -e)
     return z + boy
 
 
@@ -1671,7 +1686,8 @@ def mukarnas(y, a, b, z0, h, derin, kat=4, hucre=None, keys=('tas_acik', 'tas', 
                                             key=keys[0], yan_key=keys[2], arka_key=keys[1], k_say=6)
             y.yuz_yon([L(x0, 0), L(x1, 0), L(x1, 0, cep), L(x0, 0, cep)], keys[2], Z)       # the cell's floor
         # the soffit stepping forward to the next tier
-        y.yuz_yon([Q(0, dk) + Z * zb, Q(W, dk) + Z * zb, Q(W, dn) + Z * zb, Q(0, dn) + Z * zb], keys[2], -Z)
+        zs = zb - 0.0004   # (a hair below the cells' floors above it: back to back on one plane they flickered)
+        y.yuz_yon([Q(0, dk) + Z * zs, Q(W, dk) + Z * zs, Q(W, dn) + Z * zs, Q(0, dn) + Z * zs], keys[2], -Z)
 
 
 def tackapi_mukarnas(y, cx, cy, z0, en=0.3, H=0.45, derin=0.07, nis=0.6, sivri=0.5, kapi_key='ahsap', key='tas',

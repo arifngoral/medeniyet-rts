@@ -24,6 +24,8 @@ def serit_tas(p, q, z0, u0, u1, zb, hb, key='kirec', d=0.003):
     y.yuz_yon([A + o, B + o, B + o + up, A + o + up], key, nc)
     y.yuz_yon([A + up, B + up, B + o + up, A + o + up], key, Z)
     y.yuz_yon([A, B, B + o, A + o], key, -Z)
+    y.yuz_yon([A, A + o, A + o + up, A + up], key, -e)   # (the ends)
+    y.yuz_yon([B, B + o, B + o + up, B + up], key, e)
 
 
 BANT = [(0.0, 0.022)] + [(0.05 + 0.058 * k, 0.02) for k in range(12)]
@@ -100,6 +102,7 @@ def baca(cx, cy, z0, h, r=0.026):
     zt = z0 + h
     halka_kornis(y, (cx, cy), r * 0.78, zt - 0.012, 0.014, 0.008, 8, 'kirec', kat=math.pi / 8, profil='tac')
     y.prizma((cx, cy), r * 0.78 + 0.008, zt + 0.002, zt + 0.004, 'kirec', n=8, ust=False, kat=math.pi / 8)
+    donel(y, (cx, cy), [(r * 0.78 + 0.008, zt + 0.004), (r * 0.78 + 0.004, zt + 0.004), (r * 0.78 + 0.004, zt + 0.001)], 'kirec', n=8, kat=math.pi / 8)   # (the lip's top and inside)
     y.yuz_yon([V(p.x, p.y, zt + 0.001) for p in cokgen((cx, cy), r * 0.78 + 0.008, 8, math.pi / 8)], 'koyu', Z)
     # a small lead hood on posts over the mouth
     for i in range(4):
@@ -187,7 +190,7 @@ ZR = bina(BX0, BX1, BY0, BY1, H1, H2, 11, 5, kapi_on=5)
 # a projecting stone portal round the door
 PC = (BX0 + BX1) / 2
 PH = ZR - Z0 + 0.07
-kutu(y, V(PC - 0.1, BY0 - 0.035, Z0), X, 0.2, 0.035, PH, 'kirec', 'sagsol')
+kutu(y, V(PC - 0.1, BY0 - 0.035, Z0), X, 0.2, 0.035, PH, 'kirec', 'arkasagsol')   # (its back too: it rises above the roof)
 y.kemerli(V(PC - 0.1, BY0 - 0.035), V(PC + 0.1, BY0 - 0.035), Z0, PH, ('kirec', 'tas_koyu', 'tas_acik', 'ahsap'), v0=0, en=0.56,
           ust=0.09, derin=0.03, k_say=10, sivri=0.6, cerceve=(0.011, ['mermer', 'tugla']))
 ZP = Z0 + PH

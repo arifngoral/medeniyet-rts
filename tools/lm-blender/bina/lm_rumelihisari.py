@@ -252,9 +252,9 @@ with parca(y, (0.36, -1.1, ZW), 0.08):
             t0, t1 = -1 + 2 * i / 10, -1 + 2 * (i + 1) / 10
             a0, a1 = pr(t0, s), pr(t1, s)
             b0, b1 = V(a0.x, a0.y * 0.45, -0.004), V(a1.x, a1.y * 0.45, -0.004)
-            y.yuz_yon([b0, b1, a1 + Z * (Hk + 0.012 * t0 * t0), a0 + Z * (Hk + 0.012 * t0 * t0)], 'lake' if i % 5 else 'ahsap_koyu', V(0, s, 0.2))
+            y.yuz_yon([b0, b1, a1 + Z * (Hk + 0.012 * t1 * t1), a0 + Z * (Hk + 0.012 * t0 * t0)], 'lake' if i % 5 else 'ahsap_koyu', V(0, s, 0.2))
             # (the inner side of the planking, seen from above)
-            y.yuz_yon([b0, b1, a1 + Z * (Hk + 0.012 * t1 * t1), a0 + Z * (Hk + 0.012 * t0 * t0)], 'ahsap', V(0, -s, 0.5))
+            y.yuz_yon([q - V(0, s * 0.0006, 0) for q in (b0, b1, a1 + Z * (Hk + 0.012 * t1 * t1), a0 + Z * (Hk + 0.012 * t0 * t0))], 'ahsap', V(0, -s, 0.5))   # (a hair inside the outer face)
     y.yuz_yon([V(-Lk / 2 * 0.9, -Wk * 0.4, Hk * 0.4), V(Lk / 2 * 0.9, -Wk * 0.4, Hk * 0.4), V(Lk / 2 * 0.9, Wk * 0.4, Hk * 0.4), V(-Lk / 2 * 0.9, Wk * 0.4, Hk * 0.4)], 'ahsap_acik', Z)
     for xx in (-0.04, 0.0, 0.04):
         cubuk(y, V(xx, -Wk * 0.8, Hk * 0.8), V(xx, Wk * 0.8, Hk * 0.8), 0.006, 'ahsap_koyu', 0.004)

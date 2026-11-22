@@ -45,6 +45,7 @@ MALZEME = {
     'siva_krem': ('duz', (0.91, 0.84, 0.68), {'leke': 0.04}),
     'siva_oker': ('duz', (0.85, 0.63, 0.37), {'leke': 0.05}),
     'siva_kirmizi': ('duz', (0.66, 0.26, 0.20), {'leke': 0.04}),  # Chinese / Kremlin red walls
+    'kerpic_tugla': ('tas', (0.72, 0.52, 0.35), {}),     # bare mud-brick walls showing their courses (Egypt, Mesopotamia)
     # metal, roofs
     'kursun':   ('kursun', (0.55, 0.60, 0.67), {}),
     'kursun2':  ('kursun', (0.50, 0.545, 0.61), {}),     # every other lead sheet (ortak.py kubbe)
@@ -330,14 +331,14 @@ DESENLI = {
     'tas': (1.0, 1, 0), 'tas_koyu': (1.0, 1, 0), 'zemin': (1.6, 1, 0),
     'kirec': (1.1, 1, 0), 'kum': (1.2, 1, 0), 'kum_koyu': (1.2, 1, 0), 'kirmizi_tas': (1.0, 1, 0),
     'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
-    'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
+    'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'kerpic_tugla': (0.5, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
     'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
     'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0),
     'ahsap_dikey': (0.5, 4, 1),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
-           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu')   # (a shade per flat face)
+           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 

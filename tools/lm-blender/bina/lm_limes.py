@@ -235,10 +235,10 @@ for j in range(4):
     y.yuz_yon([V(-0.036 + j * 0.02, GD0 - 0.0045, Z0 + HW - 0.022), V(-0.024 + j * 0.02, GD0 - 0.0045, Z0 + HW - 0.022),
                V(-0.024 + j * 0.02, GD0 - 0.0045, Z0 + HW - 0.016), V(-0.036 + j * 0.02, GD0 - 0.0045, Z0 + HW - 0.016)], 'koyu', -Y)
 for s in (-1, 1):             # the doors stand open inside the passage
-    y.yuz_yon([V(s * 0.062, GD1 - 0.004, Z0), V(s * 0.03, GD1 + 0.03, Z0), V(s * 0.03, GD1 + 0.03, Z0 + 0.1), V(s * 0.062, GD1 - 0.004, Z0 + 0.1)],
-              'ahsap', V(-s, -1))
-    y.yuz_yon([V(s * 0.062, GD1 - 0.004, Z0), V(s * 0.03, GD1 + 0.03, Z0), V(s * 0.03, GD1 + 0.03, Z0 + 0.1), V(s * 0.062, GD1 - 0.004, Z0 + 0.1)],
-              'ahsap_koyu', V(s, 1))
+    _k = [V(s * 0.062, GD1 - 0.004, Z0), V(s * 0.03, GD1 + 0.03, Z0), V(s * 0.03, GD1 + 0.03, Z0 + 0.1), V(s * 0.062, GD1 - 0.004, Z0 + 0.1)]
+    y.yuz_yon(_k, 'ahsap', V(-s, -1))
+    _n = V(s, 1).normalized()
+    y.yuz_yon([q + _n * 0.0006 for q in _k], 'ahsap_koyu', V(s, 1))   # (the leaf's back a hair behind: an exact reversed twin flickers)
 sancak(y, 0, (GD0 + GD1) / 2, ZG + 0.11, boy=0.15, en=0.09, yuk=0.055, aci=-math.pi / 2 + 0.6)
 
 # ================================================================ inside the fort
@@ -381,6 +381,8 @@ for (xa, xb) in ((-1.08, -0.1), (0.1, 1.08)):
         hh = 0.1 + 0.008 * math.sin(i * 2.3)
         for d, nn in ((-0.006, -Y), (0.006, Y)):
             y.yuz_yon([V(x0, PY + d, ZP - 0.01), V(x1, PY + d, ZP - 0.01), V(x1, PY + d, ZP + hh), V(x0, PY + d, ZP + hh)], 'ahsap_dikey', nn)
+        for xe, sx in ((x0, -1), (x1, 1)):   # (its sides: a taller stake shows them above its neighbour)
+            y.yuz_yon([V(xe, PY - 0.006, ZP - 0.01), V(xe, PY + 0.006, ZP - 0.01), V(xe, PY + 0.006, ZP + hh), V(xe, PY - 0.006, ZP + hh)], 'ahsap_dikey', V(sx, 0))
         A = V(xm, PY, ZP + hh + 0.016)
         FL, FR, BR, BL = V(x0, PY - 0.006, ZP + hh), V(x1, PY - 0.006, ZP + hh), V(x1, PY + 0.006, ZP + hh), V(x0, PY + 0.006, ZP + hh)
         for tri, nn in (([FL, FR, A], V(0, -1, 0.4)), ([BR, BL, A], V(0, 1, 0.4)), ([BL, FL, A], V(-1, 0, 0.4)), ([FR, BR, A], V(1, 0, 0.4))):
@@ -405,10 +407,10 @@ cati_besik(y, -0.13, 0.13, PY - 0.03, PY + 0.03, Z0 + 0.235, 0.05, 0.02, 'saz', 
 for s in (-1, 1):
     for (dx, dy) in ((-0.12, -0.028), (-0.12, 0.028)):
         y.prizma((s * -dx, PY + dy), 0.003, Z0 + 0.182, Z0 + 0.235, 'ahsap', n=4)
-    y.yuz_yon([V(s * 0.075, PY + 0.03, Z0), V(s * 0.03, PY + 0.07, Z0), V(s * 0.03, PY + 0.07, Z0 + 0.12), V(s * 0.075, PY + 0.03, Z0 + 0.12)], 'ahsap',
-              V(-s, -1))
-    y.yuz_yon([V(s * 0.075, PY + 0.03, Z0), V(s * 0.03, PY + 0.07, Z0), V(s * 0.03, PY + 0.07, Z0 + 0.12), V(s * 0.075, PY + 0.03, Z0 + 0.12)],
-              'ahsap_koyu', V(s, 1))
+    _k = [V(s * 0.075, PY + 0.03, Z0), V(s * 0.03, PY + 0.07, Z0), V(s * 0.03, PY + 0.07, Z0 + 0.12), V(s * 0.075, PY + 0.03, Z0 + 0.12)]
+    y.yuz_yon(_k, 'ahsap', V(-s, -1))
+    _n = V(s, 1).normalized()
+    y.yuz_yon([q + _n * 0.0006 for q in _k], 'ahsap_koyu', V(s, 1))   # (the leaf's back a hair behind: an exact reversed twin flickers)
 
 y.bolum('Gözcü kulesi (taş ve ahşap, işaret ateşi)')
 WX, WY = -0.9, -0.68
@@ -490,7 +492,7 @@ nv = 12
 for k in range(nv):           # the barrel vault, tiled
     a0, a1 = math.pi * k / nv, math.pi * (k + 1) / nv
     p = lambda a, yy: V(cx + (r + 0.008) * math.cos(a), yy, Z0 + 0.09 + (r + 0.008) * math.sin(a) * 0.7)
-    y.yuz_yon([p(a0, HY0 - 0.008), p(a1, HY0 - 0.008), p(a1, HY1 + 0.008), p(a0, HY1 + 0.008)], 'kiremit', p((a0 + a1) / 2, 0) - V(cx, 0, Z0 + 0.09))
+    iki_yuzlu(y, [p(a0, HY0 - 0.008), p(a1, HY0 - 0.008), p(a1, HY1 + 0.008), p(a0, HY1 + 0.008)], 'kiremit', p((a0 + a1) / 2, 0) - V(cx, 0, Z0 + 0.09))   # (two-sided: the overhang is seen from below at the ends)
 for yy, s in ((HY0, -1), (HY1, 1)):
     pts = [V(cx + r * math.cos(math.pi * k / nv), yy, Z0 + 0.09 + r * math.sin(math.pi * k / nv) * 0.7) for k in range(nv + 1)]
     y.yuz_yon(pts, 'siva_krem', V(0, s))

@@ -137,7 +137,7 @@ for sx in (-1, 1):
                    p + e_ * 0.03 + V(-sx * 0.0015, 0, ZS_ + 0.16), p - e_ * 0.03 + V(-sx * 0.0015, 0, ZS_ + 0.16)], 'siva_kirmizi', V(-sx, 0))
     for yy, s_ in ((FY0_ - 0.02, -1), (FY1_ + 0.02, 1)):     # wall ends
         a_, b_ = (V(xw, yy), V(xo, yy)) if (s_ * sx) < 0 else (V(xo, yy), V(xw, yy))
-        duz_duvar(y, a_, b_, ZS_, zt, 'tugla_roma')
+        duz_duvar(y, a_, b_, ZS_, zt + 0.056, 'tugla_roma')   # (up to the back wall's top: above the inner face it was open)
     # a lean-to tiled roof from the colonnade up to the back wall, the coffered ceiling
     xi_ = xc - sx * 0.022
     zr = zt + 0.004
@@ -146,10 +146,10 @@ for sx in (-1, 1):
         y.yuz_yon(pts, 'kiremit', Z)
         y.yuz_yon([V(xi_, yy0, zr - 0.006), V(xi_, yy1, zr - 0.006), V(xi_, yy1, zr), V(xi_, yy0, zr)], 'ahsap_koyu', V(-sx, 0))
         for yy in (yy0, yy1):
-            y.yuz_yon([V(xi_, yy, zr - 0.006), V(xo + sx * 0.012, yy, zr - 0.006), V(xo + sx * 0.012, yy, zr + 0.055), V(xi_, yy, zr)], 'kirec',
-                      V(0, 1 if yy > -0.8 else -1))
-        y.yuz_yon([V(xi_, yy0, zr - 0.006), V(xi_, yy1, zr - 0.006), V(xw, yy1, zr - 0.006), V(xw, yy0, zr - 0.006)],
-                  'ahsap_koyu', -Z)
+            iki_yuzlu(y, [V(xi_, yy, zr - 0.006), V(xo + sx * 0.012, yy, zr - 0.006), V(xo + sx * 0.012, yy, zr + 0.055), V(xi_, yy, zr)], 'kirec',
+                      V(0, 1 if yy == yy1 else -1))   # (the far end faces +y; two-sided: seen from inside the aisle too)
+        iki_yuzlu(y, [V(xi_, yy0, zr - 0.006), V(xi_, yy1, zr - 0.006), V(xw, yy1, zr - 0.006), V(xw, yy0, zr - 0.006)],
+                  'ahsap_koyu', -Z)   # (two-sided: its top shows under the lean-to's end)
         nr = int((yy1 - yy0) / 0.024)
         for j in range(nr + 1):
             yy = yy0 + (yy1 - yy0) * j / nr
@@ -158,7 +158,7 @@ for sx in (-1, 1):
                    V(xo + sx * 0.012, yy0, zr + 0.055)], 'ahsap_koyu', V(sx, 0))
         y.yuz_yon([V(xo, yy0, zr + 0.047), V(xo, yy1, zr + 0.047), V(xo + sx * 0.012, yy1, zr + 0.047), V(xo + sx * 0.012, yy0, zr + 0.047)],
                   'ahsap_koyu', -Z)
-    y.yuz_yon([V(xc + sx * 0.02, FY0_, ZS_ + 0.2), V(xc + sx * 0.02, FY1_, ZS_ + 0.2), V(xw, FY1_, ZS_ + 0.2), V(xw, FY0_, ZS_ + 0.2)], 'kirec', -Z)
+    iki_yuzlu(y, [V(xc + sx * 0.02, FY0_, ZS_ + 0.2), V(xc + sx * 0.02, FY1_, ZS_ + 0.2), V(xw, FY1_, ZS_ + 0.2), V(xw, FY0_, ZS_ + 0.2)], 'kirec', -Z)   # (two-sided: seen from above past the aisle roof)
 
 # ================================================================ rotunda
 y.bolum('Rotunda: üç kuşaklı tuğla duvar')
@@ -188,7 +188,7 @@ for i in range(N * 3):        # dentils under the crowning cornice
     t = math.pi / N + TAU * (i + 0.5) / (N * 3)
     nn = V(math.cos(t), math.sin(t)); e = V(-nn.y, nn.x)
     p = V(C[0], C[1]) + nn * R
-    kutu(y, p - e * 0.006 + nn * 0.012 + Z * (ZW + 0.008), e, 0.012, 0.012, 0.01, 'kirec', 'onsagsol')
+    kutu(y, p - e * 0.006 + nn * 0.012 + Z * (ZW + 0.008), e, 0.012, 0.012, 0.01, 'kirec', 'onsagsolust')
 ZK = ZW + 0.018
 duvarlar(y, ring, ZW, ZK, 'kirec')
 silme(y, ring, ZK, 0.022, 0.03, 'mermer', 'tac')
@@ -308,7 +308,7 @@ for i in range(3):
     Lq = (q - p).length; e = (q - p) / Lq
     k = int(Lq / 0.011)
     for j in range(k):
-        kutu(y, p + e * (Lq * (j + 0.2) / k) + Z * (ZC + HE * 0.72) + V(e.y, -e.x) * 0.007, e, Lq / k * 0.6, 0.007, HE * 0.1, 'mermer', 'onsagsol')
+        kutu(y, p + e * (Lq * (j + 0.2) / k) + Z * (ZC + HE * 0.72) + V(e.y, -e.x) * 0.007, e, Lq / k * 0.6, 0.007, HE * 0.1, 'mermer', 'onsagsolust')
 silme(y, friz, ZC + HE * 0.82, HE * 0.18, 0.02, 'mermer', 'tac', kapali=False)
 
 y.bolum('Portiko: alınlık ve çatı')

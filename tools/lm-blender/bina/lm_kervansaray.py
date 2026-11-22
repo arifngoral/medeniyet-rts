@@ -109,8 +109,8 @@ def payanda(p, e, h, tur, z0=Z0):
         y.yuz_yon([t + Z * zs, b + Z * zs, b + Z * zt], TAS, V((b - t).y, -(b - t).x))
         return
     w, d = PAY_W['kare'], 0.055
-    kutu(y, p - e * (w / 2) + nn * d + Z * z0, e, w, d, 0.03, 'kum_koyu', 'onsagsol')
-    kutu(y, p - e * (w / 2) + nn * d + Z * (z0 + 0.03), e, w, d, h - 0.07, TAS, 'onsagsol')
+    kutu(y, p - e * (w / 2) + nn * d + Z * z0, e, w, d, 0.03, 'kum_koyu', 'onarkasagsol')
+    kutu(y, p - e * (w / 2) + nn * d + Z * (z0 + 0.03), e, w, d, h - 0.07, TAS, 'onarkasagsol')   # (its back too: above the lower range it stands free)
     # a projecting course under the cap
     kutu(y, p - e * (w / 2 + 0.004) + nn * (d + 0.004) + Z * (z0 + h - 0.052), e, w + 0.008, d + 0.004, 0.01, 'kum_acik', 'onsagsolust')
     o = p - e * (w / 2) + Z * (z0 + h - 0.04)
@@ -161,7 +161,7 @@ def parapet_hat(kose, z=Z0 + HW, kapali=False):
 
 def kose_kule(c, h, r=0.08):
     """an octagonal corner tower with a plinth, a string course, slits, a corbelled cornice and a stone cap"""
-    y.prizma(c, r * 1.1, Z0, Z0 + 0.035, 'kum_koyu', n=8, kat=math.pi / 8, ust=False)
+    y.prizma(c, r * 1.1, Z0, Z0 + 0.035, 'kum_koyu', n=8, kat=math.pi / 8)   # (top closed: its ledge round the tower)
     for k in range(4):
         y.prizma(c, r, Z0 + 0.035 + (h - 0.035) * k / 4, Z0 + 0.035 + (h - 0.035) * (k + 1) / 4, TAS, n=8, kat=math.pi / 8, ust=False)
     halka_kornis(y, c, r, Z0 + h * 0.68, 0.009, 0.006, 8, 'kum_acik', kat=math.pi / 8)
@@ -194,7 +194,7 @@ for sx in (-1, 1):
     kose_kule((sx * XW, YF), HW + 0.05)
     kose_kule((sx * XW, YB), HH + 0.05)
     # the hall rises above the court ranges: its front wall's ends above their roofs
-    a, b = (V(sx * XW, YH), V(sx * IX, YH)) if sx > 0 else (V(sx * IX, YH), V(sx * XW, YH))
+    a, b = (V(sx * IX, YH), V(sx * XW, YH)) if sx > 0 else (V(sx * XW, YH), V(sx * IX, YH))   # (facing the court, -y)
     duvar_dilim(a, b, Z0 + HW, Z0 + HH, n=1)
     payanda(V(sx * XW, YH), V(0, 1) if sx > 0 else V(0, -1), HH, 'kare')
 # cornices and the parapets
@@ -389,6 +389,7 @@ for i in range(8):
     cubuk(y, V(p.x, p.y, zc + 0.002), V(KC[0] + (p.x - KC[0]) * lr / kr, KC[1] + (p.y - KC[1]) * lr / kr, zc + 0.17), 0.006, 'kum_acik', 0.004)
 # the lantern on top (the dome's oculus): eight little open arches, a cap and a knob
 zl = zc + 0.17
+y.yuz_yon([V(KC[0] + (p.x - KC[0]) * lr / kr, KC[1] + (p.y - KC[1]) * lr / kr, zl) for p in ok2], 'kum_koyu', Z)   # (the cone's top, the lantern's floor)
 okl = cokgen(KC, lr, 8, math.pi / 8)
 for i in range(8):
     y.kemerli(okl[i], okl[(i + 1) % 8], zl, 0.05, ('kum_acik', 'kum_koyu', 'kum_acik', 'koyu'), v0=0.006, en=0.55, ust=0.008, derin=0.01, k_say=4, sivri=0.6)
@@ -526,6 +527,10 @@ for (cx, cy) in ((-0.42, YF - 0.27), (-0.39, YF - 0.3)):
     kup(cx, cy, Z0)
 kutu(y, V(-0.72, YF - 0.13, Z0), X, 0.24, 0.05, 0.035, 'kum_koyu', 'onarkasagsol')
 y.yuz_yon([V(-0.71, YF - 0.12, Z0 + 0.03), V(-0.49, YF - 0.12, Z0 + 0.03), V(-0.49, YF - 0.09, Z0 + 0.03), V(-0.71, YF - 0.09, Z0 + 0.03)], 'su', Z)
+_d, _i = dikdortgen(-0.72, -0.48, YF - 0.13, YF - 0.08), dikdortgen(-0.71, -0.49, YF - 0.12, YF - 0.09)
+for i in range(4):            # the trough's inside and rim
+    duz_duvar(y, _i[(i + 1) % 4], _i[i], Z0 + 0.03, Z0 + 0.035, 'kum_koyu')
+    y.yuz_yon([_d[i] + Z * (Z0 + 0.035), _d[(i + 1) % 4] + Z * (Z0 + 0.035), _i[(i + 1) % 4] + Z * (Z0 + 0.035), _i[i] + Z * (Z0 + 0.035)], 'kum_koyu', Z)
 for k in range(4):
     x = 0.4 + k * 0.08
     y.prizma((x, YF - 0.13), 0.007, Z0, Z0 + 0.07, 'ahsap_koyu', n=6)

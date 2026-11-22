@@ -29,7 +29,7 @@ def cit(a, b, h=0.17, taban=0.05, adim=0.024):
     for k in range(n + 1):
         p = a.lerp(b, k / n) - nn * 0.022
         hh = h * (1 + 0.06 * math.sin(k * 2.7))
-        y.prizma((p.x, p.y), 0.0105, Z0 + taban, Z0 + taban + hh, 'kutuk', n=5, ust=False, kat=k * 0.7)
+        y.prizma((p.x, p.y), 0.0105, Z0 + taban, Z0 + taban + hh, 'kutuk', n=5, kat=k * 0.7)   # (top closed: the cap is not turned with it)
         y.koni((p.x, p.y), 0.0105, Z0 + taban + hh, 0.024, 'ahsap_koyu', n=5)
     for zz in (0.35, 0.8):
         cubuk(y, a - nn * 0.038 + Z * (Z0 + taban + h * zz), b - nn * 0.038 + Z * (Z0 + taban + h * zz), 0.008, 'ahsap_koyu', 0.006)
@@ -70,6 +70,14 @@ for sx in (-1, 1):
     cubuk(y, hinge + Z * (Z0 + 0.17), hinge + d * GW + Z * (Z0 + 0.17), 0.012, 'ahsap_koyu', 0.018)
 
 
+def yalak_ic(x0, x1, y0, y1, t, za, zb, key):
+    """an open trough's inside: walls t thick facing in from the water (za) to the rim (zb), and the rim"""
+    dis = dikdortgen(x0, x1, y0, y1); ic = dikdortgen(x0 + t, x1 - t, y0 + t, y1 - t)
+    for i in range(4):
+        duz_duvar(y, ic[(i + 1) % 4], ic[i], za, zb, key)
+        y.yuz_yon([dis[i] + Z * zb, dis[(i + 1) % 4] + Z * zb, ic[(i + 1) % 4] + Z * zb, ic[i] + Z * zb], key, Z)
+
+
 # ---------------- stables ----------------
 def ahir(c, aci, L, D=0.26, H=0.15, n=8):
     """a long stable, open to the yard on its front (-y before turning): stone footing and plank walls, posts along
@@ -82,7 +90,8 @@ def ahir(c, aci, L, D=0.26, H=0.15, n=8):
             e = (q - p).normalized(); nn = V(e.y, -e.x)
             kutu(y, p + nn * 0.004 + Z * (Z0 + 0.048), e, (q - p).length, 0.004, 0.008, 'ahsap_koyu', 'onust')
         # inside faces (seen through the open front)
-        for (p, q) in ((V(x0, y1), V(x1, y1)), (V(x0, y0), V(x0, y1)), (V(x1, y1), V(x1, y0))):
+        ic = 0.0015   # (a hair inside the outer faces: back to back on one plane they flickered)
+        for (p, q) in ((V(x0, y1 - ic), V(x1, y1 - ic)), (V(x0 + ic, y0), V(x0 + ic, y1)), (V(x1 - ic, y1), V(x1 - ic, y0))):
             duz_duvar(y, p, q, Z0, Z0 + H, 'ahsap_koyu')
         y.yuz_yon([V(x0, y0, Z0 + H), V(x1, y0, Z0 + H), V(x1, y1, Z0 + H), V(x0, y1, Z0 + H)], 'ahsap_koyu', -Z)
         y.yuz_yon([V(x0, y0, Z0 + 0.002), V(x1, y0, Z0 + 0.002), V(x1, y1, Z0 + 0.002), V(x0, y1, Z0 + 0.002)], 'saz_koyu', Z)
@@ -243,7 +252,7 @@ def otag(c, W=0.21, D=0.15, H=0.12):
             pts = [p + Z * zt, q + Z * zt] + [p.lerp(q, t) + Z * (zt - 0.016 * math.sin(math.pi * t)) for t in (0.8, 0.5, 0.2)]
             pts = [pp + nn * 0.001 for pp in pts]
             y.yuz_yon(pts, 'boya_kirmizi' if j % 2 else 'boya_sari', nn)
-            y.yuz_yon(pts, 'boya_kirmizi', -nn)
+            y.yuz_yon([pp - nn * 0.0006 for pp in pts], 'boya_kirmizi', -nn)
     # poles and finials above the ridge
     for sx in (-1, 1):
         px = cx + sx * (W - D) * 0.9
@@ -264,8 +273,9 @@ otag(OC)
 cubuk(y, V(OC[0] - 0.09, OC[1] - 0.29, Z0), V(OC[0] - 0.09, OC[1] - 0.29, Z0 + 0.13), 0.007, 'ahsap_koyu')
 cubuk(y, V(OC[0] + 0.09, OC[1] - 0.29, Z0), V(OC[0] + 0.09, OC[1] - 0.29, Z0 + 0.13), 0.007, 'ahsap_koyu')
 for s, key in ((1, 'boya_kirmizi'), (-1, 'kece')):
-    y.yuz_yon([V(OC[0] - 0.1, OC[1] - 0.3, Z0 + 0.13), V(OC[0] + 0.1, OC[1] - 0.3, Z0 + 0.13), V(OC[0] + 0.1, OC[1] - 0.18, Z0 + 0.15),
-               V(OC[0] - 0.1, OC[1] - 0.18, Z0 + 0.15)], key, Z * s)
+    dz = 0 if s > 0 else -0.0006   # (the underside a hair below)
+    y.yuz_yon([V(OC[0] - 0.1, OC[1] - 0.3, Z0 + 0.13 + dz), V(OC[0] + 0.1, OC[1] - 0.3, Z0 + 0.13 + dz), V(OC[0] + 0.1, OC[1] - 0.18, Z0 + 0.15 + dz),
+               V(OC[0] - 0.1, OC[1] - 0.18, Z0 + 0.15 + dz)], key, Z * s)
 
 
 def tug(x, yy, boy=0.42, renk='koyu'):
@@ -303,7 +313,7 @@ for k in range(7):
     y.koni((b.x, b.y), 0.005, b.z, 0.022, 'demir', n=4)
     if k % 2 == 0:
         y.yuz_yon([b - Z * 0.004, b - Z * 0.022, b + V(0.03, 0.0, -0.016)], 'boya_kirmizi', -Y)
-        y.yuz_yon([b - Z * 0.004, b - Z * 0.022, b + V(0.03, 0.0, -0.016)], 'boya_kirmizi', Y)
+        y.yuz_yon([q + Y * 0.0006 for q in (b - Z * 0.004, b - Z * 0.022, b + V(0.03, 0.0, -0.016))], 'boya_kirmizi', Y)
 # firewood stacked by the fire
 for k in range(3):
     for j in range(4 - k):
@@ -319,6 +329,7 @@ for (x, ya, yb) in ((-0.55, -0.55, -0.15), (-0.55, 0.05, 0.42)):
     kutu(y, V(x + 0.065, ya, Z0), Y, yb - ya, 0.035, 0.03, 'ahsap', 'onarkasagsol')      # a water trough
     y.yuz_yon([V(x + 0.032, ya + 0.004, Z0 + 0.025), V(x + 0.062, ya + 0.004, Z0 + 0.025), V(x + 0.062, yb - 0.004, Z0 + 0.025),
                V(x + 0.032, yb - 0.004, Z0 + 0.025)], 'su', Z)
+    yalak_ic(x + 0.03, x + 0.065, ya, yb, 0.003, Z0 + 0.025, Z0 + 0.03, 'ahsap')
 # the fire with a cauldron on a tripod
 FC = (0.42, -0.3)
 for k in range(8):
@@ -328,7 +339,7 @@ for k in range(5):
     a = TAU * k / 5
     cubuk(y, V(FC[0] + 0.025 * math.cos(a), FC[1] + 0.025 * math.sin(a), Z0 + 0.006), V(FC[0] - 0.02 * math.cos(a), FC[1] - 0.02 * math.sin(a), Z0 + 0.02), 0.007, 'ahsap_koyu')
 donel(y, FC, [(0.0, Z0 + 0.008), (0.018, Z0 + 0.014), (0.0, Z0 + 0.05)], 'boya_sari', n=7)
-donel(y, FC, [(0.0, Z0 + 0.05), (0.028, Z0 + 0.055), (0.036, Z0 + 0.075), (0.034, Z0 + 0.095), (0.03, Z0 + 0.095)], 'demir', n=12)
+donel(y, FC, [(0.0, Z0 + 0.05), (0.028, Z0 + 0.055), (0.036, Z0 + 0.075), (0.034, Z0 + 0.095), (0.03, Z0 + 0.095), (0.03, Z0 + 0.09)], 'demir', n=12)   # (down the inside to the stew)
 y.yuz_yon([V(FC[0] + 0.03 * math.cos(TAU * i / 12), FC[1] + 0.03 * math.sin(TAU * i / 12), Z0 + 0.09) for i in range(12)], 'kirmizi', Z)
 for k in range(3):
     a = TAU * k / 3 + 0.4
