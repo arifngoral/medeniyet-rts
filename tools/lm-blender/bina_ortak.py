@@ -78,6 +78,30 @@ def onizlemeler(ob, klasor, ad):
         out.filepath_raw = os.path.join(klasor, f'{ad}_5_pafta.png'); out.file_format = 'PNG'; out.save()
 
 
+def izgara_bol(y, maks=0.16, alan=0.004):
+    """The baked shadow lives in the vertex colours: a large wall quad has only its four corners, so a moulding
+    touching one corner darkened the whole wall. Large flat quads (area > alan, an edge > maks; not the team blue)
+    are split into a grid of cells no longer than maks before the bake. (A T-junction where a split wall meets an
+    unsplit neighbour lies exactly on the edge: no gap.)"""
+    yeni = []
+    for pts, key in y.faces:
+        if len(pts) != 4 or key == 'mavi':
+            yeni.append((pts, key)); continue
+        P = [Vector(p) for p in pts]
+        a, b, c, d = P
+        lu, lv = max((b - a).length, (c - d).length), max((d - a).length, (c - b).length)
+        if (b - a).cross(d - a).length < alan or max(lu, lv) <= maks:
+            yeni.append((pts, key)); continue
+        nu, nv = max(1, math.ceil(lu / maks)), max(1, math.ceil(lv / maks))
+        # (bilinear: works for the trapezoids of roofs and battered walls too)
+        Q = lambda u, v: (a.lerp(b, u)).lerp(d.lerp(c, u), v)
+        for i in range(nu):
+            for j in range(nv):
+                q = [Q(i / nu, j / nv), Q((i + 1) / nu, j / nv), Q((i + 1) / nu, (j + 1) / nv), Q(i / nu, (j + 1) / nv)]
+                yeni.append(([tuple(p) for p in q], key))
+    y.faces[:] = yeni
+
+
 def calistir(y, ad):
     """build, export (argv: out.glb [preview folder]) and preview"""
     tri = y.ucgen_sayisi()
@@ -86,6 +110,9 @@ def calistir(y, ad):
         print('UYARI: ucgen sayisi hedefin (20-60 bin) disinda:', tri)
     arg = argumanlar()
     temizle()
+    n0 = len(y.faces)
+    izgara_bol(y)
+    print('BOLUNMUS UCGEN', y.ucgen_sayisi(), '(%d yuz bolundu)' % (len(y.faces) - n0))
     ob, anahtar = nesne_dokulu(y, ad)
     if 'mavi' not in anahtar:
         print('UYARI: sancak (mavi) yok')
