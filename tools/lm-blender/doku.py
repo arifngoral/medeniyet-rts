@@ -77,6 +77,7 @@ MALZEME = {
     'ahsap_koyu': ('duz', (0.27, 0.18, 0.12), {}),
     'ahsap_dikey': ('duz', (0.48, 0.33, 0.21), {}),        # vertical boards
     'kutuk':    ('duz',  (0.52, 0.37, 0.24), {}),          # logs
+    'kutuk_gri': ('duz', (0.55, 0.49, 0.42), {}),          # weathered grey logs (old timber walls, Russian forts)
     'sindira':  ('duz',  (0.36, 0.24, 0.15), {}),          # tarred wooden shingles (Norse stave roofs), courses along the eaves
     'sindira2': ('duz',  (0.31, 0.205, 0.13), {}),
     'lake':     ('duz',  (0.68, 0.17, 0.12), {'leke': 0.03}),     # red lacquer (China, Japan, Korea)
@@ -105,6 +106,9 @@ MALZEME = {
     'koyu':     ('duz',  (0.13, 0.11, 0.10), {'leke': 0.02}),
     'cam':      ('duz',  (0.22, 0.30, 0.34), {'leke': 0.03}),
     'fil':      ('duz',  (0.50, 0.47, 0.46), {'leke': 0.04}),     # elephant hide (grey, a touch warm)
+    'gumus':    ('duz',  (0.80, 0.81, 0.82), {'leke': 0.02}),     # silver (Karakorum's Silver Tree)
+    'ten':      ('duz',  (0.80, 0.62, 0.47), {'leke': 0.02}),     # skin (people's faces and hands)
+    'kece2':    ('duz',  (0.82, 0.77, 0.67), {'leke': 0.04}),     # older, greyer felt (a ger's roof flap, a worn cover)
     'kirmizi_tas_acik': ('duz', (0.80, 0.50, 0.40), {'leke': 0.04}),   # dressed red sandstone trim (Mughal / Rajput)
     'mavi':     ('duz',  (0.10, 0.32, 0.88), {'leke': 0.0, 'aosuz': True}),   # TEAM COLOUR (banners)
     'buhar':    ('duz',  (0.93, 0.93, 0.92), {'leke': 0.0}),      # steam (a soft baked shadow: YUMUSAK_AO)
@@ -361,7 +365,7 @@ DESENLI = {
     'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0), 'porselen': (0.42, 1, 0), 'tugla_gri': (0.42, 1, 0), 'tugla_gri_koyu': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
     'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'kiremit_kobalt': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
-    'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0),
+    'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0), 'kutuk_gri': (0.6, 6, 0),
     'ahsap_dikey': (0.5, 4, 1), 'sindira': (0.3, 1.4, 0), 'sindira2': (0.3, 1.4, 0),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',

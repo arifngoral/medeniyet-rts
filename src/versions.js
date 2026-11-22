@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Moskova Kremlini: kırlangıç mazgallı kırmızı tuğla sur, yeşil sırlı çadır çatılı kuleler, saatli Spasskaya Kulesi ve çift başlı kartal, beş altın kubbeli Uspenski ve Başmelek katedralleri, Büyük İvan Çan Kulesi, Granovitaya Palata, Kızıl Meydan’da pazar tezgâhları',
+        'Novgorod Ayasofyası: beyaz sıvalı, zakomara alınlıklı ve levha kaplı tonoz çatılı katedral, altın ve kurşun miğfer kubbeler, çan duvarı, kırmızı tuğla Detinets suru, Volhov ırmağında iskele ve tekne',
+        'Ahşap Kremlin: toprak set üstünde kütük sur ve kazıklar, taşma katlı çadır çatılı kuleler, ikonalı kapı kulesi, kat kat pullu kubbeli ahşap kilise, çan kulesi, boyar evleri',
+        'Kürk Ticaret Evi: karlı avluda oymalı pencereli iki katlı kütük ev ve dükkân, soğan kubbeli kütük şapel, kürk askıları, ambar, kova kaldıraçlı kuyu, kızaklar, ladinler',
         'Timbuktu Kervan Kalesi: eğimli, payandalı, toronlu kerpiç sur ve yuvarlak burçlar, tonozlu geçitli üç katlı kapı kulesi, depolar, kuyu, Tuareg muhafızlar, çöken develi tuz kervanı ve Taghaza tuz levhaları.',
         'Mansa Musa Sarayı: üç katlı kerpiç saray kulesi, altın çerçeveli ve ipek perdeli kubbeli kabul salonu, fildişi taht ve altın şemsiye altında Mansa, altın mızraklı muhafızlar, haraç sandıkları, atlar ve develer.',
         'Altın Madeni: laterit tepelerde çıkrıklı maden kuyuları ve toprak yığınları, nehirde altın yıkayan kadınlar, cevher dövenler, terazili altın tüccarları, kerpiç köy ve gözcü kulesi.',
@@ -149,6 +153,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_kremlin', kind: 'building', tags: ['yeni'], note: 'Moskova Kremlini.' },
+      { id: 'lm_novgorod', kind: 'building', tags: ['yeni'], note: 'Novgorod Ayasofyası ve Detinets.' },
+      { id: 'lm_ahsapkremlin', kind: 'building', tags: ['yeni'], note: 'Kütük surlu ahşap kremlin.' },
+      { id: 'lm_kurkpazari', kind: 'building', tags: ['yeni'], note: 'Karlı kürk ticaret evi.' },
       { id: 'lm_timbuktukale', kind: 'building', tags: ['yeni'], note: 'Kerpiç kervan kalesi ve tuz kervanı.' },
       { id: 'lm_mansasaray', kind: 'building', tags: ['yeni'], note: 'Mansa Musa\'nın sarayı.' },
       { id: 'lm_altinmadeni', kind: 'building', tags: ['yeni'], note: 'Altın madeni ve yıkama.' },
