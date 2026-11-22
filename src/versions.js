@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Rumeli Hisarı: Boğaz kıyısından tepeye basamaklanan yamaçta üç büyük kule (Saruca, Halil, Zağanos), aralarında tırmanan mazgallı surlar, küçük kuleler, iç avluda mescit ve garnizon evleri; kıyıda iskele, kayık ve toplar.',
+        'Bursa Ulu Camii: 5x4 dizilmiş yirmi kubbe (ortadakinde aydınlık feneri), kör kemerli nişli duvarlar, yıldız bordürlü mukarnaslı taçkapılar, iki minare, şadırvan ve çınarlı meydan.',
+        'Akıncı Ocağı: kazıklı çitle çevrili avlu, ahırlar ve atlar, taş kışla, ahşap gözcü kulesi, kırmızı-sarı süslü Osmanlı otağı, at kuyruğu tuğlar, çan çadırlar ve nişan tahtaları.',
+        'Söğüt Kervansarayı: Sultanhanı gibi payandalı kesme taş han, yedi sıra mukarnaslı ve yıldız bordürlü büyük taçkapı, avlu ortasında köşk mescit, külahlı fenerli kışlık bölüm, önde yüklü develer.',
         'Harbiye Mektebi: avlulu üç katlı neoklasik kışla-okul, köşelerde piramit çatılı köşkler, altı İyon sütunlu alınlıklı giriş, çatı pencereleri, avluda talim eden harbiyeliler ve toplar.',
         'Dolmabahçe Sarayı: U planlı saray, kaburgalı kubbeli Muayede salonu, iki katlı Korint sütunlu orta cephe, korkuluklu damlar, bahçe, havuz, demir parmaklık, Saltanat Kapısı ve saat kulesi.',
         'Tophane-i Âmire: almaşık taş-tuğla duvarlı beş kubbeli döküm salonu ve büyük kubbeli salon, ocak bacaları; avluda Şahi topu ve vinci, toplar, gülle yığınları, çeşme, saat kulesi.',
@@ -25,6 +29,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_rumelihisari', kind: 'building', tags: ['yeni'], note: 'Yamaçta üç büyük kule ve basamaklı surlar, kıyıda iskele.' },
+      { id: 'lm_ulucami', kind: 'building', tags: ['yeni'], note: 'Yirmi kubbe, mukarnaslı taçkapılar, iki minare.' },
+      { id: 'lm_akinciocagi', kind: 'building', tags: ['yeni'], note: 'Kazıklı çit, ahırlar, gözcü kulesi, Osmanlı otağı ve tuğlar.' },
+      { id: 'lm_kervansaray', kind: 'building', tags: ['yeni'], note: 'Payandalı han, büyük mukarnaslı taçkapı, köşk mescit.' },
       { id: 'lm_harbiye', kind: 'building', tags: ['yeni'], note: 'Avlulu neoklasik kışla-okul, köşe köşkleri, sütunlu giriş.' },
       { id: 'lm_dolmabahce', kind: 'building', tags: ['yeni'], note: 'Kubbeli Muayede salonu, Korint cephe, bahçe ve Saltanat Kapısı.' },
       { id: 'lm_tophane', kind: 'building', tags: ['yeni'], note: 'Beş kubbeli döküm salonu, almaşık duvarlar, avluda toplar.' },

@@ -405,12 +405,13 @@ def sutunlu_revak(y, a, b, n, z0, H, tur='dor', r=None, key='mermer', ust_key=No
     z = z0 + H
     o = a - e * (r * 1.6) + nc * (D / 2)
     L = W + r * 3.2
-    kutu(y, o, e, L, D, he * 0.42, uk)                         # architrave
-    kutu(y, o + Z * (he * 0.42) - nc * 0.002, e, L, D - 0.004, he * 0.4, uk)   # frieze (set back a hair)
+    oz = o + Z * z                                             # (the entablature stands on the capitals)
+    kutu(y, oz, e, L, D, he * 0.42, uk)                        # architrave
+    kutu(y, oz + Z * (he * 0.42) - nc * 0.002, e, L, D - 0.004, he * 0.4, uk)   # frieze (set back a hair)
     if triglif:
         k = n * 2
         for i in range(k + 1):
-            p = o + e * (r * 1.6 + W * i / k) + Z * (he * 0.42)
+            p = oz + e * (r * 1.6 + W * i / k) + Z * (he * 0.42)
             kutu(y, p - e * (r * 0.45) + nc * 0.0005, e, r * 0.9, 0.004, he * 0.4, triglif, 'onsagsolust')
     zc = z + he * 0.82
     c = kornis_c or r * 0.9
@@ -791,9 +792,10 @@ def kule_yuvarlak(y, c, r, z0, h, key='tas', cati='konik', cati_key='kiremit', c
 
 
 def kule_kare(y, cx, cy, w, z0, h, key='tas', cati='piramit', cati_key='kiremit', cati_h=None, mazgal_h=0.03, sacak=0.015,
-              yarik_say=2, konsol=True, d=None, kose_tas=None):
+              yarik_say=2, konsol=True, d=None, kose_tas=None, cati_ns=10, cati_nr=6):
     """a square (w x d) tower: slits, corbelled merloned parapet, cati: 'piramit' (hipped / pyramid roof), 'duz',
-    'cadir' (steep spire) or None; kose_tas: a key for quoin stones at the corners. Returns the top z"""
+    'cadir' (steep spire) or None; kose_tas: a key for quoin stones at the corners; cati_ns / cati_nr: the roof's subdivision
+    (cati_kirma ns / nr: a small straight roof needs few). Returns the top z"""
     d = d or w
     x0, x1, y0, y1 = cx - w / 2, cx + w / 2, cy - d / 2, cy + d / 2
     k = dikdortgen(x0, x1, y0, y1)
@@ -819,10 +821,10 @@ def kule_kare(y, cx, cy, w, z0, h, key='tas', cati='piramit', cati_key='kiremit'
         y.yuz_yon([V(p.x, p.y, zt + 0.0005) for p in disa(ring, -0.016)], 'zemin', Z)
     if cati == 'piramit':
         xs = [p.x for p in ring]; ys = [p.y for p in ring]
-        return cati_kirma(y, min(xs), max(xs), min(ys), max(ys), zt, cati_h or w * 0.7, sacak, cati_key)
+        return cati_kirma(y, min(xs), max(xs), min(ys), max(ys), zt, cati_h or w * 0.7, sacak, cati_key, ns=cati_ns, nr=cati_nr)
     if cati == 'cadir':
         xs = [p.x for p in ring]; ys = [p.y for p in ring]
-        return cati_kirma(y, min(xs), max(xs), min(ys), max(ys), zt + 0.012, cati_h or w * 1.8, sacak * 0.5, cati_key)
+        return cati_kirma(y, min(xs), max(xs), min(ys), max(ys), zt + 0.012, cati_h or w * 1.8, sacak * 0.5, cati_key, ns=cati_ns, nr=cati_nr)
     return zt + 0.012 + (mazgal_h or 0)
 
 

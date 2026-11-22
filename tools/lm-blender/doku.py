@@ -25,12 +25,15 @@ MALZEME = {
     'zemin':    ('tas',  (0.80, 0.77, 0.70), {'tugla': 5.0, 'yatay': True}),
     'toprak':   ('duz',  (0.58, 0.47, 0.34), {'leke': 0.08}),
     'cimen':    ('duz',  (0.42, 0.52, 0.27), {'leke': 0.08}),   # turf roof, lawn
+    'zeytin':   ('duz',  (0.50, 0.57, 0.40), {'leke': 0.07}),   # olive foliage (silvery grey-green)
+    'kaya':     ('duz',  (0.69, 0.62, 0.54), {'leke': 0.1}),     # bare limestone rock, cliffs (no coursing)
+    'kaya_koyu': ('duz', (0.54, 0.47, 0.40), {'leke': 0.1}),
     'su':       ('duz',  (0.28, 0.46, 0.52), {'leke': 0.03}),
     # brick, earth, plaster
     'tugla':    ('tas',  (0.68, 0.37, 0.26), {}),
     'tugla_koyu': ('tas', (0.52, 0.28, 0.20), {}),
-    'tugla_roma': ('tas', (0.76, 0.53, 0.38), {}),     # Roman fired brick: paler, orange-tan (Pantheon, castra)
-    'tugla_roma_koyu': ('tas', (0.60, 0.40, 0.29), {}),
+    'tugla_roma': ('tas', (0.73, 0.58, 0.46), {}),     # Roman fired brick, weathered: greyish tan-brown (Pantheon, forum)
+    'tugla_roma_koyu': ('tas', (0.58, 0.45, 0.36), {}),
     'kerpic':   ('duz',  (0.74, 0.53, 0.35), {'leke': 0.09}),   # mud brick (Mali, Persia, Mesopotamia)
     'kerpic_koyu': ('duz', (0.60, 0.41, 0.27), {'leke': 0.09}),
     'siva':     ('duz',  (0.94, 0.92, 0.87), {'leke': 0.03}),   # white plaster (Japan, Korea, Spain, Greece)
