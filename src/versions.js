@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Çin Seddi Kalesi: iki sırta tırmanan, basamaklı yürüyüş yollu ve mazgallı sed, gözcü kuleleri, dumanlı işaret kulesi; geçitte üç katlı kapı kulesi, köşkler ve barbakanla Jiayuguan tarzı kale.',
+        'Büyük Kanal Limanı: üç kemerli kambur taş köprü, mahmuzlu kilit ve çıkrıklı vinç köprüsü, yelkenli yük gemileri, ambarlar, pailou, gümrük, yeşil sırlı tapınak ve Randeng pagodası.',
+        'Pişmiş Toprak Atölyesi: üç teraslı Qin salonu, sıra sıra pişmiş toprak askerler, savaş arabası ve atlarla kazı çukuru, atölye sundurmaları, kubbeli fırınlar.',
+        'Pirinç Terasları: kıvrık eşyükselti hatlarında sulu teraslar ve fideler, basamaklı dere, su çarkı, taş köprü, çiftlik evleri, manda, bambular, tepede beş katlı pagoda.',
         'Varang Kışlası: ejder başlı ahşap galerili almaşık kışla, şindıra külahlı kule, porfir sütunlu saray revakı ve kubbeli şapel, Kuzey portalı, baltalı muhafızların talim avlusu.',
         'Yerebatan Sarnıcı: toprak kesitinin içine kazılmış gibi açık sarnıç: renkli mermer sütun ormanı, tuğla çapraz tonozlar, su, Medusa başlı iki kaide; üstte revaklı Stoa Basilica avlusu ve su kemeri ucu.',
         'Rum Ateşi Atölyesi: almaşık kubbeli kimya atölyesi, muhafız kulesi, neft kazanları ve imbikler, rıhtımda alev püskürten tunç sifon, pruvası alevli dromon.',
@@ -85,6 +89,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_seddkalesi', kind: 'building', tags: ['yeni'], note: 'Sırtlara tırmanan sed, geçit kalesi.' },
+      { id: 'lm_buyukkanal', kind: 'building', tags: ['yeni'], note: 'Kambur köprü, kilit, gemiler, pagoda.' },
+      { id: 'lm_topraksavasci', kind: 'building', tags: ['yeni'], note: 'Terracotta askerleri ve Qin salonu.' },
+      { id: 'lm_pirincteras', kind: 'building', tags: ['yeni'], note: 'Sulu teraslar, su çarkı, pagoda.' },
       { id: 'lm_varangkisla', kind: 'building', tags: ['yeni'], note: 'Varang kışlası, ejder başlı galeri.' },
       { id: 'lm_yerebatan', kind: 'building', tags: ['yeni'], note: 'Kesit gibi açık sarnıç, Medusa başları.' },
       { id: 'lm_rumatesi', kind: 'building', tags: ['yeni'], note: 'Rum ateşi atölyesi ve alev püskürten sifon.' },

@@ -89,6 +89,8 @@ MALZEME = {
     'lacivert': ('duz',  (0.28, 0.22, 0.52), {'leke': 0.03}),     # deep blue glaze / paint (kept off team blue)
     'kobalt':   ('duz',  (0.10, 0.18, 0.38), {'leke': 0.02}),     # dark cobalt glaze: a true blue kept off team blue by its
                                                                     # darkness (isTeamBlue needs max channel > 0.45)
+    'kiremit_kobalt': ('duz', (0.10, 0.18, 0.38), {'leke': 0.02}),   # cobalt glazed roof tiles (Temple of Heaven): coursed like kiremit
+    'porselen': ('duz',  (0.95, 0.94, 0.91), {'leke': 0.02}),     # white glazed porcelain bricks (Nanjing): coursed like tugla
     'beyaz':    ('duz',  (0.96, 0.95, 0.92), {'leke': 0.02}),
     'koyu':     ('duz',  (0.13, 0.11, 0.10), {'leke': 0.02}),
     'cam':      ('duz',  (0.22, 0.30, 0.34), {'leke': 0.03}),
@@ -342,9 +344,9 @@ DESENLI = {
     'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
     'tas_volkan': (0.6, 1, 0), 'tas_volkan_koyu': (0.6, 1, 0),
     'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'kerpic_tugla': (0.5, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
-    'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0),
+    'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0), 'porselen': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
-    'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
+    'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'kiremit_kobalt': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
     'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0),
     'ahsap_dikey': (0.5, 4, 1), 'sindira': (0.3, 1.4, 0), 'sindira2': (0.3, 1.4, 0),
 }
@@ -394,7 +396,14 @@ def karo_desen(boyut=512, tohum=5):
     return im
 
 
-CATI_MALZEME = ('kiremit', 'kiremit2', 'kiremit_koyu', 'kiremit_koyu2', 'kiremit_sari', 'kiremit_yesil', 'arduvaz', 'bakir',
+# Colour by position (terrain): {material key: f(x, y, z) -> sRGB (r, g, b)}. Faces of such a key take their colour per
+# corner from f at the corner's position instead of the material's flat colour; neighbouring faces share their corners,
+# so the colour flows smoothly over a terrain mesh (no triangle-by-triangle patches). Empty by default (a building
+# script fills it: import doku; doku.KOSE_RENK['kaya'] = f).
+KOSE_RENK = {}
+
+
+CATI_MALZEME = ('kiremit', 'kiremit2', 'kiremit_koyu', 'kiremit_koyu2', 'kiremit_sari', 'kiremit_yesil', 'kiremit_kobalt', 'arduvaz', 'bakir',
                 'bakir2', 'saz', 'saz_koyu', 'cimen', 'sindira', 'sindira2')
 
 
@@ -414,6 +423,10 @@ def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
         oy = MALZEME[k][2].get('leke', 0.05) * 0.6 if k in DUZ_TON else 0
         c = lin[k] * float(1 + rng.uniform(-oy, oy))
         renk[p.loop_start:p.loop_start + p.loop_total, :3] = c
+        if k in KOSE_RENK:
+            for li in range(p.loop_start, p.loop_start + p.loop_total):
+                v = me.vertices[me.loops[li].vertex_index].co
+                renk[li, :3] = [srgb2lin(max(0.0, min(1.0, t))) for t in KOSE_RENK[k](v.x, v.y, v.z)]
         if k == 'mavi': mavi[p.loop_start:p.loop_start + p.loop_total] = True
     # ambient occlusion baked into the vertex colours
     for a in list(me.color_attributes): me.color_attributes.remove(a)
