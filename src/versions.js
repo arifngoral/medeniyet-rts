@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Güneş Taşı Tapınağı: boyalı kabartmalı dev Güneş Taşı (Tonatiuh yüzü, Ollin kartuşları, gün işaretleri, ateş yılanları), arkada yılan ağızlı yuvarlak Ehecatl tapınağı ve saz çatılı yan tapınaklar.',
+        'Güneş Piramidi: volkanik taştan beş kademeli Teotihuacan piramidi, çıkıntı taşları, kırmızı tablerolu adosada, tepede tapınak, U biçimli çevre platformu ve Ölüler Caddesi.',
+        'Top Sahası: I biçimli saha, taş halkalı eğimli duvarlar, boyalı seyirci basamakları ve bey köşkü, oyuncular, iki ucunda saz çatılı tapınaklı piramitçik, tzompantli.',
+        'Büyük Tapınak (Templo Mayor): kademe köşelerinde yılan başları olan ikiz merdivenli piramit, kafatası motifli kırmızı Huitzilopochtli ve turkuaz-beyaz Tlaloc tapınakları, Coyolxauhqui taşı, yılan duvarı.',
         'Şam Çeliği Dökümhanesi: kerpiç kubbeli pota fırınları ve yüksek bacalar, körükler, örsler ve demirciler, kılıç rafları, soğutma havuzu, kaburgalı kubbeli usta salonu, rüzgâr bacaları.',
         'Büyük Kervan Hanı: dükkânlı ve cumbalı sokak cephesi, ablak mukarnaslı taçkapı, iki katlı revaklı avlu, kubbeli çeşme köşkü, mescit ve Şam minaresi, develer ve gelen kervan.',
         'Memlûk Kışlası: kırmızı-beyaz ablak mukarnaslı taçkapı, kafes kabartmalı taş kubbeli türbe, kare-sekizgen-yuvarlak gövdeli Memlûk minaresi, revaklı avlu, ahırlar ve talim avlusu.',
@@ -74,6 +78,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_taktakvim', kind: 'building', tags: ['yeni'], note: 'Güneş Taşı ve Ehecatl tapınağı.' },
+      { id: 'lm_gunespiramidi', kind: 'building', tags: ['yeni'], note: 'Teotihuacan Güneş Piramidi.' },
+      { id: 'lm_topsahasi', kind: 'building', tags: ['yeni'], note: 'Taş halkalı top sahası.' },
+      { id: 'lm_templomayor', kind: 'building', tags: ['yeni'], note: 'İkiz tapınaklı Büyük Tapınak.' },
       { id: 'lm_samcelik', kind: 'building', tags: ['yeni'], note: 'Pota fırınları, bacalar, demirciler.' },
       { id: 'lm_kervanhani', kind: 'building', tags: ['yeni'], note: 'Revaklı han, çeşme köşkü, kervan.' },
       { id: 'lm_memlukkisla', kind: 'building', tags: ['yeni'], note: 'Ablak taçkapı, taş kubbe, Memlûk minaresi.' },

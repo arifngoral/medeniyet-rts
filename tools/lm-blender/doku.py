@@ -24,6 +24,8 @@ MALZEME = {
     'granit_koyu': ('tas', (0.46, 0.44, 0.43), {}),
     'granit_kizil': ('tas', (0.66, 0.49, 0.44), {}),      # Aswan red granite (Old Kingdom temple casing, obelisks)
     'granit_kizil_koyu': ('tas', (0.50, 0.36, 0.33), {}),
+    'tas_volkan': ('tas', (0.56, 0.50, 0.45), {'tugla': 9.0}),     # Teotihuacan volcanic stone (tezontle / andesite rubble): grey-brown
+    'tas_volkan_koyu': ('tas', (0.42, 0.37, 0.34), {'tugla': 9.0}),
     'bazalt':   ('duz',  (0.34, 0.33, 0.32), {}),
     'zemin':    ('tas',  (0.80, 0.77, 0.70), {'tugla': 5.0, 'yatay': True}),
     'toprak':   ('duz',  (0.58, 0.47, 0.34), {'leke': 0.08}),
@@ -338,6 +340,7 @@ DESENLI = {
     'tas': (1.0, 1, 0), 'tas_koyu': (1.0, 1, 0), 'zemin': (1.6, 1, 0),
     'kirec': (1.1, 1, 0), 'kum': (1.2, 1, 0), 'kum_koyu': (1.2, 1, 0), 'kirmizi_tas': (1.0, 1, 0),
     'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
+    'tas_volkan': (0.6, 1, 0), 'tas_volkan_koyu': (0.6, 1, 0),
     'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'kerpic_tugla': (0.5, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
     'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
@@ -346,7 +349,7 @@ DESENLI = {
     'ahsap_dikey': (0.5, 4, 1), 'sindira': (0.3, 1.4, 0), 'sindira2': (0.3, 1.4, 0),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
-           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'tugla_sari', 'tugla_sari_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla')   # (a shade per flat face)
+           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'tugla_sari', 'tugla_sari_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla', 'tas_volkan', 'tas_volkan_koyu')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 
