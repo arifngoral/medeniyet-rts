@@ -29,6 +29,8 @@ MALZEME = {
     # brick, earth, plaster
     'tugla':    ('tas',  (0.68, 0.37, 0.26), {}),
     'tugla_koyu': ('tas', (0.52, 0.28, 0.20), {}),
+    'tugla_roma': ('tas', (0.76, 0.53, 0.38), {}),     # Roman fired brick: paler, orange-tan (Pantheon, castra)
+    'tugla_roma_koyu': ('tas', (0.60, 0.40, 0.29), {}),
     'kerpic':   ('duz',  (0.74, 0.53, 0.35), {'leke': 0.09}),   # mud brick (Mali, Persia, Mesopotamia)
     'kerpic_koyu': ('duz', (0.60, 0.41, 0.27), {'leke': 0.09}),
     'siva':     ('duz',  (0.94, 0.92, 0.87), {'leke': 0.03}),   # white plaster (Japan, Korea, Spain, Greece)
@@ -296,14 +298,14 @@ DESENLI = {
     'tas': (1.0, 1, 0), 'tas_koyu': (1.0, 1, 0), 'zemin': (1.6, 1, 0),
     'kirec': (1.1, 1, 0), 'kum': (1.2, 1, 0), 'kum_koyu': (1.2, 1, 0), 'kirmizi_tas': (1.0, 1, 0),
     'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0),
-    'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0),
+    'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
     'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
     'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0),
     'ahsap_dikey': (0.5, 4, 1),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
-           'granit_koyu', 'tugla', 'tugla_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu')   # (a shade per flat face)
+           'granit_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 

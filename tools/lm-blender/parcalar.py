@@ -295,10 +295,11 @@ def _yivli(c, r, n, z, oran=0.86):
     return [V(c[0] + (r if i % 2 == 0 else r * oran) * math.cos(TAU * i / n), c[1] + (r if i % 2 == 0 else r * oran) * math.sin(TAU * i / n), z) for i in range(n)]
 
 
-def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None, bant_key=None):
+def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None, bant_key=None, yiv=None):
     """a column from z0 to z1 (top of the capital). tur: osmanli (plain, block base and capital), dor, iyon, korint,
     toskan (Roman plain), misir (papyrus bundle with open bell capital; bant_key painted bands), pers (tall fluted,
-    bell base, double-bull capital), ahsap (lacquered post on a stone disc). Returns z1"""
+    bell base, double-bull capital), ahsap (lacquered post on a stone disc). yiv: flute count of a dor / iyon / korint shaft
+    (default 20 / 24; fewer for small, many columns). Returns z1"""
     bk = bas_key or key
     H = z1 - z0
     c = (cx, cy)
@@ -314,7 +315,7 @@ def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None,
             donel(y, c, [(r * 1.42, z0), (r * 1.42, z0 + hb * 0.25), (r * 1.3, z0 + hb * 0.55), (r * 1.12, z0 + hb * 0.75), (r * 1.05, z0 + hb)], bk, n=20)
         # shaft with entasis, fluted (Greek) or plain (Toscan)
         nk = 6
-        nf = 0 if tur == 'toskan' else (20 if tur == 'dor' else 24)
+        nf = 0 if tur == 'toskan' else (yiv or (20 if tur == 'dor' else 24))
         prev = None
         for k in range(nk + 1):
             t = k / nk
@@ -505,9 +506,11 @@ def arkad(y, a, b, n, z0, H, en=0.8, ust=0.03, sivri=0.5, derin=0.1, korkuluk=No
 
 
 def kemer_dizisi(y, a, b, n, z0, H, kalinlik, renk=('tas', 'tas_koyu', 'tas_acik', 'tas_koyu'), en=0.62, ust=0.05, sivri=0.0,
-                 ayak_key=None):
+                 ayak_key=None, acik=False, taban=True):
     """a free-standing row of arches (aqueduct tier, viaduct, open gallery) with real depth: the arched front a->b,
-    the same arches on the back, piers between, the soffits of the arches and a top. Returns the top z"""
+    the same arches on the back, piers between, the soffits of the arches and a top. Returns the top z.
+    acik: no dark plate at the back of the openings (see-through arches, a bridge); taban=False: no floor face in
+    the passages (the tier stands on something that already shows a top there: no z-fighting)"""
     a, b = V(a[0], a[1]), V(b[0], b[1])
     e = (b - a).normalized(); nc = V(e.y, -e.x)
     on, k_, ac, dl = renk
@@ -515,6 +518,9 @@ def kemer_dizisi(y, a, b, n, z0, H, kalinlik, renk=('tas', 'tas_koyu', 'tas_acik
         p, q = a.lerp(b, i / n), a.lerp(b, (i + 1) / n)
         # front and back: openings through the whole thickness (the back opening is the front's reveal end)
         y.kemerli(p, q, z0, H, (on, k_, ac, dl), v0=0.0, en=en, ust=ust, derin=kalinlik, k_say=10, sivri=sivri)
+        # kemerli's last two faces: the passage floor, then the back plate
+        if acik: y.faces.pop()
+        if not taban: y.faces.pop(-1 if acik else -2)
     # back face: a second set facing the other way, reveals short (they meet the front's), no back plate
     pb, qb = b - nc * kalinlik, a - nc * kalinlik
     for i in range(n):
@@ -746,12 +752,12 @@ def sur(y, yol, z0, h, kalinlik=0.06, key='tas', kapali=False, mazgal_h=0.03, pa
 
 
 def kule_yuvarlak(y, c, r, z0, h, key='tas', cati='konik', cati_key='kiremit', cati_h=None, mazgal_h=0.03, n=24, egim=0.06,
-                  sacak=0.012, yarik_say=3, konsol=True, sivri=None, ust_kat=None):
+                  sacak=0.012, yarik_say=3, konsol=True, sivri=None, ust_kat=None, bolum=1):
     """a round tower: a slightly battered shaft (egim: bottom radius r * (1 + egim)), arrow slits, a corbelled
     parapet with merlons, and cati: 'konik' (cone with an eave), 'duz' (open top behind the merlons), 'kubbe',
-    'sogan' (onion) or None. Returns the top z"""
+    'sogan' (onion) or None; bolum: the shaft in that many bands. Returns the top z"""
     r0 = r * (1 + egim)
-    pr = [(r0, z0), (r, z0 + h)]
+    pr = [(r0 + (r - r0) * k / bolum, z0 + h * k / bolum) for k in range(bolum + 1)]   # (bolum > 1: bands, the baked shadow of the crown stays up there)
     donel(y, c, pr, key, n=n)
     zt = z0 + h
     # slits on n/3 sides, at two heights
@@ -1547,3 +1553,150 @@ def agac(y, x, yy, z=0.0, boy=0.12, tur='yapraklı', key='boya_yesil', govde='ah
     else:
         y.prizma((x, yy), 0.005, z, z + boy * 0.45, govde, n=5)
         kure(y, (x, yy, z + boy * 0.68), boy * 0.32, key, n=10, kat=5)
+
+
+# ---------------------------------------------------------------- blind arches, muqarnas, muqarnas portal (Seljuk / Ottoman)
+def kemer_yolu(x0, x1, hs, sivri=0.0, k_say=10):
+    """the outline of an arch from (x0, hs) over the crown to (x1, hs) as (u, v) points, the same curve as Yapi.kemerli
+    (sivri > 0: pointed, its rise sivri x span; 0: round)"""
+    if sivri:
+        w = x1 - x0; hr = sivri * w
+        rho = (w * w / 4 + hr * hr) / w; c = x0 + rho
+        ta = math.atan2(hr, (x0 + w / 2) - c); yari = k_say // 2
+        sol = [(c + rho * math.cos(math.pi - (math.pi - ta) * k / yari), hs + rho * math.sin(math.pi - (math.pi - ta) * k / yari)) for k in range(1, yari + 1)]
+        kemer = sol + [(x0 + x1 - u, v) for u, v in reversed(sol[:-1])]
+    else:
+        R = (x1 - x0) / 2
+        kemer = [(x0 + R + R * math.cos(math.pi - math.pi * k / k_say), hs + R * math.sin(math.pi - math.pi * k / k_say)) for k in range(1, k_say)]
+    return [(x0, hs)] + kemer + [(x1, hs)]
+
+
+def kemer_nis(y, a, b, z0, H, en=0.8, ust=0.03, sivri=0.5, derin=0.015, key='tas', yan_key='tas_koyu', alt_key='tas_acik',
+              arka_key=None, v0=0.0, k_say=10, cerceve=None):
+    """a wall bay a->b (facing the right of a->b) with an arched opening that only goes derin deep: the wall face round
+    the arch, the reveal (jambs and soffit) and, with arka_key, a flat back. Without arka_key the back is left open for
+    the caller to fill (a back wall with windows, a door, a muqarnas hood). cerceve = (width, key or [keys]): a raised
+    frame round the arch. Returns (L, x0, x1, hs, apex): L(u, v, d) the point u along, v above z0, d behind the line;
+    x0..x1 the opening, hs the springing height, apex the crown height (both above z0)"""
+    a, b = V(a[0], a[1]), V(b[0], b[1])
+    W = (b - a).length; e = (b - a) / W; nc = V(e.y, -e.x)
+    L = lambda u, v, d=0.0: a + e * u - nc * d + Z * (z0 + v)
+    x0, x1 = (1 - en) / 2 * W, (1 + en) / 2 * W
+    w = x1 - x0
+    hs = H - ust - (sivri * w if sivri else w / 2)
+    tp = kemer_yolu(x0, x1, hs, sivri, k_say)
+    y.yuz_yon([L(0, 0), L(x0, 0), L(x0, H), L(0, H)], key, nc)
+    y.yuz_yon([L(x1, 0), L(W, 0), L(W, H), L(x1, H)], key, nc)
+    if v0 > 0: y.yuz_yon([L(x0, 0), L(x1, 0), L(x1, v0), L(x0, v0)], key, nc)
+    for k in range(len(tp) - 1):
+        (ua, va), (ub, vb) = tp[k], tp[k + 1]
+        y.yuz_yon([L(ua, va), L(ub, vb), L(ub, H), L(ua, H)], key, nc)
+    yol = [(x0, v0)] + tp + [(x1, v0)]
+    xm = (x0 + x1) / 2
+    for k in range(len(yol) - 1):
+        p, q = yol[k], yol[k + 1]
+        vm = min(max((p[1] + q[1]) / 2, v0), hs)
+        mid = (L(*p) + L(*q)) / 2
+        y.yuz_yon([L(*p), L(*q), L(*q, derin), L(*p, derin)], yan_key, L(xm, vm) - mid)
+    if v0 > 0:
+        y.yuz_yon([L(x0, v0), L(x1, v0), L(x1, v0, derin), L(x0, v0, derin)], alt_key, Z)
+    if arka_key:
+        y.yuz_yon([L(*p, derin) for p in yol], arka_key, nc)
+    if cerceve:
+        f, mlz = cerceve
+        mlz = mlz if isinstance(mlz, (list, tuple)) else [mlz]
+        d = -0.0025
+        def dis(p):
+            u, v = p
+            if v <= hs + 1e-9:
+                return (u - f if u < xm else u + f, v)
+            kk = Vector((u - xm, v - hs)).normalized()
+            return (u + kk.x * f, v + kk.y * f)
+        for k in range(len(yol) - 1):
+            p, q = yol[k], yol[k + 1]
+            tas = mlz[0] if (p[1] <= hs + 1e-9 and q[1] <= hs + 1e-9) else mlz[k % len(mlz)]
+            y.yuz_yon([L(*p, d), L(*q, d), L(*dis(q), d), L(*dis(p), d)], tas, nc)
+            orta = (L(*dis(p), 0) + L(*dis(q), 0)) / 2
+            y.yuz_yon([L(*dis(p), d), L(*dis(q), d), L(*dis(q), 0), L(*dis(p), 0)], mlz[0], orta - L(xm, (v0 + hs) / 2, 0))
+    return L, x0, x1, hs, H - ust
+
+
+def mukarnas(y, a, b, z0, h, derin, kat=4, hucre=None, keys=('tas_acik', 'tas', 'tas_koyu'), cep=None, sivri=0.72):
+    """a muqarnas hood (stalactite vault) filling a niche behind the line a->b (the niche opens to the right of a->b
+    and is derin deep): kat tiers corbelling forward from the back (at z0) to the line (at z0 + h); each tier a row of
+    hucre small pointed cells (default: about square ones) recessed cep deep, alternate tiers offset by half a cell,
+    stepped soffits between the tiers. keys: cell fronts, cell backs, reveals and soffits. The caller draws the
+    niche's sides (up to z0 + h) and its back (up to z0)"""
+    a, b = V(a[0], a[1]), V(b[0], b[1])
+    W = (b - a).length; e = (b - a) / W; nc = V(e.y, -e.x)
+    th = h / kat
+    hucre = hucre or max(2, int(round(W / (th * 1.05))))
+    cw = W / hucre
+    cep = min(derin / kat * 0.85, cw * 0.4) if cep is None else cep
+    Q = lambda u, d: a + e * u - nc * d          # (2D, z added by the callee)
+    for k in range(kat):
+        za, zb = z0 + th * k, z0 + th * (k + 1)
+        dk, dn = derin * (1 - k / kat), derin * (1 - (k + 1) / kat)
+        if k % 2 == 0:
+            hucreler = [(i * cw, (i + 1) * cw, True) for i in range(hucre)]
+        else:
+            hucreler = [(0.0, cw / 2, False)] + [(cw / 2 + i * cw, cw / 2 + (i + 1) * cw, True) for i in range(hucre - 1)] + [(W - cw / 2, W, False)]
+        for ua, ub, tam in hucreler:
+            if not tam:
+                duz_duvar(y, Q(ua, dk), Q(ub, dk), za, zb, keys[0]); continue
+            L, x0, x1, hs, apex = kemer_nis(y, Q(ua, dk), Q(ub, dk), za, th, en=0.78, ust=th * 0.06, sivri=sivri, derin=cep,
+                                            key=keys[0], yan_key=keys[2], arka_key=keys[1], k_say=6)
+            y.yuz_yon([L(x0, 0), L(x1, 0), L(x1, 0, cep), L(x0, 0, cep)], keys[2], Z)       # the cell's floor
+        # the soffit stepping forward to the next tier
+        y.yuz_yon([Q(0, dk) + Z * zb, Q(W, dk) + Z * zb, Q(W, dn) + Z * zb, Q(0, dn) + Z * zb], keys[2], -Z)
+
+
+def tackapi_mukarnas(y, cx, cy, z0, en=0.3, H=0.45, derin=0.07, nis=0.6, sivri=0.5, kapi_key='ahsap', key='tas',
+                     bordur=("tas_acik", "mermer"), mk_kat=4, kuleli=False, cerceve=(0.012, ["mermer", "tas_koyu"]), tonlar=("tas_acik", "tas_koyu")):
+    """a Seljuk / Ottoman muqarnas portal (Sultanhanı, Bursa Ulu Camii) on the line y = cy facing -y, its block going
+    derin back (+y): a tall frame with raised border bands, a pointed-arched niche (nis: its width share) whose head is a
+    muqarnas hood, a framed rectangular door in the niche's back, colonnettes at the niche's edges and a crowning
+    cornice. tonlar: the light and dark stone of the niche and mouldings. Returns the top z"""
+    x0b, x1b = cx - en / 2, cx + en / 2
+    ra = 0.01                                   # the arch's own depth
+    nd = derin * 0.78                           # the niche's back, behind the front
+    L, u0, u1, hs, apex = kemer_nis(y, V(x0b, cy), V(x1b, cy), z0, H, en=nis, ust=H * 0.12, sivri=sivri, derin=ra, key=key,
+                                    yan_key=tonlar[0], k_say=12, cerceve=cerceve)
+    # the niche: sides (up to the crown), the back with the door (up to the muqarnas), the hood
+    zs = z0 + hs * 0.72
+    for u, s in ((u0, 1), (u1, -1)):
+        y.yuz_yon([L(u, 0, ra), L(u, 0, nd), L(u, apex + 0.002, nd), L(u, apex + 0.002, ra)], tonlar[1], V(s, 0))
+    dikdortgen_acik(y, L(u0, 0, nd), L(u1, 0, nd), z0, zs - z0, 0.24, 0.76, 0.0, (zs - z0) * 0.62, (key, tonlar[1], tonlar[0], kapi_key),
+                    derin=0.012, cerceve=(0.008, 'mermer'))
+    pw = u1 - u0
+    L2 = lambda u, v: L(u0 + u * pw, v, nd - 0.002)
+    y.yuz_yon([L2(0.2, (zs - z0) * 0.72), L2(0.8, (zs - z0) * 0.72), L2(0.8, (zs - z0) * 0.9), L2(0.2, (zs - z0) * 0.9)], tonlar[0], -Y)
+    mukarnas(y, L(u0, 0, ra), L(u1, 0, ra), zs, apex + 0.002 - (zs - z0), nd - ra, kat=mk_kat, keys=(tonlar[0], key, tonlar[1]))
+    # the block's sides and top
+    y.yuz_yon([V(x1b, cy, z0), V(x1b, cy + derin, z0), V(x1b, cy + derin, z0 + H), V(x1b, cy, z0 + H)], key, X)
+    y.yuz_yon([V(x0b, cy + derin, z0), V(x0b, cy, z0), V(x0b, cy, z0 + H), V(x0b, cy + derin, z0 + H)], key, -X)
+    # raised border bands: an outer band round the frame, an inner one round the arch's rectangle
+    def bant(xa, xb, zb, w, key_, d):
+        for (ua, va, ub, vb) in ((xa, z0, xa + w, zb), (xb - w, z0, xb, zb), (xa + w, zb - w, xb - w, zb)):
+            kutu(y, V(ua, cy - d, va), X, ub - ua, d, vb - va, key_, 'onsagsolust')
+    bw = en * 0.07
+    bant(x0b, x1b, z0 + H - 0.016, bw, bordur[0], 0.006)
+    hw = (u1 - u0) / 2 + 0.012 + bw * 0.6
+    bant(cx - hw, cx + hw, z0 + apex + bw * 0.7, bw * 0.55, bordur[1], 0.004)
+    # colonnettes at the niche's edges
+    for u, s in ((u0, 1), (u1, -1)):
+        p = L(u, 0, 0)
+        c = (p.x + s * 0.006, cy - 0.003)
+        y.prizma(c, 0.006, z0 + 0.014, z0 + hs, 'mermer', n=8, ust=False)
+        y.prizma(c, 0.009, z0, z0 + 0.014, 'mermer', n=8)
+        y.prizma(c, 0.009, z0 + hs, z0 + hs + 0.012, 'mermer', n=8)
+    # cornice and top
+    kornis(y, x0b, x1b, cy, cy + derin, z0 + H - 0.016, 0.018, 0.012, tonlar[0], 'tac')
+    y.yuz_yon([V(x0b, cy, z0 + H + 0.002), V(x1b, cy, z0 + H + 0.002), V(x1b, cy + derin, z0 + H + 0.002), V(x0b, cy + derin, z0 + H + 0.002)], tonlar[0], Z)
+    top = z0 + H + 0.002
+    if kuleli:
+        for sx in (-1, 1):
+            y.prizma((cx + sx * en / 2, cy + 0.01), 0.018, z0 + H, z0 + H + 0.03, tonlar[0], n=8)
+            y.koni((cx + sx * en / 2, cy + 0.01), 0.02, z0 + H + 0.03, 0.045, 'kursun', n=8)
+            top = z0 + H + 0.075
+    return top

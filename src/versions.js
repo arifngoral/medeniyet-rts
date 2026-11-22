@@ -10,15 +10,24 @@
 // Rule of thumb (same as the card game): changes made on the same day go into the same version.
 export const VERSIONS = [
   {
-    v: '1.2', date: '2026-11-22', title: 'Kolezyum ve Süleymaniye',
-    intro: 'Kolezyum ve Süleymaniye artık ayrıntılı 3B modeller.',
+    v: '1.2', date: '2026-11-22', title: 'Çağ binaları yeni modellerle',
+    intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
+      ['Yeni çağ binası modelleri', [
+        'Harbiye Mektebi: avlulu üç katlı neoklasik kışla-okul, köşelerde piramit çatılı köşkler, altı İyon sütunlu alınlıklı giriş, çatı pencereleri, avluda talim eden harbiyeliler ve toplar.',
+        'Dolmabahçe Sarayı: U planlı saray, kaburgalı kubbeli Muayede salonu, iki katlı Korint sütunlu orta cephe, korkuluklu damlar, bahçe, havuz, demir parmaklık, Saltanat Kapısı ve saat kulesi.',
+        'Tophane-i Âmire: almaşık taş-tuğla duvarlı beş kubbeli döküm salonu ve büyük kubbeli salon, ocak bacaları; avluda Şahi topu ve vinci, toplar, gülle yığınları, çeşme, saat kulesi.',
+        'Bütün binalar ortak bir parça kütüphanesiyle kuruluyor (kubbe, kule, sur, sütun, Doğu Asya çatısı, piramit, otağ, kerpiç...); kiremit, tuğla ve tahta da artık yakından keskin desenli.',
+      ]],
       ['Çağ binaları', [
         'Süleymaniye yeni modeliyle (yakınlaşınca da keskin taş deseni, pişirilmiş gölgeler, dilim dilim kurşun levhalı pürüzsüz kubbeler, 32 pencereli kasnak; iki katlı sütunlu yan revaklar, kırmızı-beyaz taşlı kemerler, mermer çerçeveli pencereler, yuvarlak üst pencereler, yivli minareler): kasnak üstünde büyük kubbe, önde ve arkada yarım kubbeler, köşelerde ağırlık kuleleri, basamak basamak inen küçük kubbeler, sütunlu sivri kemerli revaklarla çevrili, köşklü şadırvanlı avlu, taçkapı, dört minare (arkadakiler üç, öndekiler iki şerefeli, mukarnas basamaklı). Gemini çizimine bakılarak Blender\'da kuruldu.',
         'Kolezyum yeni modeliyle: üç kat kemer (üst katlarda korkuluklu), pencereli attika, iç tarafta kemerli üst galeri, merdiven yollu basamaklı oturma yerleri, kum arena; duvarın üstünde oyuncu renginde iki sancak. Gemini çizimine bakılarak Blender\'da kuruldu.',
       ]],
     ],
     showcase: [
+      { id: 'lm_harbiye', kind: 'building', tags: ['yeni'], note: 'Avlulu neoklasik kışla-okul, köşe köşkleri, sütunlu giriş.' },
+      { id: 'lm_dolmabahce', kind: 'building', tags: ['yeni'], note: 'Kubbeli Muayede salonu, Korint cephe, bahçe ve Saltanat Kapısı.' },
+      { id: 'lm_tophane', kind: 'building', tags: ['yeni'], note: 'Beş kubbeli döküm salonu, almaşık duvarlar, avluda toplar.' },
       { id: 'lm_suleymaniye', kind: 'building', tags: ['yeni'], note: 'Blender\'da kurulan yeni model: kasnaklı büyük kubbe, yarım kubbeler, kubbeli avlu, dört minare.' },
       { id: 'lm_kolezyum', kind: 'building', tags: ['yeni'], note: 'Blender\'da kurulan yeni model: üç kat kemer, attika, oturma basamakları, kum arena.' },
     ],
