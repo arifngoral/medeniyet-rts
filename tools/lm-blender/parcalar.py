@@ -514,11 +514,7 @@ def alinlik(y, a, b, z, h, derin=0.06, key='mermer', ic_key=None, c=0.012, cati_
         y.yuz_yon([p + out, q + out, q + out + lift, p + out + lift], key, nc)
         y.yuz_yon([p, q, q + out, p + out], key, -(lift))
         y.yuz_yon([p + lift, q + lift, q + out + lift, p + out + lift], key, lift)
-        y.yuz_yon([p, q, q + lift, p + lift], key, -nc)   # (its back: seen past the roof's end)
-        # (the roof slope starts a hair above the lip's top (lift is square to the slope): close that slit)
-        if (Z * (c * 0.8) - lift).length > 1e-5:
-            y.yuz_yon([p + lift, q + lift, q + Z * (c * 0.8), p + Z * (c * 0.8)], key, nc)
-    # roof slopes and the back gable
+        y.yuz_yon([p, q, q + lift, p + lift], key, -nc)   # (its back: seen past the roof's end)    # roof slopes and the back gable
     D = -nc * derin
     ck = cati_key or key
     for p, q in ((A, T), (T, B)):
@@ -875,8 +871,9 @@ def kule_kare(y, cx, cy, w, z0, h, key='tas', cati='piramit', cati_key='kiremit'
 
 
 def kale_kapisi(y, cx, cy, en, z0, h, derin=0.12, key='tas', kule='yuvarlak', kule_r=None, kule_h=None, cati='duz',
-                cati_key='kiremit', kapi_key='ahsap', sivri=0.0):
-    """a gatehouse on the line y = cy facing -y: a block en wide and derin deep with an arched passage (doors set in),
+                cati_key='kiremit', kapi_key='ahsap', sivri=0.0, kule_n=24):
+    """(kule_n: the round towers' sides)
+    a gatehouse on the line y = cy facing -y: a block en wide and derin deep with an arched passage (doors set in),
     merlons, and two flanking towers (kule: 'yuvarlak', 'kare' or None). Returns the top z"""
     y0, y1 = cy - derin / 2, cy + derin / 2
     x0, x1 = cx - en / 2, cx + en / 2
@@ -898,7 +895,7 @@ def kale_kapisi(y, cx, cy, en, z0, h, derin=0.12, key='tas', kule='yuvarlak', ku
         hh = kule_h or h * 1.35
         for sx in (-1, 1):
             if kule == 'yuvarlak':
-                t = kule_yuvarlak(y, (cx + sx * (en / 2 + r * 0.55), cy - derin * 0.1), r, z0, hh, key, cati, cati_key)
+                t = kule_yuvarlak(y, (cx + sx * (en / 2 + r * 0.55), cy - derin * 0.1), r, z0, hh, key, cati, cati_key, n=kule_n)
             else:
                 t = kule_kare(y, cx + sx * (en / 2 + r * 0.7), cy - derin * 0.1, r * 2, z0, hh, key, cati if cati != 'konik' else 'piramit', cati_key)
             tepe = max(tepe, t)

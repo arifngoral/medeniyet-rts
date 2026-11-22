@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'İskenderiye Feneri: adacıkta mazgallı avlu üstünde üç katlı kule (pencereli kare gövde, köşelerde Tritonlar, sekizgen orta kat, sütunlu fener, ateş ve altın Zeus), Ptolemaios kolosları, sfenksli yol, iskele ve gemiler.',
+        'İskenderiye Kütüphanesi: kabartmalı pilon giriş, papirüs sütunlu revaklı avlu, papirüs rulolu raflar, yıldızlı eksedralar, bakır kubbeli ana salon, damda gözlem köşkleri ve güneş saati.',
+        'Abu Simbel: kayaya oyulmuş cephede dört oturan II. Ramses kolosu (biri yıkık), babun frizi, Nefertari tapınağı, Nil kıyısında iskele ve yelkenli.',
+        'Büyük Piramit: beyaz kaplamalı, altın piramidionlu Keops piramidi, kerpiç rampa ve blok çeken işçiler, işçi köyü, taş ocağı, cenaze tapınağı, kraliçe piramitleri, mastabalar.',
         'Valhalla Salonu: altın kalkan pullarıyla kaplı çatı, mızrak sıralı duvarlar, altın ışıklı kapılar, mahyada Heiðrún keçisi ve Eikþyrnir geyiği, altın Glasir ağacı, kurtlar ve Eldhrímnir kazanı.',
         'Hedeby Pazarı: yarım daire sur ve palisat içinde tahta yollu ticaret kasabası, sazlı evler, pazar tezgâhları, gözcü kulesi, iskeleler, knarr ve uzun gemiler.',
         'Jomsborg Kalesi: toprak sur üstünde palisat ve kalkanlı ahşap kuleler, içinden su geçen taş deniz kapısı ve kulesi, iç limanda uzun gemiler.',
@@ -58,6 +62,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_feneri', kind: 'building', tags: ['yeni'], note: 'Üç katlı fener kulesi, ada ve avlu.' },
+      { id: 'lm_kutuphane', kind: 'building', tags: ['yeni'], note: 'Pilon giriş, revaklı avlu, kubbeli salon.' },
+      { id: 'lm_abusimbel', kind: 'building', tags: ['yeni'], note: 'Dört oturan kolos, Nefertari tapınağı.' },
+      { id: 'lm_piramit', kind: 'building', tags: ['yeni'], note: 'Keops piramidi, rampa, işçi köyü.' },
       { id: 'lm_ulfsalon', kind: 'building', tags: ['yeni'], note: 'Altın kalkan çatılı Valhalla.' },
       { id: 'lm_hedeby', kind: 'building', tags: ['yeni'], note: 'Surlu ticaret kasabası ve liman.' },
       { id: 'lm_jomsborg', kind: 'building', tags: ['yeni'], note: 'Palisatlı kale, taş deniz kapısı.' },

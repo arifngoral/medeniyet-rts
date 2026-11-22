@@ -341,7 +341,8 @@ export const LM_GLB = new Set(['lm_ayasofya', 'lm_himeji', 'lm_tacmahal', 'lm_az
   'lm_parthenon', 'lm_olimpia', 'lm_rodos', 'lm_falanks',
   'lm_agora', 'lm_gymnasion', 'lm_delfi', 'lm_akropolsur',
   'lm_uzunev', 'lm_hof', 'lm_thing', 'lm_naust',
-  'lm_uppsala', 'lm_jomsborg', 'lm_hedeby', 'lm_ulfsalon']);
+  'lm_uppsala', 'lm_jomsborg', 'lm_hedeby', 'lm_ulfsalon',
+  'lm_piramit', 'lm_abusimbel', 'lm_kutuphane', 'lm_feneri']);
 const LM_STARTED = new Set();
 export function loadLandmarkGlb(id) {
   if (!LM_GLB.has(id) || LM_STARTED.has(id) || !enabled()) return;
