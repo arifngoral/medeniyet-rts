@@ -14,6 +14,9 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Varang Kışlası: ejder başlı ahşap galerili almaşık kışla, şindıra külahlı kule, porfir sütunlu saray revakı ve kubbeli şapel, Kuzey portalı, baltalı muhafızların talim avlusu.',
+        'Yerebatan Sarnıcı: toprak kesitinin içine kazılmış gibi açık sarnıç: renkli mermer sütun ormanı, tuğla çapraz tonozlar, su, Medusa başlı iki kaide; üstte revaklı Stoa Basilica avlusu ve su kemeri ucu.',
+        'Rum Ateşi Atölyesi: almaşık kubbeli kimya atölyesi, muhafız kulesi, neft kazanları ve imbikler, rıhtımda alev püskürten tunç sifon, pruvası alevli dromon.',
         'Darphane: almaşık duvarlı, yüksek orta nefli kubbeli atölye, altın mozaikli giriş, kubbeli eritme ocakları, sikke basma örsleri, kemerli sikke revağı, hazine odası ve muhafız kulesi.',
         'Theodosius Surları: L biçimli üçlü savunma hattı (sulu hendek, dış sur, almaşık iç sur ve iri kuleler), çelenkli ve altın yazıtlı Altınkapı, fil quadrigası, kubbeli kilise ve Arkadios Sütunu.',
         'Hipodrom: U biçimli mermer basamaklar, iki kat kemerli almaşık dış duvar, spina üstünde Theodosius Dikilitaşı, Yılanlı Sütun ve Örme Dikilitaş, dört bronz atlı carceres, kathisma ve kubbeli saray salonu.',
@@ -82,6 +85,9 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_varangkisla', kind: 'building', tags: ['yeni'], note: 'Varang kışlası, ejder başlı galeri.' },
+      { id: 'lm_yerebatan', kind: 'building', tags: ['yeni'], note: 'Kesit gibi açık sarnıç, Medusa başları.' },
+      { id: 'lm_rumatesi', kind: 'building', tags: ['yeni'], note: 'Rum ateşi atölyesi ve alev püskürten sifon.' },
       { id: 'lm_darphane', kind: 'building', tags: ['yeni'], note: 'Kubbeli atölye, sikke basma, mozaik giriş.' },
       { id: 'lm_theodosius', kind: 'building', tags: ['yeni'], note: 'Üçlü sur ve Altınkapı.' },
       { id: 'lm_hipodrom', kind: 'building', tags: ['yeni'], note: 'U biçimli pist, spina, kathisma.' },

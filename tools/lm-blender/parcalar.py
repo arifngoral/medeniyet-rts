@@ -370,7 +370,13 @@ def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None,
                     tip = p0 + d * (r * 0.32)
                     yp = [p0 - t * w + Z * (zb + hc * h0), p0 + t * w + Z * (zb + hc * h0), tip + t * w * 0.7 + Z * (zb + hc * h1), tip - t * w * 0.7 + Z * (zb + hc * h1)]
                     y.yuz_yon(yp, bk, d)
-                    y.yuz_yon([q - d * 0.0005 for q in yp[::-1]], bk, -d)   # (two-sided: a leaf is seen from behind; the back a hair in, or the welder drops it)
+                    # (closed: the leaf is a thin wedge, its back four triangles meeting at a point inside. A two-sided
+                    #  sheet showed back faces where neighbouring leaves cross, many-column buildings flickered magenta)
+                    ap = sum(yp, Vector()) / 4 - d * (r * 0.14)
+                    cen = (sum(yp, Vector()) + ap) / 5
+                    for i_ in range(4):
+                        a_, b_ = yp[i_], yp[(i_ + 1) % 4]
+                        y.yuz_yon([b_, a_, ap], bk, (a_ + b_) / 2 - cen)
             kutu_merkez(y, c, r * 2.8, r * 2.8, hc * 0.18, bk, z0=zb + hc * 0.82)
     elif tur == 'misir':
         hc = H * 0.2
@@ -528,8 +534,9 @@ def alinlik(y, a, b, z, h, derin=0.06, key='mermer', ic_key=None, c=0.012, cati_
 
 # ---------------------------------------------------------------- arcades (Ottoman / Roman)
 def arkad(y, a, b, n, z0, H, en=0.8, ust=0.03, sivri=0.5, derin=0.1, korkuluk=None, cerceve=(0.011, ['mermer', 'kirmizi']),
-          son_sutun=True, renk=REVAK, sutun_key='mermer', sutun_tur='osmanli', sutun_r=0.015, sutunlu=True):
-    """an open arcade from a to b (facing the right of a->b): arches (pointed if sivri > 0, round if 0) on columns"""
+          son_sutun=True, renk=REVAK, sutun_key='mermer', sutun_tur='osmanli', sutun_r=0.015, sutunlu=True, sutun_yiv=None):
+    """an open arcade from a to b (facing the right of a->b): arches (pointed if sivri > 0, round if 0) on columns
+    (sutun_yiv: the flute count of fluted columns; fewer for many small ones)"""
     a, b = V(a[0], a[1]), V(b[0], b[1])
     for i in range(n):
         p, q = a.lerp(b, i / n), a.lerp(b, (i + 1) / n)
@@ -540,7 +547,7 @@ def arkad(y, a, b, n, z0, H, en=0.8, ust=0.03, sivri=0.5, derin=0.1, korkuluk=No
         if sutunlu:
             for u in ([0.0, 1.0] if (i == n - 1 and son_sutun) else [0.0]):
                 cc = p.lerp(q, u) + nc * 0.016
-                sutun(y, cc.x, cc.y, z0, z0 + hs, sutun_r, sutun_key, sutun_tur)
+                sutun(y, cc.x, cc.y, z0, z0 + hs, sutun_r, sutun_key, sutun_tur, yiv=sutun_yiv)
 
 
 def kemer_dizisi(y, a, b, n, z0, H, kalinlik, renk=('tas', 'tas_koyu', 'tas_acik', 'tas_koyu'), en=0.62, ust=0.05, sivri=0.0,
@@ -1041,18 +1048,20 @@ def cati_besik(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
 
 
 def cati_irimoya(y, x0, x1, y0, y1, z, h, sacak=0.05, key='kiremit_koyu', mahya='kiremit_koyu2', kivrim=0.45, yukari=0.03,
-                 alt_key='ahsap_koyu', ucluk_key='ahsap', oran=0.55, sus=None, dilim=None):
+                 alt_key='ahsap_koyu', ucluk_key='ahsap', oran=0.55, sus=None, dilim=None, ns=10, nr=6, ns2=8, nr2=6):
     """a hip-and-gable roof (Japanese irimoya, Chinese xieshan, Korean paljak): hipped below up to oran of the
-    height, a small gable roof on top with its triangular gable walls. Returns the ridge z"""
+    height, a small gable roof on top with its triangular gable walls. ns / nr, ns2 / nr2: the grid of the hipped and
+    the gable part (fewer for small roofs). Returns the ridge z"""
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
     a, b = (x1 - x0) / 2 + sacak, (y1 - y0) / 2 + sacak
     if a < b:
         with parca(y, (cx, cy, 0), math.pi / 2):
-            return cati_irimoya(y, -(y1 - y0) / 2, (y1 - y0) / 2, -(x1 - x0) / 2, (x1 - x0) / 2, z, h, sacak, key, mahya, kivrim, yukari, alt_key, ucluk_key, oran, sus, dilim)
+            return cati_irimoya(y, -(y1 - y0) / 2, (y1 - y0) / 2, -(x1 - x0) / 2, (x1 - x0) / 2, z, h, sacak, key, mahya, kivrim, yukari, alt_key, ucluk_key, oran, sus, dilim,
+                                ns, nr, ns2, nr2)
     m = b
     # the lower slopes stop at r_ust (t = r_ust): the hip ring's top edge
     r_ust = 0.5
-    zt = cati_kirma(y, x0, x1, y0, y1, z, h * 1.0, sacak, key, mahya, 0.012, kivrim, yukari, alt_key, r_ust=r_ust, dilim=dilim)
+    zt = cati_kirma(y, x0, x1, y0, y1, z, h * 1.0, sacak, key, mahya, 0.012, kivrim, yukari, alt_key, r_ust=r_ust, dilim=dilim, ns=ns, nr=nr)
     # upper gable roof: covers the opening (half sizes a - b r_ust, b (1 - r_ust)) plus a small overhang
     ai, bi = a - m * r_ust, b * (1 - r_ust)
     ho = h * ((1 - kivrim) + kivrim) - (zt - z)
@@ -1061,7 +1070,7 @@ def cati_irimoya(y, x0, x1, y0, y1, z, h, sacak=0.05, key='kiremit_koyu', mahya=
     # (steeper than the hips, its verges projecting over the hip slopes: the gable reads as a raised triangle, not a
     #  hole in the roof)
     zr = cati_besik(y, cx - ai + sacak * 0.6, cx + ai - sacak * 0.6, cy - bi + 0.012, cy + bi - 0.012, zt - 0.004, max(0.02, ho * 1.45), 0.016, key, mahya,
-                    0.008, kivrim * 0.5, alt_key, ucluk_key, None, sacak * 0.6, sus=sus, dilim=dilim)
+                    0.008, kivrim * 0.5, alt_key, ucluk_key, None, sacak * 0.6, sus=sus, dilim=dilim, nr=nr2, ns=ns2)
     return zr
 
 
@@ -1137,7 +1146,7 @@ def pagoda_kati(y, c, w, z, h, cati_h, sacak=0.06, key_duvar='siva', key_direk='
 
 def sorin(y, cx, cy, z, boy, key='bronz', halka=7):
     """a pagoda finial (sorin / chatra): a base, a mast with stacked rings, a jewel on top"""
-    donel(y, (cx, cy), [(0.025, z), (0.025, z + 0.012), (0.018, z + 0.02), (0.02, z + 0.03), (0.01, z + 0.035)], key, n=12)
+    donel(y, (cx, cy), [(0.025, z), (0.025, z + 0.012), (0.018, z + 0.02), (0.02, z + 0.03), (0.01, z + 0.035), (0.0, z + 0.035)], key, n=12)   # (closed: its top round the mast showed the inside)
     y.prizma((cx, cy), 0.005, z + 0.035, z + boy, key, n=8)
     for i in range(halka):
         zz = z + 0.05 + (boy - 0.09) * i / max(1, halka - 1)
