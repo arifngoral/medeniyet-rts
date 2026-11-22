@@ -94,6 +94,8 @@ MALZEME = {
     'beyaz':    ('duz',  (0.96, 0.95, 0.92), {'leke': 0.02}),
     'koyu':     ('duz',  (0.13, 0.11, 0.10), {'leke': 0.02}),
     'cam':      ('duz',  (0.22, 0.30, 0.34), {'leke': 0.03}),
+    'fil':      ('duz',  (0.50, 0.47, 0.46), {'leke': 0.04}),     # elephant hide (grey, a touch warm)
+    'kirmizi_tas_acik': ('duz', (0.80, 0.50, 0.40), {'leke': 0.04}),   # dressed red sandstone trim (Mughal / Rajput)
     'mavi':     ('duz',  (0.10, 0.32, 0.88), {'leke': 0.0, 'aosuz': True}),   # TEAM COLOUR (banners)
 }
 

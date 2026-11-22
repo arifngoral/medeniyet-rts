@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Cennet Tapınağı: üç katlı yuvarlak mermer sunak üstünde kobalt mavisi üç kat konik çatılı Qiniandian, Gök Kubbesi Salonu ve Yankı Duvarı, açık Huanqiu sunağı ve lingxing kapıları.',
+        'Porselen Kule: Bao\'en avlusunda dokuz katlı beyaz porselen sekizgen pagoda, yeşil sırlı kıvrık saçaklar ve çanlar, altın tepelik; dağ kapısı, çan ve davul kuleleri, kaplumbağa sırtında steller.',
+        'Barut Atölyesi: gözcü kulesi, havan ve değirmenler, toprak örtülü barut deposu, güherçile tekneleri, ateş oku rampaları, çekmeli mancınık, tunç toplar ve deneme alanı.',
+        'Yasak Şehir: üç katlı mermer teras üstünde çift saçaklı sarı sırlı Taihedian, Altın Su Deresi ve köprüleri, Meridyen Kapısı, köşe kuleleri, kırmızı surlar.',
         'Çin Seddi Kalesi: iki sırta tırmanan, basamaklı yürüyüş yollu ve mazgallı sed, gözcü kuleleri, dumanlı işaret kulesi; geçitte üç katlı kapı kulesi, köşkler ve barbakanla Jiayuguan tarzı kale.',
         'Büyük Kanal Limanı: üç kemerli kambur taş köprü, mahmuzlu kilit ve çıkrıklı vinç köprüsü, yelkenli yük gemileri, ambarlar, pailou, gümrük, yeşil sırlı tapınak ve Randeng pagodası.',
         'Pişmiş Toprak Atölyesi: üç teraslı Qin salonu, sıra sıra pişmiş toprak askerler, savaş arabası ve atlarla kazı çukuru, atölye sundurmaları, kubbeli fırınlar.',
@@ -89,6 +93,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_cennettapinagi', kind: 'building', tags: ['yeni'], note: 'Kobalt çatılı yuvarlak salon ve sunaklar.' },
+      { id: 'lm_porselenkule', kind: 'building', tags: ['yeni'], note: 'Dokuz katlı porselen pagoda.' },
+      { id: 'lm_barutatolye', kind: 'building', tags: ['yeni'], note: 'Barut değirmenleri, roket rampaları, mancınık.' },
+      { id: 'lm_yasaksehir', kind: 'building', tags: ['yeni'], note: 'Taihedian ve Meridyen Kapısı.' },
       { id: 'lm_seddkalesi', kind: 'building', tags: ['yeni'], note: 'Sırtlara tırmanan sed, geçit kalesi.' },
       { id: 'lm_buyukkanal', kind: 'building', tags: ['yeni'], note: 'Kambur köprü, kilit, gemiler, pagoda.' },
       { id: 'lm_topraksavasci', kind: 'building', tags: ['yeni'], note: 'Terracotta askerleri ve Qin salonu.' },

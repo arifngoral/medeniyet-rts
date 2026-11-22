@@ -752,9 +752,10 @@ def parapet(y, kose, z, h_dolu, h_dis, kalinlik=0.02, key='tas', kapali=True, us
     for i in range(n if kapali else n - 1):
         j = (i + 1) % n
         a, b, ai, bi = kose[i], kose[j], ic[i], ic[j]
-        duz_duvar(y, a, b, z, z + h_dolu, key)
-        duz_duvar(y, bi, ai, z, z + h_dolu, key)
-        y.yuz_yon([V(a.x, a.y, z + h_dolu), V(b.x, b.y, z + h_dolu), V(bi.x, bi.y, z + h_dolu), V(ai.x, ai.y, z + h_dolu)], ust_key or key, Z)
+        if h_dolu > 1e-6:   # (a zero-high band left a strip on the wall top in the same plane: it flickered)
+            duz_duvar(y, a, b, z, z + h_dolu, key)
+            duz_duvar(y, bi, ai, z, z + h_dolu, key)
+            y.yuz_yon([V(a.x, a.y, z + h_dolu), V(b.x, b.y, z + h_dolu), V(bi.x, bi.y, z + h_dolu), V(ai.x, ai.y, z + h_dolu)], ust_key or key, Z)
         if h_dis:
             mazgal(y, a, b, z + h_dolu, h_dis, kalinlik, key)
     if not kapali:
@@ -1029,8 +1030,13 @@ def cati_besik(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
             tri = [V(xg, cy - wb, z), V(xg, cy + wb, z), V(xg, cy + wb, z + e_), V(xg, cy, zf(1) - kalinlik), V(xg, cy - wb, z + e_)]
         # follow the roof's curve with a few points
         if kivrim:
-            tri = [V(xg, cy - wb, z)] + [V(xg, cy - wb * (1 - r), zf(r) - kalinlik) for r in (0.25, 0.5, 0.75)] + [V(xg, cy, zf(1) - kalinlik)] + \
-                  [V(xg, cy + wb * (1 - r), zf(r) - kalinlik) for r in (0.75, 0.5, 0.25)] + [V(xg, cy + wb, z)]
+            # (the roof's height over a point yy off the ridge is zf(1 - yy / b), b measured to the eave, not to the wall:
+            #  reading zf at the wall's own fraction left a sliver under the slope through which its underside showed)
+            zw = lambda yy: zf(1 - yy / b) - kalinlik
+            yk = [wb * (1 - k / 8) for k in range(1, 8)]
+            ek = [wb] if zw(wb) > z + 0.0005 else []
+            tri = [V(xg, cy - wb, z)] + [V(xg, cy - yy, zw(yy)) for yy in ek + yk] + [V(xg, cy, zf(1) - kalinlik)] + \
+                  [V(xg, cy + yy, zw(yy)) for yy in (yk + ek)[::-1]] + [V(xg, cy + wb, z)]
         y.yuz_yon(tri, ucluk_key, V(sx, 0))
         if alinlik_key:
             for s2 in (-1, 1):
