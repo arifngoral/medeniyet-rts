@@ -85,6 +85,8 @@ MALZEME = {
     'boya_yesil': ('duz', (0.24, 0.50, 0.38), {'leke': 0.03}),
     'turkuaz':  ('duz',  (0.18, 0.60, 0.58), {'leke': 0.03}),     # glazed tile (Persia, Timurid)
     'lacivert': ('duz',  (0.28, 0.22, 0.52), {'leke': 0.03}),     # deep blue glaze / paint (kept off team blue)
+    'kobalt':   ('duz',  (0.10, 0.18, 0.38), {'leke': 0.02}),     # dark cobalt glaze: a true blue kept off team blue by its
+                                                                    # darkness (isTeamBlue needs max channel > 0.45)
     'beyaz':    ('duz',  (0.96, 0.95, 0.92), {'leke': 0.02}),
     'koyu':     ('duz',  (0.13, 0.11, 0.10), {'leke': 0.02}),
     'cam':      ('duz',  (0.22, 0.30, 0.34), {'leke': 0.03}),

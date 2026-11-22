@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Kahire Kalesi: yamaçta iki seviyeli Selahaddin kalesi, burçlu surlar, Bab el-Azab ve Mukattam Burcu; kurşun kubbeli, kalem minareli Mehmed Ali Camii, Nasır Muhammed Camii, cihannümalı Cevhere Sarayı.',
+        'Beytülhikme: dört eyvanlı Abbasi medresesi, mukarnaslı taçkapı, çinili minareler, turkuaz kubbeli salon, armiller küreli rasathane kulesi, havuzlu avlu, badgirler.',
+        'Deve Ağılı: Necd tarzı kerpiç ağıl, burçlar ve gözcü kulesi, boyalı kapı, hurma dalı gölgelikler, develer ve atlar, çıkrıklı kuyu, siyah kıl çadır.',
+        'Bağdat Çarşısı: sarı tuğladan haç planlı örtülü çarşı, fenerli kubbeler, kobalt kaburgalı turkuaz ana kubbe, mukarnaslı taçkapı, revaklı han, minareli mescit, baharat ve halı pazarı.',
         'İskenderiye Feneri: adacıkta mazgallı avlu üstünde üç katlı kule (pencereli kare gövde, köşelerde Tritonlar, sekizgen orta kat, sütunlu fener, ateş ve altın Zeus), Ptolemaios kolosları, sfenksli yol, iskele ve gemiler.',
         'İskenderiye Kütüphanesi: kabartmalı pilon giriş, papirüs sütunlu revaklı avlu, papirüs rulolu raflar, yıldızlı eksedralar, bakır kubbeli ana salon, damda gözlem köşkleri ve güneş saati.',
         'Abu Simbel: kayaya oyulmuş cephede dört oturan II. Ramses kolosu (biri yıkık), babun frizi, Nefertari tapınağı, Nil kıyısında iskele ve yelkenli.',
@@ -62,6 +66,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_kahirekalesi', kind: 'building', tags: ['yeni'], note: 'Yamaçta kale ve Mehmed Ali Camii.' },
+      { id: 'lm_beytulhikme', kind: 'building', tags: ['yeni'], note: 'Dört eyvanlı medrese, rasathane.' },
+      { id: 'lm_deveagili', kind: 'building', tags: ['yeni'], note: 'Kerpiç ağıl, develer, kıl çadır.' },
+      { id: 'lm_bagdatcarsi', kind: 'building', tags: ['yeni'], note: 'Örtülü çarşı, turkuaz kubbe.' },
       { id: 'lm_feneri', kind: 'building', tags: ['yeni'], note: 'Üç katlı fener kulesi, ada ve avlu.' },
       { id: 'lm_kutuphane', kind: 'building', tags: ['yeni'], note: 'Pilon giriş, revaklı avlu, kubbeli salon.' },
       { id: 'lm_abusimbel', kind: 'building', tags: ['yeni'], note: 'Dört oturan kolos, Nefertari tapınağı.' },

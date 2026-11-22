@@ -872,9 +872,8 @@ def kule_kare(y, cx, cy, w, z0, h, key='tas', cati='piramit', cati_key='kiremit'
 
 def kale_kapisi(y, cx, cy, en, z0, h, derin=0.12, key='tas', kule='yuvarlak', kule_r=None, kule_h=None, cati='duz',
                 cati_key='kiremit', kapi_key='ahsap', sivri=0.0, kule_n=24):
-    """(kule_n: the round towers' sides)
-    a gatehouse on the line y = cy facing -y: a block en wide and derin deep with an arched passage (doors set in),
-    merlons, and two flanking towers (kule: 'yuvarlak', 'kare' or None). Returns the top z"""
+    """a gatehouse on the line y = cy facing -y: a block en wide and derin deep with an arched passage (doors set in),
+    merlons, and two flanking towers (kule: 'yuvarlak', 'kare' or None; kule_n: the round towers' sides). Returns the top z"""
     y0, y1 = cy - derin / 2, cy + derin / 2
     x0, x1 = cx - en / 2, cx + en / 2
     # front and back faces with the passage
