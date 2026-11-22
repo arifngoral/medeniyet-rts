@@ -298,8 +298,14 @@ def kafes(y, a, b, z0, u0, u1, v0, v1, key='ahsap_koyu', nu=4, nv=3, en=0.004, i
 
 
 def yarik(y, o, ex, n, u, v, w, h, key='koyu'):
-    """an arrow slit (dark narrow window painted just in front of a wall): o on the wall, ex along it, n out"""
-    y.pencere(o, ex, n, u, v, w, h, key, kemer=False)
+    """an arrow slit: a thin dark block set into the wall (o on the wall, ex along it, n out), standing a hair proud of
+    it (a flat painted quad showed its back where it overhung a round tower's curve)"""
+    o, ex, n = Vector(o), Vector(ex), Vector(n)
+    ex.z = 0; ex.normalize(); n = V(n.x, n.y); n.normalize()
+    if ex.cross(Z).dot(n) < 0:   # (kutu's front faces ex x Z: turn the run so it faces out)
+        o = o + ex * (2 * u + w); ex = -ex
+    d = 0.008
+    kutu(y, o + ex * u + n * 0.0012 + Z * v, ex, w, d, h, key, 'onsagsolust')   # (front 0.0012 proud, d deep into the wall)
 
 
 def kapi(y, a, b, z0, en, H, renkler=('tas', 'tas_koyu', 'tas_acik', 'ahsap'), sivri=0.0, derin=0.03, cerceve=None, k_say=8):
@@ -377,6 +383,9 @@ def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None,
             ring = [V(cx + rr * (1 if i % 2 == 0 else 0.84) * math.cos(TAU * i / 16), cy + rr * (1 if i % 2 == 0 else 0.84) * math.sin(TAU * i / 16), z0 + H * 0.045 + (zb - z0 - H * 0.045) * t) for i in range(16)]
             if prev: y.serit(prev, ring, key)
             prev = ring
+        # (the shaft's top: its lobes stand out past the bell's foot, the open tube showed from above)
+        for i in range(16):
+            y.yuz_yon([V(cx, cy, prev[i].z), prev[i], prev[(i + 1) % 16]], key, Z)
         for j in range(3):   # tie bands under the capital
             zz = zb - H * 0.06 + j * H * 0.022
             halka_kornis(y, c, r * 0.9, zz, H * 0.012, r * 0.12, 16, bant_key or bk)
@@ -470,6 +479,12 @@ def peristil(y, x0, x1, y0, y1, nx, ny, z0, H, tur='dor', r=None, key='mermer', 
                 cc = p.lerp(q, m / k)
                 kutu(y, cc - e * (r * 0.45) + Z * (z + he * 0.42) + nc * 0.0005, e, r * 0.9, 0.004, he * 0.4, triglif, 'onsagsolust')
     silme(y, disa(dk, D - 0.003), z + he * 0.82, he * 0.2, r * 0.9, key, 'tac')
+    # the entablature's inner face (towards the cella) and its top: seen from above and from the back they were open
+    fz = disa(dk, D - 0.003)
+    for i in range(4):
+        j = (i + 1) % 4
+        duz_duvar(y, ic[j], ic[i], z, z + he * 1.02, key)
+        y.yuz_yon([fz[i] + Z * (z + he * 1.02), fz[j] + Z * (z + he * 1.02), ic[j] + Z * (z + he * 1.02), ic[i] + Z * (z + he * 1.02)], key, Z)
     return z + he * 1.02
 
 
@@ -500,6 +515,9 @@ def alinlik(y, a, b, z, h, derin=0.06, key='mermer', ic_key=None, c=0.012, cati_
         y.yuz_yon([p, q, q + out, p + out], key, -(lift))
         y.yuz_yon([p + lift, q + lift, q + out + lift, p + out + lift], key, lift)
         y.yuz_yon([p, q, q + lift, p + lift], key, -nc)   # (its back: seen past the roof's end)
+        # (the roof slope starts a hair above the lip's top (lift is square to the slope): close that slit)
+        if (Z * (c * 0.8) - lift).length > 1e-5:
+            y.yuz_yon([p + lift, q + lift, q + Z * (c * 0.8), p + Z * (c * 0.8)], key, nc)
     # roof slopes and the back gable
     D = -nc * derin
     ck = cati_key or key
@@ -633,6 +651,7 @@ def yarim_kubbe(y, c, R, z, aci, kasnak_h=0.1, kubbe_h=None, n_pencere=8, key='k
     hy = lambda rr, zz: [V(c[0] + rr * math.cos(t0 + math.pi * i / n_pencere), c[1] + rr * math.sin(t0 + math.pi * i / n_pencere), zz) for i in range(n_pencere + 1)]
     y.serit(hy(R, zh), hy(R + 0.01, zh), 'tas_acik', kapali=False)
     y.serit(hy(R + 0.01, zh), hy(R + 0.01, zh + 0.01), 'tas_acik', kapali=False)
+    y.serit(hy(R + 0.01, zh + 0.01), hy(R + 0.003, zh + 0.01), 'tas_acik', kapali=False)   # (the moulding's top: left open, its underside showed from above)
     y.kubbe(c, R + 0.005, zh + 0.01, kubbe_h or R * 0.74, key, n=48, kat=14, t0=t0, t1=t0 + math.pi, kapak=kapak)
     return zh + 0.01 + (kubbe_h or R * 0.74)
 
@@ -697,6 +716,7 @@ def tackapi(y, cx, cy, z0, en=0.28, H=0.31, derin=0.07, kapi_key='ahsap', cercev
     y.kutu((cx - en / 2, y0, z0), X, Y, en, y1 - y0, H, 'tas', 'sagsol')
     kornis(y, cx - en / 2, cx + en / 2, y0, y1, z0 + H - 0.014, 0.016, 0.012)
     y.yuz([V(cx - en / 2, y0, z0 + H), V(cx + en / 2, y0, z0 + H), V(cx + en / 2, y1, z0 + H), V(cx - en / 2, y1, z0 + H)], 'tas_acik')
+    duz_duvar(y, V(cx + en / 2, y1), V(cx - en / 2, y1), z0, z0 + H, 'tas')   # (its back: open when the portal stands proud of a wall)
     if kuleli:
         for sx in (-1, 1):
             y.kutu((cx + sx * en / 2 - 0.02, y0 - 0.01, z0), X, Y, 0.04, 0.04, H + 0.03, 'tas_acik')
@@ -1452,6 +1472,10 @@ def kerpic_duvar(y, kose, z0, h, key='kerpic', kapali=True, payanda=0.12, toron=
         y.yuz_yon([V(a.x, a.y, z0), V(b.x, b.y, z0), V(b2.x, b2.y, z0 + h), V(a2.x, a2.y, z0 + h)], key, nc + Z * egim)
         # rounded crest: a low ridge on the wall top
         y.yuz_yon([V(a2.x, a2.y, z0 + h), V(b2.x, b2.y, z0 + h), V(b2.x, b2.y, z0 + h) - nc * 0.012 + Z * 0.012, V(a2.x, a2.y, z0 + h) - nc * 0.012 + Z * 0.012], ust_key or key, nc + Z)
+        # the crest's back slope and the wall's inner face (the walls were one-sided: open from inside a court)
+        ia, ib = V(a2.x, a2.y) - nc * 0.024, V(b2.x, b2.y) - nc * 0.024
+        y.yuz_yon([V(b2.x, b2.y, z0 + h) - nc * 0.012 + Z * 0.012, V(a2.x, a2.y, z0 + h) - nc * 0.012 + Z * 0.012, ia + Z * (z0 + h), ib + Z * (z0 + h)], ust_key or key, -nc + Z)
+        y.yuz_yon([ib + Z * z0, ia + Z * z0, ia + Z * (z0 + h), ib + Z * (z0 + h)], key, -nc)
         npy = max(1, int(round(L / payanda)))
         for k in range(npy + 1):
             if k == 0 and (kapali or i > 0): continue
