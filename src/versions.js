@@ -14,6 +14,9 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Kızıl Kale: chhatri\'li yuvarlak burçlu kızıl kumtaşı surlar, hendek, yükselen Lahor Kapısı ve mermer kubbecikleri, Divan-ı Am, Divan-ı Has, altın kubbeli Müsemmen Burç, İnci Mescit, Nehr-i Behişt ve Hayat Bahş bahçesi.',
+        'Racput Kışlası: sarı kumtaşı surlar ve burçlar, fillere karşı çivili kapı, do-chala çatılı kuleli komutan sarayı, süvari ahırı, savaş filleri ve talim eden asker safları.',
+        'Baharat Pazarı: beyaz bantlı minareli Babür kapısı, jharokha\'lı renkli havelîler, konik baharat yığınlı tezgâhlar, damlarda kurutma hasırları, zebu arabaları, develer ve kalabalık.',
         'Londra Kulesi: kurşun soğan kubbecikli dört köşe kuleli Beyaz Kule, iç ve dış surlar ve kuleleri, Byward kapısı, yeşil hendek, Thames\'e açılan Hainler Kapısı, toplar, Beefeater\'lar ve kuzgunlar.',
         'Westminster Manastırı: Hawksmoor kuleli batı cephesi, çift uçan payandalı gotik nef, gül pencereli transept, VII. Henry şapeli, manastır avlusu ve sekizgen bölüm evi.',
         'Okçu Talim Alanı: çim hedef setleri ve saplanmış oklu saman hedefler, atış çizgisinde uzun yaylı okçular, yarı ahşap yay ustası atölyesi, gotik köy kilisesi kulesi.',
@@ -109,6 +112,9 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_kizilkale', kind: 'building', tags: ['yeni'], note: 'Kızıl surlar ve Lahor Kapısı.' },
+      { id: 'lm_racputkisla', kind: 'building', tags: ['yeni'], note: 'Racput kale-kışlası, savaş filleri.' },
+      { id: 'lm_baharatpazari', kind: 'building', tags: ['yeni'], note: 'Baharat yığınları, havelîler.' },
       { id: 'lm_londrakulesi', kind: 'building', tags: ['yeni'], note: 'Beyaz Kule ve surlar.' },
       { id: 'lm_westminster', kind: 'building', tags: ['yeni'], note: 'Gotik manastır kilisesi.' },
       { id: 'lm_okcutalim', kind: 'building', tags: ['yeni'], note: 'Okçular ve hedef setleri.' },
