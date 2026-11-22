@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Amber Kalesi: Maota gölü ve yıldız tarhlı Kesar Kyari, tepede yuvarlak burçlu saray-kale, fil yokuşu, boyalı Ganesh Pol, bangla çatılı köşkler, shikhara\'lı Sila Devi tapınağı, sırta tırmanan surlar.',
+        'Sanchi Stupası: yarım küre stupa, harmika ve üç katlı chattra, vedika korkuluğu, fil ve Bodhi ağacı kabartmalı dört torana kapısı, Asoka sütunu, küçük stupalar ve tapınaklar.',
+        'Fil Ahırı: Hampi\'deki gibi sırayla sade, yivli, sekizgen ve shikhara kubbeli on bir bölmeli ahır, kuleli orta kapı, haudahlı filler ve bakıcıları, granit mandapa.',
+        'Basamaklı Kuyu: dokuz teraslı, zikzak basamaklı ters piramit kuyu (Chand Baori), dipte nilüferli su, üç katlı sütunlu galeri, chhatri\'li ağız ve saray köşkü.',
         'Turnuva Alanı: ayırma çitinde mızrakla koşan şövalyeler (dalgalanan at örtüleri), çizgili tenteli tribünler, kral locası, şövalye çadırları, kalkan ve mızrak rafları, arkada kale kulesi.',
         'Aachen Sarayı: sekizgen kubbeli Palatine Şapeli, 16 köşeli koridor, iki kuleli batı yapısı, üç apsisli Aula Regia, Granus kulesi, revaklı atrium, kaplıca havuzu.',
         'Motte Kalesi: hendekle çevrili toprak tepe üstünde çıkma galerili ahşap donjon, uçan köprü, palisatlı bailey (salon, şapel, ahır, demirhane), asma köprü.',
@@ -97,6 +101,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_amberkalesi', kind: 'building', tags: ['yeni'], note: 'Göl kıyısında tepe sarayı.' },
+      { id: 'lm_sanchi', kind: 'building', tags: ['yeni'], note: 'Stupa ve torana kapıları.' },
+      { id: 'lm_filahiri', kind: 'building', tags: ['yeni'], note: 'On bir kubbeli fil ahırı.' },
+      { id: 'lm_basamaklikuyu', kind: 'building', tags: ['yeni'], note: 'Ters piramit basamaklı kuyu.' },
       { id: 'lm_turnuva', kind: 'building', tags: ['yeni'], note: 'Mızrak dövüşü, tribünler, çadırlar.' },
       { id: 'lm_aachen', kind: 'building', tags: ['yeni'], note: 'Sekizgen kubbeli Palatine Şapeli.' },
       { id: 'lm_motte', kind: 'building', tags: ['yeni'], note: 'Toprak tepe üstünde ahşap donjon.' },
