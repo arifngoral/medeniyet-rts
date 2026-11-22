@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Darphane: almaşık duvarlı, yüksek orta nefli kubbeli atölye, altın mozaikli giriş, kubbeli eritme ocakları, sikke basma örsleri, kemerli sikke revağı, hazine odası ve muhafız kulesi.',
+        'Theodosius Surları: L biçimli üçlü savunma hattı (sulu hendek, dış sur, almaşık iç sur ve iri kuleler), çelenkli ve altın yazıtlı Altınkapı, fil quadrigası, kubbeli kilise ve Arkadios Sütunu.',
+        'Hipodrom: U biçimli mermer basamaklar, iki kat kemerli almaşık dış duvar, spina üstünde Theodosius Dikilitaşı, Yılanlı Sütun ve Örme Dikilitaş, dört bronz atlı carceres, kathisma ve kubbeli saray salonu.',
+        'Bukoleon Limanı: deniz suru üstünde mermer balkonlu saray cephesi, zincirli kuleli liman havuzu, boğa-aslan heykeli, üç katlı fener, dromonlar ve kubbeli Pharos kilisesi.',
         'Güneş Taşı Tapınağı: boyalı kabartmalı dev Güneş Taşı (Tonatiuh yüzü, Ollin kartuşları, gün işaretleri, ateş yılanları), arkada yılan ağızlı yuvarlak Ehecatl tapınağı ve saz çatılı yan tapınaklar.',
         'Güneş Piramidi: volkanik taştan beş kademeli Teotihuacan piramidi, çıkıntı taşları, kırmızı tablerolu adosada, tepede tapınak, U biçimli çevre platformu ve Ölüler Caddesi.',
         'Top Sahası: I biçimli saha, taş halkalı eğimli duvarlar, boyalı seyirci basamakları ve bey köşkü, oyuncular, iki ucunda saz çatılı tapınaklı piramitçik, tzompantli.',
@@ -78,6 +82,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_darphane', kind: 'building', tags: ['yeni'], note: 'Kubbeli atölye, sikke basma, mozaik giriş.' },
+      { id: 'lm_theodosius', kind: 'building', tags: ['yeni'], note: 'Üçlü sur ve Altınkapı.' },
+      { id: 'lm_hipodrom', kind: 'building', tags: ['yeni'], note: 'U biçimli pist, spina, kathisma.' },
+      { id: 'lm_bukoleon', kind: 'building', tags: ['yeni'], note: 'Deniz saray cephesi, liman, fener.' },
       { id: 'lm_taktakvim', kind: 'building', tags: ['yeni'], note: 'Güneş Taşı ve Ehecatl tapınağı.' },
       { id: 'lm_gunespiramidi', kind: 'building', tags: ['yeni'], note: 'Teotihuacan Güneş Piramidi.' },
       { id: 'lm_topsahasi', kind: 'building', tags: ['yeni'], note: 'Taş halkalı top sahası.' },
