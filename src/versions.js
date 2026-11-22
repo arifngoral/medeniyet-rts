@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Toledo Kılıç Ocağı: Tajo kıyısında taş-tuğla kılıç atölyesi, ocaklar, örsler, su verme havuzları, su çarklı çekiç değirmeni, iki kapılı Alcántara köprüsü; tepede dört kuleli avlulu Alcázar, mudéjar kilise kulesi ve evler.',
+        'Santiago Katedrali: kat kat yükselen barok Obradoiro cephesi ve fenerli iki kulesi, iki kollu merdiven, Romanesk gövde, sekizgen kesişim feneri, saat kulesi, klostr, Gelmírez sarayı ve hacılı meydan.',
+        'Sınır Kalesi: kayalık tepede mazgallı yuvarlak kuleli Kastilya kalesi, konsollu kulecikli büyük kale kulesi, barbakanlı kapı ve rampa, Romanesk şapel, demirci ve ahır.',
+        'Zeytin Değirmeni: kuru taş setlerde sıra sıra zeytin ağaçları, beyaz badanalı avlulu cortijo, contrapeso kuleli almazara, katırlı değirmen ve pres, tinajalar, sulama havuzu ve bostan, çan kuleli şapel.',
         'Kızıl Kale: chhatri\'li yuvarlak burçlu kızıl kumtaşı surlar, hendek, yükselen Lahor Kapısı ve mermer kubbecikleri, Divan-ı Am, Divan-ı Has, altın kubbeli Müsemmen Burç, İnci Mescit, Nehr-i Behişt ve Hayat Bahş bahçesi.',
         'Racput Kışlası: sarı kumtaşı surlar ve burçlar, fillere karşı çivili kapı, do-chala çatılı kuleli komutan sarayı, süvari ahırı, savaş filleri ve talim eden asker safları.',
         'Baharat Pazarı: beyaz bantlı minareli Babür kapısı, jharokha\'lı renkli havelîler, konik baharat yığınlı tezgâhlar, damlarda kurutma hasırları, zebu arabaları, develer ve kalabalık.',
@@ -112,6 +116,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_toledo', kind: 'building', tags: ['yeni'], note: 'Kılıç atölyesi, köprü, Alcázar.' },
+      { id: 'lm_santiago', kind: 'building', tags: ['yeni'], note: 'Barok Obradoiro cephesi.' },
+      { id: 'lm_reconquista', kind: 'building', tags: ['yeni'], note: 'Kastilya tepe kalesi.' },
+      { id: 'lm_zeytinlik', kind: 'building', tags: ['yeni'], note: 'Zeytinlikler ve cortijo.' },
       { id: 'lm_kizilkale', kind: 'building', tags: ['yeni'], note: 'Kızıl surlar ve Lahor Kapısı.' },
       { id: 'lm_racputkisla', kind: 'building', tags: ['yeni'], note: 'Racput kale-kışlası, savaş filleri.' },
       { id: 'lm_baharatpazari', kind: 'building', tags: ['yeni'], note: 'Baharat yığınları, havelîler.' },
