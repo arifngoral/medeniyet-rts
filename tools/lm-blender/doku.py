@@ -4,6 +4,7 @@
 # (extras yumusak = 1, glb-models.js plainGeo).
 import bpy, bmesh, math
 import numpy as np
+from mathutils import Vector
 
 # material key -> (kind, sRGB colour, options)
 # (team blue: the game repaints every colour of hue 200-245 with saturation > 0.55 in the player's colour (glb-models.js
@@ -21,6 +22,8 @@ MALZEME = {
     'kirmizi_tas': ('tas', (0.70, 0.36, 0.27), {}),        # red sandstone (Red Fort, Amber)
     'granit':   ('tas',  (0.63, 0.60, 0.58), {}),          # grey castle stone (England, France, Korea walls)
     'granit_koyu': ('tas', (0.46, 0.44, 0.43), {}),
+    'granit_kizil': ('tas', (0.66, 0.49, 0.44), {}),      # Aswan red granite (Old Kingdom temple casing, obelisks)
+    'granit_kizil_koyu': ('tas', (0.50, 0.36, 0.33), {}),
     'bazalt':   ('duz',  (0.34, 0.33, 0.32), {}),
     'zemin':    ('tas',  (0.80, 0.77, 0.70), {'tugla': 5.0, 'yatay': True}),
     'toprak':   ('duz',  (0.58, 0.47, 0.34), {'leke': 0.08}),
@@ -154,20 +157,44 @@ def _malzeme_yap(ad):
     return m
 
 
-def nesne_dokulu(yapi, ad, aci=38):
+def nesne_dokulu(yapi, ad, aci=38, kimlik=False):
     """the faces of a Yapi whose colours are material keys -> one welded, smooth-shaded, unwrapped object"""
     anahtarlar = sorted({k for _, k in yapi.faces})
     me = bpy.data.meshes.new(ad)
     bm = bmesh.new()
-    for pts, k in yapi.faces:
+    kim = bm.faces.layers.int.new('kim') if kimlik else None   # (diagnostics: the index of the Yapi face)
+    # a double-sided sheet (a face and its reversed twin on the same corners): welding would delete the twin as a
+    # duplicate face, leaving the sheet one-sided. The twins are kept aside and added after the weld with their own corners
+    ilk, ikiz = {}, []
+    def _normal(pts):
+        n = Vector((0, 0, 0))
+        for i in range(len(pts)):
+            a, b = pts[i], pts[(i + 1) % len(pts)]
+            n += Vector(((a[1] - b[1]) * (a[2] + b[2]), (a[2] - b[2]) * (a[0] + b[0]), (a[0] - b[0]) * (a[1] + b[1])))
+        return n
+    for i, (pts, k) in enumerate(yapi.faces):
+        anah = tuple(sorted(tuple(round(c * 1e5) for c in p) for p in pts))
+        n = _normal(pts)
+        if anah in ilk and ilk[anah].dot(n) < 0:
+            ikiz.append(i); continue
+        ilk.setdefault(anah, n)
         vs = [bm.verts.new(p) for p in pts]
         try:
             f = bm.faces.new(vs)
         except ValueError:
             continue
         f.material_index = anahtarlar.index(k)
+        if kim: f[kim] = i
     bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-5)
     bmesh.ops.dissolve_degenerate(bm, edges=bm.edges[:], dist=1e-7)
+    for i in ikiz:
+        pts, k = yapi.faces[i]
+        try:
+            f = bm.faces.new([bm.verts.new(p) for p in pts])
+        except ValueError:
+            continue
+        f.material_index = anahtarlar.index(k)
+        if kim: f[kim] = i
     bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method='BEAUTY', ngon_method='EAR_CLIP')
     bm.to_mesh(me); bm.free()
     for k in anahtarlar:
@@ -302,7 +329,7 @@ def parca_nesne(yuzler, ad, aci=38):
 DESENLI = {
     'tas': (1.0, 1, 0), 'tas_koyu': (1.0, 1, 0), 'zemin': (1.6, 1, 0),
     'kirec': (1.1, 1, 0), 'kum': (1.2, 1, 0), 'kum_koyu': (1.2, 1, 0), 'kirmizi_tas': (1.0, 1, 0),
-    'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0),
+    'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
     'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
     'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
@@ -310,7 +337,7 @@ DESENLI = {
     'ahsap_dikey': (0.5, 4, 1),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
-           'granit_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu')   # (a shade per flat face)
+           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 

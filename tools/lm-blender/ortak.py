@@ -42,6 +42,11 @@ class Yapi:
         if 'sol' in yuzler: self.yuz([P(0, d, 0), P(0, 0, 0), P(0, 0, h), P(0, d, h)], renk)
         if 'sag' in yuzler: self.yuz([P(w, 0, 0), P(w, d, 0), P(w, d, h), P(w, 0, h)], renk)
         if 'ust' in yuzler: self.yuz([P(0, 0, h), P(w, 0, h), P(w, d, h), P(0, d, h)], renk)
+        # a negative size or a left-handed frame (ey to the right of ex) mirrors the box: its faces were wound inward
+        if (w * d * h < 0) != (ex.cross(ey).z < 0):
+            for i in range(len(self.faces) - sum(k in yuzler for k in ('on', 'arka', 'sol', 'sag', 'ust')), len(self.faces)):
+                pts, r = self.faces[i]
+                self.faces[i] = (list(reversed(pts)), r)
 
     # a vertical cylinder (pole)
     def silindir(self, c, r, z0, z1, renk, n=6):
@@ -138,6 +143,7 @@ class Yapi:
             d0, d1, h = derin * 0.35, derin * 0.6, v0 + korkuluk
             self.yuz([L(x0, v0, d0), L(x1, v0, d0), L(x1, h, d0), L(x0, h, d0)], acik)
             self.yuz([L(x0, h, d0), L(x1, h, d0), L(x1, h, d1), L(x0, h, d1)], acik)
+            self.yuz([L(x1, v0, d1), L(x0, v0, d1), L(x0, h, d1), L(x1, h, d1)], acik)   # its back (an open arcade is seen from inside)
         if cerceve:
             # a raised frame round the jambs and the arch (cerceve = (width, material or [alternating materials for the
             # arch stones])), and a sill ledge under the opening
@@ -159,6 +165,9 @@ class Yapi:
                 # the frame's outer edge, so it reads as raised
                 orta = (L(*dis(p), 0) + L(*dis(q), 0)) / 2
                 self.yuz_yon([L(*dis(p), d), L(*dis(q), d), L(*dis(q), 0), L(*dis(p), 0)], mlz[0], orta - L(xm, (v0 + hs) / 2, 0))
+                # and its inner edge (seen slantwise the gap under it showed the outer edge's back)
+                ic_ = (L(*p, 0) + L(*q, 0)) / 2
+                self.yuz_yon([L(*p, d), L(*q, d), L(*q, 0), L(*p, 0)], mlz[0], L(xm, (v0 + hs) / 2, 0) - ic_)
             if v0 > 0:
                 ss = 0.008
                 Zv = Vector((0, 0, 1))

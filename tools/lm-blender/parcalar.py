@@ -136,6 +136,14 @@ def silme(y, kose, z, h, c, key='tas_acik', profil='duz', kapali=True):
     rings = [[V(p.x, p.y, z + u * h) for p in disa(kose, o * c, kapali)] for o, u in pr]
     for k in range(len(rings) - 1):
         y.serit(rings[k], rings[k + 1], key, kapali=kapali)
+    # the back (on the wall line), and the top / bottom back to it: closes the profile, so a moulding standing off
+    # its wall or seen past a wall's end shows no open inside (on a wall it lies against the wall, facing into it)
+    kap = ([(0, pr[-1][1])] if pr[-1][0] else []) + ([(0, pr[0][1])] if pr[0][0] else [])
+    zr = [rings[-1]] + [[V(p.x, p.y, z + u * h) for p in disa(kose, o * c, kapali)] for o, u in kap] + [rings[0]]
+    for k in range(len(zr) - 1):
+        if abs(zr[k][0].z - zr[k + 1][0].z) + (zr[k][0] - zr[k + 1][0]).length > 1e-7:
+            y.serit(zr[k], zr[k + 1], key, kapali=kapali)
+    rings = rings + zr[1:-1]
     if not kapali:   # end caps
         for uc, yon in ((0, -1), (-1, 1)):
             pts = [r[uc] for r in rings]
@@ -188,7 +196,9 @@ def boru(y, pts, r, key, n=6, kapat=True, r_son=None):
         t = (pts[min(k + 1, m - 1)] - pts[max(k - 1, 0)]).normalized()
         u = Z.cross(t)
         if u.length < 1e-4: u = X.cross(t)
-        u.normalize(); w = t.cross(u)
+        u.normalize()
+        if rings and u.dot(u0) < 0: u = -u   # (the frame must not flip where the tube turns past vertical: the quads twisted)
+        u0 = u; w = t.cross(u)
         rr = r if r_son is None else r + (r_son - r) * k / (m - 1)
         rings.append([pts[k] + (u * math.cos(TAU * i / n) + w * math.sin(TAU * i / n)) * rr for i in range(n)])
     for k in range(m - 1):
@@ -313,6 +323,7 @@ def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None,
         za, zb = z0 + hb, z1 - hc
         if hb:
             donel(y, c, [(r * 1.42, z0), (r * 1.42, z0 + hb * 0.25), (r * 1.3, z0 + hb * 0.55), (r * 1.12, z0 + hb * 0.75), (r * 1.05, z0 + hb)], bk, n=20)
+            y.yuz_yon(cokgen(c, r * 1.05, 20, z=z0 + hb), bk, Z)   # the base's top round the shaft's foot (else a back-face ring)
         # shaft with entasis, fluted (Greek) or plain (Toscan)
         nk = 6
         nf = 0 if tur == 'toskan' else (yiv or (20 if tur == 'dor' else 24))
@@ -343,7 +354,9 @@ def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None,
                     p0 = V(cx, cy) + d * (rt * rr * 1.01)
                     w = r * 0.42
                     tip = p0 + d * (r * 0.32)
-                    y.yuz_yon([p0 - t * w + Z * (zb + hc * h0), p0 + t * w + Z * (zb + hc * h0), tip + t * w * 0.7 + Z * (zb + hc * h1), tip - t * w * 0.7 + Z * (zb + hc * h1)], bk, d)
+                    yp = [p0 - t * w + Z * (zb + hc * h0), p0 + t * w + Z * (zb + hc * h0), tip + t * w * 0.7 + Z * (zb + hc * h1), tip - t * w * 0.7 + Z * (zb + hc * h1)]
+                    y.yuz_yon(yp, bk, d)
+                    y.yuz_yon(yp[::-1], bk, -d)   # (two-sided: a leaf is seen from behind; doku.nesne_dokulu keeps such a reversed twin)
             kutu_merkez(y, c, r * 2.8, r * 2.8, hc * 0.18, bk, z0=zb + hc * 0.82)
     elif tur == 'misir':
         hc = H * 0.2
@@ -362,6 +375,7 @@ def sutun(y, cx, cy, z0, z1, r=0.015, key='mermer', tur='osmanli', bas_key=None,
         # open papyrus capital (bell), painted lobes
         donel(y, c, [(r * 0.82, zb), (r * 1.15, zb + hc * 0.45), (r * 1.55, zb + hc * 0.85), (r * 1.62, zb + hc * 0.9)], bk, n=16,
               dilim=[bk, bant_key] if bant_key else None)
+        y.yuz_yon(cokgen(c, r * 1.62, 16, z=zb + hc * 0.9), bk, Z)   # the bell's top (seen from above when free-standing)
         kutu_merkez(y, c, r * 1.7, r * 1.7, hc * 0.1, bk, z0=zb + hc * 0.9)
     elif tur == 'pers':
         hc = H * 0.14
@@ -468,7 +482,8 @@ def alinlik(y, a, b, z, h, derin=0.06, key='mermer', ic_key=None, c=0.012, cati_
     # frame: three bands round the tympanum (front faces) and their reveals
     for p, q, pi, qi in ((A, B, Ai, Bi), (B, T, Bi, Ti), (T, A, Ti, Ai)):
         y.yuz_yon([p, q, qi, pi], key, nc)
-        y.yuz_yon([pi, qi, qi - nc * 0.006, pi - nc * 0.006], key, ((p + q) / 2 - (pi + qi) / 2))
+        y.yuz_yon([pi, qi, qi - nc * 0.006, pi - nc * 0.006], key, ((pi + qi) / 2 - (p + q) / 2))   # (faces the tympanum: the reveal round the recess)
+        y.yuz_yon([pi, qi, qi - nc * 0.006, pi - nc * 0.006], key, ((p + q) / 2 - (pi + qi) / 2))   # (and its back: seen over the frame from above)
     # the raking cornices project (front lip)
     for p, q in ((B, T), (T, A)):
         d = (q - p).normalized()
@@ -477,6 +492,7 @@ def alinlik(y, a, b, z, h, derin=0.06, key='mermer', ic_key=None, c=0.012, cati_
         y.yuz_yon([p + out, q + out, q + out + lift, p + out + lift], key, nc)
         y.yuz_yon([p, q, q + out, p + out], key, -(lift))
         y.yuz_yon([p + lift, q + lift, q + out + lift, p + out + lift], key, lift)
+        y.yuz_yon([p, q, q + lift, p + lift], key, -nc)   # (its back: seen past the roof's end)
     # roof slopes and the back gable
     D = -nc * derin
     ck = cati_key or key
@@ -1489,6 +1505,11 @@ def sancak(y, x, yy, z, boy=0.2, en=0.1, yuk=0.065, aci=0.0, direk_key='ahsap', 
             continue
         y.yuz_yon([P(u0, 0, 1), P(u1, 0, 1), P(u1, yuk, 1), P(u0, yuk, 1)], 'mavi', nn)
         y.yuz_yon([P(u0, 0, -1), P(u1, 0, -1), P(u1, yuk, -1), P(u0, yuk, -1)], 'mavi', -nn)
+        # the cloth's rims (top, bottom, free end): seen edge-on the two sheets otherwise show each other's backs
+        y.yuz_yon([P(u0, yuk, 1), P(u1, yuk, 1), P(u1, yuk, -1), P(u0, yuk, -1)], 'mavi', Z)
+        y.yuz_yon([P(u0, 0, 1), P(u1, 0, 1), P(u1, 0, -1), P(u0, 0, -1)], 'mavi', -Z)
+        if i == n - 1:
+            y.yuz_yon([P(1, 0, 1), P(1, yuk, 1), P(1, yuk, -1), P(1, 0, -1)], 'mavi', e)
     return z + boy
 
 

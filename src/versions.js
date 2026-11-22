@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Zafer Takı: Konstantin Takı gibi üç geçitli mermer tak, sarı mermer Korint sütunlar, esir heykelleri, tondolar, kanatlı Zafer kabartmaları, okunan bronz yazıtlı attika ve tepede bronz quadriga.',
+        'Senato (Curia Julia): podyum üstünde yüksek tuğla salon, sıvalı alınlıklı cephe, üç büyük pencere, bronz kapı ve İyon sütunlu sundurma; iki yanda dükkânlı revaklar, onur sütunları ve çeşmeler.',
+        'Su Kemeri: Pont du Gard gibi ırmak vadisinden geçen üç kat kemer, örtülü su kanalı, dağıtım kulesine (castellum) dönen kol ve çağlayan; yumuşak tepeli, ağaçlı arazi.',
+        'Kolezyum baştan yeni yoldan kuruldu: Toskan-İyon-Korint yarım sütunlu derin kemerli üç kat, kalkanlı attika, iç revak, basamaklı oturma yerleri, açık hipojen; güney yüzü yıkık.',
         'Limes Kalesi: kare kuleli, kırmızı tuğla bantlı taş kale, derin hendek, toprak set ve kazık çitli sınır hattı, işaret ateşli ve ahşap gözcü kuleleri, kale dışında hamam.',
         'Castra: köşeleri yuvarlak surlu lejyon kampı, iki katlı kuleler, dört kuleli kapı, kavşakta anıtsal dört yönlü kapı, principia, kışla sıraları, hendek.',
         'Pantheon: kör kemerli ve pencereli tuğla rotunda, basamak halkalı kubbe ve oculus, 16 Korint sütunlu portiko (AGRIPPA yazıtlı), iki yanda sütunlu revaklı meydan.',
@@ -33,6 +37,9 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_zafertaki', kind: 'building', tags: ['yeni'], note: 'Üç geçitli tak, Korint sütunlar, quadriga.' },
+      { id: 'lm_senato', kind: 'building', tags: ['yeni'], note: 'Tuğla Curia, sütunlu sundurma, revaklı meydan.' },
+      { id: 'lm_sukemeri', kind: 'building', tags: ['yeni'], note: 'Üç kat kemer, su kanalı, castellum.' },
       { id: 'lm_limes', kind: 'building', tags: ['yeni'], note: 'Taş kale, derin hendek ve kazıklı sınır hattı, gözcü kuleleri.' },
       { id: 'lm_castra', kind: 'building', tags: ['yeni'], note: 'Yuvarlak köşeli surlu lejyon kampı, kuleli kapılar, ortada anıtsal kapı.' },
       { id: 'lm_pantheon', kind: 'building', tags: ['yeni'], note: 'Rotunda, oculuslu kubbe, Korint portiko.' },
