@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Les Invalides: altın kaburgalı, çelenkli, yaldızlı fenerli kurşun kubbe, Dor ve Korint sütunlu iki katlı cephe, iki kat revaklı Cour d\'Honneur, Mansart çatılı hastane, top sırası, hendek ve tarhlar.',
+        'Versay Sarayı: Place d\'Armes ve atlı XIV. Louis, yaldızlı Grille Royale, Mermer Avlu, tuğla-taş şato ve Mansart çatılar, Kraliyet Şapeli, bahçe cephesi, Su Parteri ve Latona çeşmesi.',
+        'Carcassonne: tepe üstünde çifte surlu ortaçağ kenti, konik arduvaz çatılı kuleler, Narbonne Kapısı, Comtal kalesi, Saint-Nazaire bazilikası ve sokak sokak evler.',
+        'Notre-Dame: iki kuleli batı cephesi, renkli gül pencere, Krallar Galerisi, üç portal, uçan payandalar, transept gülleri, bakır havarili fleş; meydan, Charlemagne heykeli ve Seine.',
         'Amber Kalesi: Maota gölü ve yıldız tarhlı Kesar Kyari, tepede yuvarlak burçlu saray-kale, fil yokuşu, boyalı Ganesh Pol, bangla çatılı köşkler, shikhara\'lı Sila Devi tapınağı, sırta tırmanan surlar.',
         'Sanchi Stupası: yarım küre stupa, harmika ve üç katlı chattra, vedika korkuluğu, fil ve Bodhi ağacı kabartmalı dört torana kapısı, Asoka sütunu, küçük stupalar ve tapınaklar.',
         'Fil Ahırı: Hampi\'deki gibi sırayla sade, yivli, sekizgen ve shikhara kubbeli on bir bölmeli ahır, kuleli orta kapı, haudahlı filler ve bakıcıları, granit mandapa.',
@@ -101,6 +105,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_invalides', kind: 'building', tags: ['yeni'], note: 'Altın kaburgalı kubbe.' },
+      { id: 'lm_versay', kind: 'building', tags: ['yeni'], note: 'U avlular, Mansart çatılar, bahçe.' },
+      { id: 'lm_carcassonne', kind: 'building', tags: ['yeni'], note: 'Çifte surlu ortaçağ kenti.' },
+      { id: 'lm_notredame', kind: 'building', tags: ['yeni'], note: 'Gotik katedral, gül pencere.' },
       { id: 'lm_amberkalesi', kind: 'building', tags: ['yeni'], note: 'Göl kıyısında tepe sarayı.' },
       { id: 'lm_sanchi', kind: 'building', tags: ['yeni'], note: 'Stupa ve torana kapıları.' },
       { id: 'lm_filahiri', kind: 'building', tags: ['yeni'], note: 'On bir kubbeli fil ahırı.' },

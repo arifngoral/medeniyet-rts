@@ -131,6 +131,10 @@ def calistir(y, ad):
     """build, export (argv: out.glb [preview folder]) and preview"""
     tri = y.ucgen_sayisi()
     print('UCGEN', tri)
+    if os.environ.get('LM_BOLUM') and getattr(y, 'bolumler', None):   # triangles per section (where the budget goes)
+        bs = y.bolumler + [(len(y.faces), None)]
+        for (i0, ad_), (i1, _) in zip(bs, bs[1:]):
+            print('BOLUM %6d  %s' % (sum(len(p) - 2 for p, _ in y.faces[i0:i1]), ad_))
     if tri < 15000 or tri > 70000:
         print('UYARI: ucgen sayisi hedefin (20-60 bin) disinda:', tri)
     arg = argumanlar()

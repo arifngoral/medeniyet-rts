@@ -757,7 +757,15 @@ def parapet(y, kose, z, h_dolu, h_dis, kalinlik=0.02, key='tas', kapali=True, us
             duz_duvar(y, bi, ai, z, z + h_dolu, key)
             y.yuz_yon([V(a.x, a.y, z + h_dolu), V(b.x, b.y, z + h_dolu), V(bi.x, bi.y, z + h_dolu), V(ai.x, ai.y, z + h_dolu)], ust_key or key, Z)
         if h_dis:
-            mazgal(y, a, b, z + h_dolu, h_dis, kalinlik, key)
+            # at a convex corner the previous side's last merlon already fills the corner square: start this side's
+            # merlons behind it (two boxes in one corner left coplanar tops that flickered)
+            a2 = V(a.x, a.y)
+            if kapali or i > 0:
+                p = kose[(i - 1) % n]
+                e0, e1 = V(a.x - p.x, a.y - p.y), V(b.x - a.x, b.y - a.y)
+                if e1.length > kalinlik * 3 and e0.length > 1e-6 and e0.x * e1.y - e0.y * e1.x > 1e-6 * e0.length * e1.length:
+                    a2 = a2 + e1.normalized() * kalinlik
+            mazgal(y, a2, b, z + h_dolu, h_dis, kalinlik, key)
     if not kapali:
         for i, s in ((0, -1), (n - 1, 1)):
             p, q = kose[i], ic[i]
