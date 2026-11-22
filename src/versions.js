@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Büyük Sfenks: oyulmuş yüzlü, nemes başlıklı aslan gövdeli heykel kaya çukurunda, Rüya Steli, kızıl granit Sfenks ve Vadi tapınakları, kayadan teras üstünde Kefren piramidi, kraliçe piramitleri, mastabalar.',
+        'Karnak Tapınağı: bayrak direkli, firavun kabartmalı dev pilonlar, koç başlı sfenksler, kızıl granit dikilitaşlar, papirüs sütunlu hipostil salon ve ışıklıkları, Beyaz Şapel, kutsal göl.',
+        'Arabacı Ahırı: savaş arabası kabartmalı yüksek pilon kapı, papirüs sütunlu ahır, savaş arabası sundurması, silah deposu ve koşan arabalı talim pisti.',
+        'Büyük Ambar: kerpiç avlu, yüksek terasta boyalı kuşaklı arı kovanı silolar, kâtip odası, harman yeri, Nil kıyısında rıhtım, saz kayık ve şaduf.',
         'Zafer Takı: Konstantin Takı gibi üç geçitli mermer tak, sarı mermer Korint sütunlar, esir heykelleri, tondolar, kanatlı Zafer kabartmaları, okunan bronz yazıtlı attika ve tepede bronz quadriga.',
         'Senato (Curia Julia): podyum üstünde yüksek tuğla salon, sıvalı alınlıklı cephe, üç büyük pencere, bronz kapı ve İyon sütunlu sundurma; iki yanda dükkânlı revaklar, onur sütunları ve çeşmeler.',
         'Su Kemeri: Pont du Gard gibi ırmak vadisinden geçen üç kat kemer, örtülü su kanalı, dağıtım kulesine (castellum) dönen kol ve çağlayan; yumuşak tepeli, ağaçlı arazi.',
@@ -37,6 +41,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_sfenks', kind: 'building', tags: ['yeni'], note: 'Sfenks heykeli, tapınaklar, Kefren piramidi.' },
+      { id: 'lm_karnak', kind: 'building', tags: ['yeni'], note: 'Pilonlar, sfenks yolu, hipostil salon.' },
+      { id: 'lm_arabaciahiri', kind: 'building', tags: ['yeni'], note: 'Pilon kapı, ahır, savaş arabaları.' },
+      { id: 'lm_ambar', kind: 'building', tags: ['yeni'], note: 'Arı kovanı silolar, kâtip odası, Nil kıyısı.' },
       { id: 'lm_zafertaki', kind: 'building', tags: ['yeni'], note: 'Üç geçitli tak, Korint sütunlar, quadriga.' },
       { id: 'lm_senato', kind: 'building', tags: ['yeni'], note: 'Tuğla Curia, sütunlu sundurma, revaklı meydan.' },
       { id: 'lm_sukemeri', kind: 'building', tags: ['yeni'], note: 'Üç kat kemer, su kanalı, castellum.' },
