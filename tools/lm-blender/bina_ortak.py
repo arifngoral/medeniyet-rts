@@ -35,6 +35,12 @@ def onizlemeler(ob, klasor, ad):
     os.makedirs(klasor, exist_ok=True)
     sc = bpy.context.scene
     cam = _sahne_isik()
+    # back faces are culled as the game does (a wrongly wound face shows as a hole); LM_ARKA_YUZ=0 shows them
+    kes = os.environ.get('LM_ARKA_YUZ', '1') != '0'
+    def kesim(ac):
+        for mt in bpy.data.materials:
+            mt.use_backface_culling = ac
+    kesim(kes)
     bb = [ob.matrix_world @ Vector(c) for c in ob.bound_box]
     lo = Vector((min(v.x for v in bb), min(v.y for v in bb), min(v.z for v in bb)))
     hi = Vector((max(v.x for v in bb), max(v.y for v in bb), max(v.z for v in bb)))
@@ -54,6 +60,25 @@ def onizlemeler(ob, klasor, ad):
         bpy.ops.render.render(write_still=True)
     for isim, az, el, yak, mm in goruntu:
         cek(os.path.join(klasor, f'{ad}_{isim}.png'), mm, az, el, boy / yak)
+    # wrongly wound faces: the views drawn again WITHOUT culling; where the two differ a back face was in sight
+    # (a reversed face, or a single-sided face seen from behind). Marked in magenta on _0_ters.png, counted in TERS_YUZ
+    if kes:
+        import numpy as np
+        tum = []
+        for isim, az, el, yak, mm in goruntu[:3]:
+            a_yol = os.path.join(klasor, f'{ad}_{isim}.png'); b_yol = os.path.join(klasor, '_ters_b.png')
+            kesim(False); cek(b_yol, mm, az, el, boy / yak); kesim(True)
+            A = bpy.data.images.load(a_yol); B = bpy.data.images.load(b_yol)
+            pa = np.array(A.pixels[:], np.float32).reshape(1000, 1400, 4); pb = np.array(B.pixels[:], np.float32).reshape(1000, 1400, 4)
+            fark = np.abs(pa[..., :3] - pb[..., :3]).sum(-1) > 0.12
+            iz = pa.copy(); iz[fark, 0] = 1; iz[fark, 1] = 0; iz[fark, 2] = 1
+            tum.append((isim, int(fark.sum()), iz))
+            bpy.data.images.remove(A); bpy.data.images.remove(B); os.remove(b_yol)
+        toplam = sum(t[1] for t in tum)
+        print('TERS_YUZ', toplam, 'piksel', ' '.join('%s:%d' % (t[0], t[1]) for t in tum) + ('' if toplam < 300 else '  UYARI: ters yüz var, _0_ters.png'))
+        enk = max(tum, key=lambda t: t[1])
+        out = bpy.data.images.new('ters', 1400, 1000); out.pixels[:] = enk[2].ravel()
+        out.filepath_raw = os.path.join(klasor, f'{ad}_0_ters.png'); out.file_format = 'PNG'; out.save()
     # extra close-ups on one sheet: LM_YAKIN="x,y,z,size[,azimuth];..." (model units)
     yk = os.environ.get('LM_YAKIN')
     if yk:

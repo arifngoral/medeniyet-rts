@@ -31,7 +31,7 @@ try {
   console.error((e.stdout || '').split('\n').filter((l) => /Error|Traceback|File "|line \d|^\s+\S/.test(l)).slice(-30).join('\n'));
   console.error(e.stderr || ''); process.exit(1);
 }
-const satir = out.split('\n').filter((l) => /^(UCGEN|BOLUNMUS|UYARI|BOYUT)|Error|Traceback/.test(l));
+const satir = out.split('\n').filter((l) => /^(UCGEN|BOLUNMUS|UYARI|BOYUT|TERS_YUZ)|Error|Traceback/.test(l));
 console.log(satir.join('\n'));
 if (/Traceback/.test(out)) { console.error(out.split('Traceback').pop().slice(0, 3000)); process.exit(1); }
 const gtYol = join(KOK, '.blender-varlik/gt/node_modules/.bin', process.platform === 'win32' ? 'gltf-transform.cmd' : 'gltf-transform');
