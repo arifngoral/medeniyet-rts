@@ -337,7 +337,8 @@ export function glbVersion() { return version; }
 export const LM_GLB = new Set(['lm_ayasofya', 'lm_himeji', 'lm_tacmahal', 'lm_aziz_basil', 'lm_kolezyum', 'lm_suleymaniye',
   'lm_tophane', 'lm_dolmabahce', 'lm_harbiye', 'lm_kervansaray', 'lm_akinciocagi', 'lm_ulucami', 'lm_rumelihisari',
   'lm_forum', 'lm_castra', 'lm_pantheon', 'lm_limes', 'lm_sukemeri', 'lm_senato', 'lm_zafertaki',
-  'lm_ambar', 'lm_arabaciahiri', 'lm_karnak', 'lm_sfenks']);
+  'lm_ambar', 'lm_arabaciahiri', 'lm_karnak', 'lm_sfenks',
+  'lm_parthenon', 'lm_olimpia', 'lm_rodos', 'lm_falanks']);
 const LM_STARTED = new Set();
 export function loadLandmarkGlb(id) {
   if (!LM_GLB.has(id) || LM_STARTED.has(id) || !enabled()) return;

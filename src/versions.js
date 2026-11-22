@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Makedon Falanks Kampı: sarissalarını indirmiş falanks dizisi, Vergina güneşli komutan evi, demirhane, talim kazıkları, çadırlar, kazık palisad ve yüksek gözcü kulesi.',
+        'Rodos Limanı: mendirek başında meşaleli, ışın taçlı Kolossos, deniz feneri, gemi hangarları, dükkânlı stoa, Helios tapınağı, kuleli surlar ve limanda gemiler.',
+        'Olimpia: Zeus tapınağı (altın Zeus kapıdan görünür), Philippeion, kül sunağı, hazineler terası ve kemerli tünelli stadyum.',
+        'Parthenon: Akropolis kayası üstünde tepeyi kaplayan 8x17 Dor tapınak, metoplar, Panathenaia frizi, alınlık heykelleri, mermer kiremit çatı; Propylaia, Athena Nike, Erekhtheion, Athena Promakhos.',
         'Büyük Sfenks: oyulmuş yüzlü, nemes başlıklı aslan gövdeli heykel kaya çukurunda, Rüya Steli, kızıl granit Sfenks ve Vadi tapınakları, kayadan teras üstünde Kefren piramidi, kraliçe piramitleri, mastabalar.',
         'Karnak Tapınağı: bayrak direkli, firavun kabartmalı dev pilonlar, koç başlı sfenksler, kızıl granit dikilitaşlar, papirüs sütunlu hipostil salon ve ışıklıkları, Beyaz Şapel, kutsal göl.',
         'Arabacı Ahırı: savaş arabası kabartmalı yüksek pilon kapı, papirüs sütunlu ahır, savaş arabası sundurması, silah deposu ve koşan arabalı talim pisti.',
@@ -41,6 +45,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_falanks', kind: 'building', tags: ['yeni'], note: 'Falanks dizisi, komutan evi, gözcü kulesi.' },
+      { id: 'lm_rodos', kind: 'building', tags: ['yeni'], note: 'Kolossos, fener, gemi hangarları.' },
+      { id: 'lm_olimpia', kind: 'building', tags: ['yeni'], note: 'Zeus tapınağı, Philippeion, stadyum.' },
+      { id: 'lm_parthenon', kind: 'building', tags: ['yeni'], note: 'Akropolis üstünde 8x17 Dor tapınak.' },
       { id: 'lm_sfenks', kind: 'building', tags: ['yeni'], note: 'Sfenks heykeli, tapınaklar, Kefren piramidi.' },
       { id: 'lm_karnak', kind: 'building', tags: ['yeni'], note: 'Pilonlar, sfenks yolu, hipostil salon.' },
       { id: 'lm_arabaciahiri', kind: 'building', tags: ['yeni'], note: 'Pilon kapı, ahır, savaş arabaları.' },
