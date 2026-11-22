@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Fil Ahırları: iki katlı Kartaca suru içinde kemerlerden bakan Kuzey Afrika filleri ve atlar, rampalar, kuleler, Tanit\'li fil kapısı, hendek ve palisat, avluda savaş filleri.',
+        'Byrsa Sarayı: payandalı teraslar ve 60 basamaklı merdiven, kanatlı güneşli kapılı akropol, İyon portikli Eşmun tapınağı, avlulu Pön sarayı ve yamaçta beyaz evler.',
+        'Paralı Asker Kampı: palisat içinde Kelt, İber, Libya ve Numidya (ters tekne biçimli mapalia) konutları, mor-beyaz komutan çadırı, gözcü kulesi, ödeme masası ve talim alanı.',
+        'Kothon Limanı: halka biçimli askeri liman, ortadaki adada amiral kulesi, ışın gibi dizilmiş sütunlu gemi hangarları ve triremeler, halka sur, su kapısı ve ticaret limanı.',
         'Armada Tersanesi: beş sivri kemerli tuğla tersane salonu, kızakta kalyon iskeleti, rıhtımda Burgonya haçlı yelkenli büyük kalyon ve top yükleyen vinç, top dökümhanesi.',
         'El Escorial: ızgara planlı granit manastır-saray, sivri arduvaz külahlı köşe kuleleri, kaburgalı kubbeli bazilika ve çan kuleleri, Müjdeciler avlusu, kral heykelli cephe, Lonja.',
         'Tercio Kışlası: avlulu iki katlı kışla, çan duvarlı armalı taç kapı, gözcü kulesi, silah deposu, talimde mızrak karesi ve ateş eden arkebüzcüler.',
@@ -124,6 +128,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_filahirlari', kind: 'building', tags: ['yeni'], note: 'Sur içinde fil ahırları.' },
+      { id: 'lm_byrsa', kind: 'building', tags: ['yeni'], note: 'Teraslı akropol ve Eşmun tapınağı.' },
+      { id: 'lm_paraliasker', kind: 'building', tags: ['yeni'], note: 'Çok halklı paralı asker kampı.' },
+      { id: 'lm_kothon', kind: 'building', tags: ['yeni'], note: 'Dairesel askeri liman.' },
       { id: 'lm_armada', kind: 'building', tags: ['yeni'], note: 'Tersane salonları ve kalyonlar.' },
       { id: 'lm_escorial', kind: 'building', tags: ['yeni'], note: 'Granit manastır-saray.' },
       { id: 'lm_tercio', kind: 'building', tags: ['yeni'], note: 'Kışla ve mızrak karesi.' },

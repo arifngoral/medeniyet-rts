@@ -258,15 +258,20 @@ def jharokha(y, a, b, z, w, h, d, key='kum', trim='kum_acik', renk=None, kubbe=T
     return zt
 
 
-def fil(y, x, yy, z, aci=0.0, olcek=1.0, key='fil', cul=None, haudah=False, binici=None, hortum=0.0, sus='altin', az=False, kaba=False):
+def fil(y, x, yy, z, aci=0.0, olcek=1.0, key='fil', cul=None, haudah=False, binici=None, hortum=0.0, sus='altin', az=False, kaba=False,
+        afrika=False):
     """a stylised elephant facing aci (head towards +x before turning), ~0.12 tall at olcek 1: legs, barrel body,
     domed head, big ear flaps, a trunk (hortum > 0 raises it), tusks, a tail. cul: a key for a caparison (jhool) with a
-    gold border; haudah: a canopied howdah on its back; binici: a key for a mahout's robe (sits on the neck); kaba: fewer segments on the round parts (a background elephant)"""
+    gold border; haudah: a canopied howdah on its back; binici: a key for a mahout's robe (sits on the neck); kaba: fewer segments on the round parts (a background elephant).
+    afrika: the small North African (forest) elephant of Carthage instead (_fil_afrika: one-domed head, huge fan ears,
+    the back highest at the shoulder, straight down-pointing tusks); the caparison / howdah / rider fit it the same"""
     q = 0.7 if kaba else 1.0
     nq = lambda n, m=3: max(m, int(round(n * q)))
     with parca(y, (x, yy, z), aci, olcek):
+        if afrika:
+            _fil_afrika(y, key, hortum, az, nq)
         # legs (pillar-like, a little wider at the foot) and toenails
-        for lx in (-0.03, 0.026):
+        for lx in ((-0.03, 0.026) if not afrika else ()):
             for s in (-1, 1):
                 ly = s * 0.016
                 if az: kutu_merkez(y, (lx, ly), 0.019, 0.019, 0.062, key, yuzler='onarkasagsol')
@@ -274,24 +279,24 @@ def fil(y, x, yy, z, aci=0.0, olcek=1.0, key='fil', cul=None, haudah=False, bini
                 for t in ():
                     kure(y, (lx + 0.0105 * math.cos(t), ly + 0.0105 * math.sin(t) * 0.8, 0.004), 0.0025, 'kum_acik', n=5, kat=2)
         # body
-        elipsoid(y, (0.0, 0.0, 0.074), 0.047, 0.027, 0.032, key, n=6 if az else nq(12), kat=3 if az else nq(6))
+        if not afrika: elipsoid(y, (0.0, 0.0, 0.074), 0.047, 0.027, 0.032, key, n=6 if az else nq(12), kat=3 if az else nq(6))
         # head and forehead dome
-        elipsoid(y, (0.048, 0.0, 0.088), 0.022, 0.02, 0.024, key, n=5 if az else nq(12), kat=2 if az else nq(6))
-        if not az: elipsoid(y, (0.052, 0.0, 0.105), 0.013, 0.015, 0.011, key, n=nq(10), kat=nq(5))
+        if not afrika: elipsoid(y, (0.048, 0.0, 0.088), 0.022, 0.02, 0.024, key, n=5 if az else nq(12), kat=2 if az else nq(6))
+        if not az and not afrika: elipsoid(y, (0.052, 0.0, 0.105), 0.013, 0.015, 0.011, key, n=nq(10), kat=nq(5))
         # ears: flattened discs at the sides of the head
-        for s in (-1, 1):
+        for s in ((-1, 1) if not afrika else ()):
             elipsoid(y, (0.04, s * 0.022, 0.088), 0.017, 0.0035, 0.022, key, n=5 if az else nq(10), kat=2 if az else nq(6))
             if not az: kure(y, (0.062, s * 0.012, 0.096), 0.0022, 'koyu', n=6, kat=3)      # eye
         # trunk
         tr = [V(0.066, 0, 0.084), V(0.075, 0, 0.066), V(0.079, 0, 0.044), V(0.08 + hortum * 0.2, 0, 0.026 + hortum * 0.6),
               V(0.085 + hortum * 0.5, 0, 0.012 + hortum), V(0.09 + hortum * 0.6, 0, 0.012 + hortum * 1.2)]
-        boru(y, tr if not az else tr[::2] + [tr[-1]], 0.0085, key, n=3 if az else nq(8), r_son=0.0035)
+        if not afrika: boru(y, tr if not az else tr[::2] + [tr[-1]], 0.0085, key, n=3 if az else nq(8), r_son=0.0035)
         # tusks
-        for s in (-1, 1):
+        for s in ((-1, 1) if not afrika else ()):
             boru(y, [V(0.062, s * 0.01, 0.074), V(0.074, s * 0.012, 0.06), V(0.086, s * 0.011, 0.062), V(0.091, s * 0.009, 0.07)], 0.0028,
                  'beyaz', n=3 if az else nq(6), r_son=0.001)
         # tail
-        if not az: boru(y, [V(-0.046, 0, 0.088), V(-0.052, 0, 0.07), V(-0.053, 0, 0.05)], 0.0018, key, n=4, r_son=0.0012)
+        if not az and not afrika: boru(y, [V(-0.046, 0, 0.088), V(-0.052, 0, 0.07), V(-0.053, 0, 0.05)], 0.0018, key, n=4, r_son=0.0012)
         if cul:
             # the caparison: a cloth over the back hanging down both flanks, a gold border, and a forehead plate
             for s in (-1, 1):
@@ -318,6 +323,52 @@ def fil(y, x, yy, z, aci=0.0, olcek=1.0, key='fil', cul=None, haudah=False, bini
             kure(y, (-0.004, 0.0, hz + 0.068), 0.003, 'altin', n=6, kat=3)
         if binici:
             adam(y, 0.036, 0.0, 0.098, 0.0, binici, 'beyaz', boy=0.034)
+
+
+def _fil_afrika(y, key, hortum, az, nq):
+    """the anatomy of the North African forest elephant for fil(afrika=True), in fil's local frame (head towards +x)"""
+    # legs: pillars a little longer than the Indian elephant's
+    for lx, lh in ((-0.029, 0.066), (0.025, 0.07)):
+        for s in (-1, 1):
+            ly = s * 0.0155
+            if az: kutu_merkez(y, (lx, ly), 0.02, 0.02, lh, key, yuzler='onarkasagsol')
+            else: donel(y, (lx, ly), [(0.0, 0.0), (0.0122, 0.0), (0.0112, 0.012), (0.0106, lh * 0.62), (0.0118, lh * 0.96), (0.0, lh)],
+                        key, n=nq(8))
+    # body: one lofted barrel, highest at the shoulder, dipping a little behind it and rounding off at the rump
+    ist = [(-0.055, 0.076, 0.003, 0.003), (-0.049, 0.075, 0.016, 0.02), (-0.037, 0.074, 0.023, 0.027), (-0.018, 0.073, 0.026, 0.029),
+           (0.0, 0.074, 0.0272, 0.03), (0.016, 0.077, 0.026, 0.0302), (0.03, 0.08, 0.022, 0.027), (0.041, 0.083, 0.016, 0.02),
+           (0.047, 0.085, 0.004, 0.005)]
+    nr = 6 if az else nq(12, 6)
+    hal = [[V(x_, w_ * math.cos(TAU * i / nr), cz + h_ * math.sin(TAU * i / nr)) for i in range(nr)] for x_, cz, w_, h_ in ist]
+    for k in range(len(ist) - 1):
+        cz = (ist[k][1] + ist[k + 1][1]) / 2
+        for i in range(nr):
+            j = (i + 1) % nr
+            q = [hal[k][i], hal[k + 1][i], hal[k + 1][j], hal[k][j]]
+            c = sum(q, Vector()) / 4
+            y.yuz_yon(q, key, V(0, c.y, c.z - cz))
+    for k, sx in ((0, -1), (len(ist) - 1, 1)):
+        y.yuz_yon(hal[k], key, V(sx, 0, 0))
+    # head: one dome, carried high, the brow sloping into the trunk
+    elipsoid(y, (0.049, 0.0, 0.09), 0.02, 0.018, 0.022, key, n=5 if az else nq(12), kat=2 if az else nq(6))
+    # ears: huge flaps over the shoulders (a broad upper lobe, a narrower lobe hanging below), swung out at the back
+    for s in (-1, 1):
+        with parca(y, (0.044, s * 0.024, 0.0), -s * 0.3):
+            elipsoid(y, (-0.016, 0.0, 0.092), 0.024, 0.003, 0.024, key, n=5 if az else nq(12), kat=2 if az else nq(6))
+            elipsoid(y, (-0.012, 0.0, 0.074), 0.016, 0.0028, 0.02, key, n=5 if az else nq(10), kat=2 if az else nq(5))
+        if not az: kure(y, (0.064, s * 0.0125, 0.094), 0.002, 'koyu', n=6, kat=3)      # eye
+    # trunk: long and hanging
+    tr = [V(0.064, 0, 0.084), V(0.073, 0, 0.066), V(0.077, 0, 0.044), V(0.078 + hortum * 0.2, 0, 0.022 + hortum * 0.6),
+          V(0.081 + hortum * 0.5, 0, 0.007 + hortum), V(0.085 + hortum * 0.6, 0, 0.005 + hortum * 1.2)]
+    boru(y, tr if not az else tr[::2] + [tr[-1]], 0.008, key, n=3 if az else nq(8), r_son=0.0034)
+    # tusks: straight, pointing forward and down
+    for s in (-1, 1):
+        boru(y, [V(0.06, s * 0.0105, 0.074), V(0.072, s * 0.0125, 0.058), V(0.083, s * 0.0125, 0.047)], 0.0026,
+             'beyaz', n=3 if az else nq(6), r_son=0.0009)
+    # tail with a small dark tuft
+    if not az:
+        boru(y, [V(-0.05, 0, 0.088), V(-0.056, 0, 0.068), V(-0.057, 0, 0.052)], 0.0015, key, n=4, r_son=0.0012)
+        boru(y, [V(-0.057, 0, 0.053), V(-0.057, 0, 0.046)], 0.0019, 'koyu', n=4, r_son=0.0008)
 
 
 def nis_satir(y, a, b, z0, z1, n, renk=KUM, en=0.6, derin=0.008, sivri=0.0, ust=None):
