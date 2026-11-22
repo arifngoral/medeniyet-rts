@@ -1020,12 +1020,13 @@ def cati_kirma(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
 
 
 def cati_besik(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, kalinlik=0.012, kivrim=0.0, alt_key='ahsap_koyu',
-               ucluk_key='tas', alinlik_key=None, uc_sacak=None, nr=6, ns=8, mahya_en=0.012, dilim=None, sus=None):
+               ucluk_key='tas', alinlik_key=None, uc_sacak=None, nr=6, ns=8, mahya_en=0.012, dilim=None, sus=None, eksen=None):
     """a gable roof over x0..x1, y0..y1 with the ridge along the LONGER side (wall top z, ridge h above): two slopes,
     fascia and soffit, the gable walls (ucluk_key; alinlik_key: a moulded pediment edge), ridge cap. kivrim: concave
-    slopes. sus: a key for upturned ridge-end ornaments (East Asian). Returns the ridge z"""
+    slopes. sus: a key for upturned ridge-end ornaments (East Asian). eksen 'x': the ridge along x whatever the
+    proportions (the short gable on top of a near-square hip-and-gable roof). Returns the ridge z"""
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-    if (x1 - x0) < (y1 - y0):
+    if eksen != 'x' and (x1 - x0) < (y1 - y0):
         with parca(y, (cx, cy, 0), math.pi / 2):
             return cati_besik(y, -(y1 - y0) / 2, (y1 - y0) / 2, -(x1 - x0) / 2, (x1 - x0) / 2, z, h, sacak, key, mahya, kalinlik, kivrim,
                               alt_key, ucluk_key, alinlik_key, uc_sacak, nr, ns, mahya_en, dilim, sus)
@@ -1121,7 +1122,7 @@ def cati_irimoya(y, x0, x1, y0, y1, z, h, sacak=0.05, key='kiremit_koyu', mahya=
     # (steeper than the hips, its verges projecting over the hip slopes: the gable reads as a raised triangle, not a
     #  hole in the roof)
     zr = cati_besik(y, cx - ai + sacak * 0.6, cx + ai - sacak * 0.6, cy - bi + 0.012, cy + bi - 0.012, zt - 0.004, max(0.02, ho * dik), 0.016, key, mahya,
-                    0.008, kivrim * 0.5, alt_key, ucluk_key, None, sacak * 0.6, sus=sus, dilim=dilim, nr=nr2, ns=ns2)
+                    0.008, kivrim * 0.5, alt_key, ucluk_key, None, sacak * 0.6, sus=sus, dilim=dilim, nr=nr2, ns=ns2, eksen='x')
     return zr
 
 

@@ -14,6 +14,11 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Hwaseong Kalesi: granit sur ve tuğla siperler, yükselen iki katlı Janganmun kapı köşkü ve yarım ay barbakanı, yedi kemerli Hwahongmun su kapısı, beş bacalı Bongdon işaret kulesi, Gongsimdon gözcü kulesi.',
+        'Bulguksa Tapınağı: taş teraslar ve Cheongungyo / Baegungyo merdiven-köprüleri, Jahamun kapısı, Daeungjeon salonu, avluda süslü Dabotap ve sade Seokgatap pagodaları, revaklar, nilüferli gölet, kızıl akçaağaçlar.',
+        'Okçuluk Köşkü: çamlı tepede granit kaideli, dancheong boyalı açık köşk, yay geren okçular, boyalı hedef tahtaları, açelya çalıları, kaplumbağa kaideli kitabe.',
+        'Küp Avlusu: taş sekide sıra sıra sırlı onggi küpleri, kağıt kapılı hanok ve verandası, ambar kanadı, kiremit başlıklı toprak duvar, kaki ağacı, kuruyan biberler.',
+        'Kore binalarının yarım kırma (paljak) çatıları Kore\'ye özgü alçak alınlıklı biçimde; kareye yakın planlarda üst çatının ters dönmesi düzeltildi.',
         'Niani Kalesi: kaburgalı burçlu kerpiç sur, çivili kanatlı büyük kapı, terasta kireç sıvalı, kubbeli kabul salonu, altın kuşlu şemsiye altında Mansa ve saray erkânı, sazlı kulübeler, baobablar.',
         'Djinguereber Camii: Timbuktu\'nun alçak uzun kerpiç salonu, kademeli payandalar ve toronlar, bölmeli dam ve fenerler, iri sivrilen minare, avluda cemaat, sıva şenliği yapan ustalar, tuz kervanı.',
         'Atlı Avlusu: payandalı, pinakıllı kerpiç süvari avlusu, sivri kuleli kapı yapısı, sazlı sundurmalar ve kapitone örtülü atlar, koşu halkasında süvariler, saraç gölgeliği, tahıl ambarları.',
@@ -136,6 +141,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_hwaseong', kind: 'building', tags: ['yeni'], note: 'Surlar, Janganmun, Hwahongmun.' },
+      { id: 'lm_bulguksa', kind: 'building', tags: ['yeni'], note: 'Taş teraslar ve iki pagoda.' },
+      { id: 'lm_okculukpavyon', kind: 'building', tags: ['yeni'], note: 'Okçuluk köşkü ve okçular.' },
+      { id: 'lm_ambaravlu', kind: 'building', tags: ['yeni'], note: 'Onggi küpleri ve hanok.' },
       { id: 'lm_nianikale', kind: 'building', tags: ['yeni'], note: 'Kerpiç başkent ve Mansa\'nın sarayı.' },
       { id: 'lm_djinguereber', kind: 'building', tags: ['yeni'], note: 'Timbuktu\'nun kerpiç camisi.' },
       { id: 'lm_atliavlusu', kind: 'building', tags: ['yeni'], note: 'Kerpiç süvari avlusu.' },

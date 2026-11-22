@@ -361,7 +361,8 @@ export const LM_GLB = new Set(['lm_ayasofya', 'lm_himeji', 'lm_tacmahal', 'lm_az
   'lm_altinkule', 'lm_tercio', 'lm_escorial', 'lm_armada',
   'lm_kothon', 'lm_paraliasker', 'lm_byrsa', 'lm_filahirlari',
   'lm_morboya', 'lm_kartacasur', 'lm_tanit', 'lm_hannibalkamp',
-  'lm_nijerpazari', 'lm_atliavlusu', 'lm_djinguereber', 'lm_nianikale']);
+  'lm_nijerpazari', 'lm_atliavlusu', 'lm_djinguereber', 'lm_nianikale',
+  'lm_ambaravlu', 'lm_okculukpavyon', 'lm_bulguksa', 'lm_hwaseong']);
 const LM_STARTED = new Set();
 export function loadLandmarkGlb(id) {
   if (!LM_GLB.has(id) || LM_STARTED.has(id) || !enabled()) return;
