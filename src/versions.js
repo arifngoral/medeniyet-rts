@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Jaguar Tapınağı: Malinalco gibi teraslar üstünde yılan ağızlı kapılı yuvarlak tapınak, kademeli konik saz çatı, jaguar ve kartal heykelleri, gladyatör taşında kartal ve jaguar savaşçıları.',
+        'Tlatelolco Pazarı: tenteli pazar tezgâhları ve mallar, tüccar revakı, yargıç kürsüsü, kano iskeleli kanal, arkada kafatası frizli kırmızı ve turkuaz çizgili ikiz tapınaklı piramit.',
+        'Kartal Evi: talud-tablero kaideli sütunlu salon, kartal başlı merdiven, kartal savaşçısı heykelleri, kalkan diskli kırmızı türbe ve tepede kanat açmış kartal, savaşçı alayı frizli sıralar.',
+        'Çinampa Bahçeleri: göl üstünde ekin dolu tarla adaları, söğütler, yüklü kanolar, saz kulübeler; ortada turkuaz-beyaz Tlaloc türbeli piramit ve ahşap gözcü kulesi.',
         'Kahire Kalesi: yamaçta iki seviyeli Selahaddin kalesi, burçlu surlar, Bab el-Azab ve Mukattam Burcu; kurşun kubbeli, kalem minareli Mehmed Ali Camii, Nasır Muhammed Camii, cihannümalı Cevhere Sarayı.',
         'Beytülhikme: dört eyvanlı Abbasi medresesi, mukarnaslı taçkapı, çinili minareler, turkuaz kubbeli salon, armiller küreli rasathane kulesi, havuzlu avlu, badgirler.',
         'Deve Ağılı: Necd tarzı kerpiç ağıl, burçlar ve gözcü kulesi, boyalı kapı, hurma dalı gölgelikler, develer ve atlar, çıkrıklı kuyu, siyah kıl çadır.',
@@ -66,6 +70,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_jaguartapinagi', kind: 'building', tags: ['yeni'], note: 'Yılan ağızlı yuvarlak tapınak, jaguarlar.' },
+      { id: 'lm_tlatelolco', kind: 'building', tags: ['yeni'], note: 'Pazar ve ikiz tapınaklı piramit.' },
+      { id: 'lm_kartalevi', kind: 'building', tags: ['yeni'], note: 'Kartal savaşçıları sarayı.' },
+      { id: 'lm_cinampa', kind: 'building', tags: ['yeni'], note: 'Yüzer tarlalar ve Tlaloc türbesi.' },
       { id: 'lm_kahirekalesi', kind: 'building', tags: ['yeni'], note: 'Yamaçta kale ve Mehmed Ali Camii.' },
       { id: 'lm_beytulhikme', kind: 'building', tags: ['yeni'], note: 'Dört eyvanlı medrese, rasathane.' },
       { id: 'lm_deveagili', kind: 'building', tags: ['yeni'], note: 'Kerpiç ağıl, develer, kıl çadır.' },
