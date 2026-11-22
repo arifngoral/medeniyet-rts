@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Donanma Komutanlığı: yüksek granit kaideli 9x5 bölmeli Sebyeonggwan salonu, iki katlı Mangilru kapısı, tören avlusunda deniz askerleri, kaplumbağa kaideli steli olan Yi Sun-sin türbesi, limanda panokseon ve kaplumbağa gemisi.',
+        'Kaplumbağa Gemisi Tersanesi: kızakta, suda ve iskelede üç kaplumbağa gemisi (dumanlı ejder başı, çivili altıgen plakalı sırt, kürekler, top delikleri), hangar, buharlama teknesi, rıhtımda toplar, gözcü kulesi.',
+        'Hwacha Atölyesi: duvarlı avluda atölye, barut sundurması, yapımdaki hwacha arabaları, kafes ayaklı gözcü kulesi; deneme alanında duman izli roket oklar fırlatan hwachalar.',
+        'Gyeongbokgung Sarayı: iki kademeli granit terasta iki katlı Geunjeongjeon taht salonu, rütbe taşlı avlu ve tek çatılı revak halkası, Geumcheon köprüsü, üç kemerli Gwanghwamun, gölde Gyeonghoeru köşkü.',
         'Hwaseong Kalesi: granit sur ve tuğla siperler, yükselen iki katlı Janganmun kapı köşkü ve yarım ay barbakanı, yedi kemerli Hwahongmun su kapısı, beş bacalı Bongdon işaret kulesi, Gongsimdon gözcü kulesi.',
         'Bulguksa Tapınağı: taş teraslar ve Cheongungyo / Baegungyo merdiven-köprüleri, Jahamun kapısı, Daeungjeon salonu, avluda süslü Dabotap ve sade Seokgatap pagodaları, revaklar, nilüferli gölet, kızıl akçaağaçlar.',
         'Okçuluk Köşkü: çamlı tepede granit kaideli, dancheong boyalı açık köşk, yay geren okçular, boyalı hedef tahtaları, açelya çalıları, kaplumbağa kaideli kitabe.',
@@ -141,6 +145,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_komutanlik', kind: 'building', tags: ['yeni'], note: 'Sebyeonggwan ve liman.' },
+      { id: 'lm_kaplumbaga', kind: 'building', tags: ['yeni'], note: 'Kaplumbağa gemileri.' },
+      { id: 'lm_hwachaatolye', kind: 'building', tags: ['yeni'], note: 'Hwacha roket arabaları.' },
+      { id: 'lm_gyeongbok', kind: 'building', tags: ['yeni'], note: 'Gyeongbokgung taht salonu.' },
       { id: 'lm_hwaseong', kind: 'building', tags: ['yeni'], note: 'Surlar, Janganmun, Hwahongmun.' },
       { id: 'lm_bulguksa', kind: 'building', tags: ['yeni'], note: 'Taş teraslar ve iki pagoda.' },
       { id: 'lm_okculukpavyon', kind: 'building', tags: ['yeni'], note: 'Okçuluk köşkü ve okçular.' },
