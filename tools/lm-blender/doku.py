@@ -31,12 +31,15 @@ MALZEME = {
     'cimen_kuru': ('duz', (0.47, 0.51, 0.29), {'leke': 0.08}),  # sun-dried grass: one step from cimen towards toprak
     'toprak_ot': ('duz', (0.53, 0.49, 0.31), {'leke': 0.08}),   # earth with scrub: the next step (terrain colour ramps)
     'zeytin':   ('duz',  (0.50, 0.57, 0.40), {'leke': 0.07}),   # olive foliage (silvery grey-green)
+    'yesil_koyu': ('duz', (0.21, 0.36, 0.22), {'leke': 0.07}),   # dark evergreen foliage (yew, spruce, pine)
     'kaya':     ('duz',  (0.69, 0.62, 0.54), {'leke': 0.1}),     # bare limestone rock, cliffs (no coursing)
     'kaya_koyu': ('duz', (0.54, 0.47, 0.40), {'leke': 0.1}),
     'su':       ('duz',  (0.28, 0.46, 0.52), {'leke': 0.03}),
     # brick, earth, plaster
     'tugla':    ('tas',  (0.68, 0.37, 0.26), {}),
     'tugla_koyu': ('tas', (0.52, 0.28, 0.20), {}),
+    'tugla_sari': ('tas', (0.84, 0.69, 0.47), {}),     # Abbasid / Mesopotamian yellow baked brick (Baghdad, Samarra)
+    'tugla_sari_koyu': ('tas', (0.70, 0.55, 0.37), {}),
     'tugla_roma': ('tas', (0.73, 0.58, 0.46), {}),     # Roman fired brick, weathered: greyish tan-brown (Pantheon, forum)
     'tugla_roma_koyu': ('tas', (0.58, 0.45, 0.36), {}),
     'kerpic':   ('duz',  (0.74, 0.53, 0.35), {'leke': 0.09}),   # mud brick (Mali, Persia, Mesopotamia)
@@ -69,6 +72,8 @@ MALZEME = {
     'ahsap_koyu': ('duz', (0.27, 0.18, 0.12), {}),
     'ahsap_dikey': ('duz', (0.48, 0.33, 0.21), {}),        # vertical boards
     'kutuk':    ('duz',  (0.52, 0.37, 0.24), {}),          # logs
+    'sindira':  ('duz',  (0.36, 0.24, 0.15), {}),          # tarred wooden shingles (Norse stave roofs), courses along the eaves
+    'sindira2': ('duz',  (0.31, 0.205, 0.13), {}),
     'lake':     ('duz',  (0.68, 0.17, 0.12), {'leke': 0.03}),     # red lacquer (China, Japan, Korea)
     'lake_koyu': ('duz', (0.42, 0.10, 0.08), {'leke': 0.03}),
     'kece':     ('duz',  (0.93, 0.90, 0.83), {'leke': 0.04}),     # felt (Mongol ger)
@@ -332,13 +337,14 @@ DESENLI = {
     'kirec': (1.1, 1, 0), 'kum': (1.2, 1, 0), 'kum_koyu': (1.2, 1, 0), 'kirmizi_tas': (1.0, 1, 0),
     'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
     'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'kerpic_tugla': (0.5, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
+    'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
     'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
     'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0),
-    'ahsap_dikey': (0.5, 4, 1),
+    'ahsap_dikey': (0.5, 4, 1), 'sindira': (0.3, 1.4, 0), 'sindira2': (0.3, 1.4, 0),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
-           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla')   # (a shade per flat face)
+           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'tugla_sari', 'tugla_sari_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 
@@ -383,6 +389,10 @@ def karo_desen(boyut=512, tohum=5):
     return im
 
 
+CATI_MALZEME = ('kiremit', 'kiremit2', 'kiremit_koyu', 'kiremit_koyu2', 'kiremit_sari', 'kiremit_yesil', 'arduvaz', 'bakir',
+                'bakir2', 'saz', 'saz_koyu', 'cimen', 'sindira', 'sindira2')
+
+
 def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'; sc.cycles.samples = ornek; sc.cycles.device = 'CPU'
@@ -411,7 +421,13 @@ def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
     bpy.ops.object.bake(type='AO')
     a = np.zeros(n_loop * 4, np.float32); ao.data.foreach_get('color', a)
     a = a.reshape(-1, 4)[:, :1]
-    carp = (1 - ao_guc) + ao_guc * a
+    # roofs: the ridge / hip caps and rafters sitting on a slope darkened whole roof triangles in blotches (the
+    # shadow lives in the corners and spreads over the face), so roof materials take a softer shadow
+    guc = np.full((n_loop, 1), ao_guc, np.float32)
+    for p in me.polygons:
+        if anahtarlar[p.material_index] in CATI_MALZEME:
+            guc[p.loop_start:p.loop_start + p.loop_total] = ao_guc * 0.5
+    carp = (1 - guc) + guc * a
     son = renk.copy()
     son[:, :3] = np.where(mavi[:, None], renk[:, :3], renk[:, :3] * carp)
     me.color_attributes.remove(ao)

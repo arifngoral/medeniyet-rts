@@ -14,6 +14,11 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Akropolis Surları: kayalık tepe üstünde mazgallı sur ve kuleler, büyük merdivenli Propylaia, burç üstünde Athena Nike, Erekhtheion, Athena Promakhos, Eski Athena tapınağının kalıntıları.',
+        'Delfi Kahinliği: poligonal duvarlı teraslarda Apollon tapınağı, Atinalılar ve Sifnoslular hazineleri, Sakızlılar sunağı, Yılanlı Sütun, Naksos sfenksi, tiyatro ve Phaedriades kayalıkları.',
+        'Gymnasion: peristil avlulu palaistra, yüksek ephebeion salonu, İyon propylon, uzun örtülü koşu stoası, açık koşu yolu, bronz atletler ve zeytinler.',
+        'Agora: iki katlı Attalos Stoası, tepede Hephaistos tapınağı, Panathenaia yolu, pazar tezgâhları, Tholos, çeşme evi, Eponim Kahramanlar Anıtı.',
+        'Çatılardaki koyu gölge lekeleri giderildi (mahya ve kırma çizgilerinin çevresi).',
         'Makedon Falanks Kampı: sarissalarını indirmiş falanks dizisi, Vergina güneşli komutan evi, demirhane, talim kazıkları, çadırlar, kazık palisad ve yüksek gözcü kulesi.',
         'Rodos Limanı: mendirek başında meşaleli, ışın taçlı Kolossos, deniz feneri, gemi hangarları, dükkânlı stoa, Helios tapınağı, kuleli surlar ve limanda gemiler.',
         'Olimpia: Zeus tapınağı (altın Zeus kapıdan görünür), Philippeion, kül sunağı, hazineler terası ve kemerli tünelli stadyum.',
@@ -45,6 +50,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_akropolsur', kind: 'building', tags: ['yeni'], note: 'Sur, Propylaia, Athena Nike, Erekhtheion.' },
+      { id: 'lm_delfi', kind: 'building', tags: ['yeni'], note: 'Teraslar, Apollon tapınağı, hazineler, tiyatro.' },
+      { id: 'lm_gymnasion', kind: 'building', tags: ['yeni'], note: 'Palaistra avlusu, koşu stoası.' },
+      { id: 'lm_agora', kind: 'building', tags: ['yeni'], note: 'Attalos Stoası, Hephaistos tapınağı, pazar.' },
       { id: 'lm_falanks', kind: 'building', tags: ['yeni'], note: 'Falanks dizisi, komutan evi, gözcü kulesi.' },
       { id: 'lm_rodos', kind: 'building', tags: ['yeni'], note: 'Kolossos, fener, gemi hangarları.' },
       { id: 'lm_olimpia', kind: 'building', tags: ['yeni'], note: 'Zeus tapınağı, Philippeion, stadyum.' },
