@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Valhalla Salonu: altın kalkan pullarıyla kaplı çatı, mızrak sıralı duvarlar, altın ışıklı kapılar, mahyada Heiðrún keçisi ve Eikþyrnir geyiği, altın Glasir ağacı, kurtlar ve Eldhrímnir kazanı.',
+        'Hedeby Pazarı: yarım daire sur ve palisat içinde tahta yollu ticaret kasabası, sazlı evler, pazar tezgâhları, gözcü kulesi, iskeleler, knarr ve uzun gemiler.',
+        'Jomsborg Kalesi: toprak sur üstünde palisat ve kalkanlı ahşap kuleler, içinden su geçen taş deniz kapısı ve kulesi, iç limanda uzun gemiler.',
+        'Uppsala Tapınağı: altın zincirle sarılı kademeli stav tapınağı, ejder başları, şindıra kule, kutsal ağaç ve kuyu, üç çimenli kraliyet höyüğü.',
         'Uzun Gemi Tersanesi: taş duvarlı çim ve saz çatılı gemi barınakları, kızakta yapımı süren gemi, kırmızı-beyaz yelkenli ejder pruvalı drakkar, iskele, gözcü kulesi, ağlar ve katran kazanı.',
         'Thing Meydanı: taş setli çimenli kanun tepesi, tepede ejder başlı köşk, kutsal ip çiti, búðir barakaları, boyalı büyük runik taş ve çim çatılı meclis salonu.',
         'Hof Tapınağı: dik şindıra çatılı, ejder başlı, fener kuleli ahşap tapınak, revaklı galeri, altın zincir, hörgr sunağı, put direkleri, kutsal dişbudak ve dikili taş çemberi.',
@@ -54,6 +58,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_ulfsalon', kind: 'building', tags: ['yeni'], note: 'Altın kalkan çatılı Valhalla.' },
+      { id: 'lm_hedeby', kind: 'building', tags: ['yeni'], note: 'Surlu ticaret kasabası ve liman.' },
+      { id: 'lm_jomsborg', kind: 'building', tags: ['yeni'], note: 'Palisatlı kale, taş deniz kapısı.' },
+      { id: 'lm_uppsala', kind: 'building', tags: ['yeni'], note: 'Altın zincirli stav tapınağı, höyükler.' },
       { id: 'lm_naust', kind: 'building', tags: ['yeni'], note: 'Gemi barınakları, yapımı süren gemi, drakkar.' },
       { id: 'lm_thing', kind: 'building', tags: ['yeni'], note: 'Kanun tepesi, köşk, runik taş.' },
       { id: 'lm_hof', kind: 'building', tags: ['yeni'], note: 'Dik çatılı ahşap tapınak, ejder başları.' },
