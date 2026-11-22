@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Timbuktu Kervan Kalesi: eğimli, payandalı, toronlu kerpiç sur ve yuvarlak burçlar, tonozlu geçitli üç katlı kapı kulesi, depolar, kuyu, Tuareg muhafızlar, çöken develi tuz kervanı ve Taghaza tuz levhaları.',
+        'Mansa Musa Sarayı: üç katlı kerpiç saray kulesi, altın çerçeveli ve ipek perdeli kubbeli kabul salonu, fildişi taht ve altın şemsiye altında Mansa, altın mızraklı muhafızlar, haraç sandıkları, atlar ve develer.',
+        'Altın Madeni: laterit tepelerde çıkrıklı maden kuyuları ve toprak yığınları, nehirde altın yıkayan kadınlar, cevher dövenler, terazili altın tüccarları, kerpiç köy ve gözcü kulesi.',
+        'Sankore Medresesi: dört kademeli toronlu piramit minare, fenerli ibadet salonu, öğrenci odaları, el yazmalı kütüphane revağı, ders halkaları, damda kuruyan boyalı kumaşlar.',
         'Donanma Komutanlığı: yüksek granit kaideli 9x5 bölmeli Sebyeonggwan salonu, iki katlı Mangilru kapısı, tören avlusunda deniz askerleri, kaplumbağa kaideli steli olan Yi Sun-sin türbesi, limanda panokseon ve kaplumbağa gemisi.',
         'Kaplumbağa Gemisi Tersanesi: kızakta, suda ve iskelede üç kaplumbağa gemisi (dumanlı ejder başı, çivili altıgen plakalı sırt, kürekler, top delikleri), hangar, buharlama teknesi, rıhtımda toplar, gözcü kulesi.',
         'Hwacha Atölyesi: duvarlı avluda atölye, barut sundurması, yapımdaki hwacha arabaları, kafes ayaklı gözcü kulesi; deneme alanında duman izli roket oklar fırlatan hwachalar.',
@@ -145,6 +149,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_timbuktukale', kind: 'building', tags: ['yeni'], note: 'Kerpiç kervan kalesi ve tuz kervanı.' },
+      { id: 'lm_mansasaray', kind: 'building', tags: ['yeni'], note: 'Mansa Musa\'nın sarayı.' },
+      { id: 'lm_altinmadeni', kind: 'building', tags: ['yeni'], note: 'Altın madeni ve yıkama.' },
+      { id: 'lm_sankore', kind: 'building', tags: ['yeni'], note: 'Piramit minareli medrese.' },
       { id: 'lm_komutanlik', kind: 'building', tags: ['yeni'], note: 'Sebyeonggwan ve liman.' },
       { id: 'lm_kaplumbaga', kind: 'building', tags: ['yeni'], note: 'Kaplumbağa gemileri.' },
       { id: 'lm_hwachaatolye', kind: 'building', tags: ['yeni'], note: 'Hwacha roket arabaları.' },
