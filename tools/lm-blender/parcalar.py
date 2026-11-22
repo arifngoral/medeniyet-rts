@@ -16,6 +16,28 @@ REVAK = ('tas', 'tas', 'tas_acik', 'tas_koyu')            # an open arcade: dark
 TAU = 2 * math.pi
 
 
+def sivri_sol(x0, w, hs, hr, yari):
+    """the left half of a pointed arch over x0..x0 + w springing at hs, rising hr: yari points after the springing,
+    the last one the apex. hr >= w / 2: two arcs (equilateral / lancet). A lower rise (a Tudor / four-centred arch):
+    the two-arc rule put the arcs' tops above the apex (a heart-shaped notch at the crown), so a small haunch arc
+    turns into a straight rise to the apex instead"""
+    if hr >= w / 2 - 1e-9 or yari < 2:
+        rho = (w * w / 4 + hr * hr) / w; c = x0 + rho
+        ta = math.atan2(hr, (x0 + w / 2) - c)
+        return [(c + rho * math.cos(math.pi - (math.pi - ta) * k / yari), hs + rho * math.sin(math.pi - (math.pi - ta) * k / yari))
+                for k in range(1, yari + 1)]
+    r1 = min(w * 0.25, hr * 0.72)
+    cx, ax, ay = x0 + r1, x0 + w / 2, hr
+    d = math.hypot(ax - cx, ay)
+    tt = math.atan2(ay, ax - cx) + math.acos(min(1.0, r1 / d))   # the tangent point's angle on the haunch circle
+    n1 = max(1, min(yari - 1, int(round(yari * 0.6))))
+    out = [(cx + r1 * math.cos(math.pi - (math.pi - tt) * k / n1), hs + r1 * math.sin(math.pi - (math.pi - tt) * k / n1)) for k in range(1, n1 + 1)]
+    tx, tz = out[-1]
+    n2 = yari - n1
+    out += [(tx + (ax - tx) * k / n2, tz + (hs + ay - tz) * k / n2) for k in range(1, n2 + 1)]
+    return out
+
+
 def V(x, y, z=0.0):
     return Vector((x, y, z))
 
@@ -253,9 +275,10 @@ def pencereli_duvar(y, kose, z0, H, sayilar, kapali=True, **kw):
                       korkuluk=kw.get('korkuluk'))
 
 
-def dikdortgen_acik(y, a, b, z0, H, u0, u1, v0, v1, renkler, derin=0.025, cerceve=None):
+def dikdortgen_acik(y, a, b, z0, H, u0, u1, v0, v1, renkler, derin=0.025, cerceve=None, ic_kenar=False):
     """a wall bay a->b with a square-headed opening (window, door) from u0..u1 (0..1 along) and v0..v1 (height above
-    z0): wall around it, the reveal faces, the dark (or wooden) back. cerceve = (width, key): a raised frame"""
+    z0): wall around it, the reveal faces, the dark (or wooden) back. cerceve = (width, key): a raised frame;
+    ic_kenar: the frame's inner edges too (closes the slit along the reveal)"""
     duvar, koyu, acik, delik = renkler
     a, b = V(a[0], a[1]), V(b[0], b[1])
     W = (b - a).length; e = (b - a) / W; nc = V(e.y, -e.x)
@@ -280,6 +303,11 @@ def dikdortgen_acik(y, a, b, z0, H, u0, u1, v0, v1, renkler, derin=0.025, cercev
         y.yuz_yon([L(u0 - fu, v0 - f, d), L(u0 - fu, v1 + f, d), L(u0 - fu, v1 + f, 0), L(u0 - fu, v0 - f, 0)], mk, -e)
         y.yuz_yon([L(u1 + fu, v0 - f, d), L(u1 + fu, v1 + f, d), L(u1 + fu, v1 + f, 0), L(u1 + fu, v0 - f, 0)], mk, e)
         y.yuz_yon([L(u0 - fu, v0 - f, d), L(u1 + fu, v0 - f, d), L(u1 + fu, v0 - f, 0), L(u0 - fu, v0 - f, 0)], mk, -Z)
+        if ic_kenar:   # (the slit between the raised frame and the reveal showed the backs of the edges above)
+            y.yuz_yon([L(u0, v0, d), L(u0, v1, d), L(u0, v1, 0), L(u0, v0, 0)], mk, e)
+            y.yuz_yon([L(u1, v0, d), L(u1, v1, d), L(u1, v1, 0), L(u1, v0, 0)], mk, -e)
+            y.yuz_yon([L(u0, v1, d), L(u1, v1, d), L(u1, v1, 0), L(u0, v1, 0)], mk, -Z)
+            if v0 > 0: y.yuz_yon([L(u0, v0, d), L(u1, v0, d), L(u1, v0, 0), L(u0, v0, 0)], mk, Z)
     return W, e, nc, L
 
 
@@ -585,9 +613,8 @@ def _kemer_yuzu(y, a, b, z0, H, en, ust, sivri, key, k_say=10):
     R = (x1 - x0) / 2
     if sivri:
         w = x1 - x0; hr = sivri * w; hs = H - ust - hr
-        rho = (w * w / 4 + hr * hr) / w; c = x0 + rho
-        ta = math.atan2(hr, (x0 + w / 2) - c); yari = k_say // 2
-        sol = [(c + rho * math.cos(math.pi - (math.pi - ta) * k / yari), hs + rho * math.sin(math.pi - (math.pi - ta) * k / yari)) for k in range(1, yari + 1)]
+        yari = k_say // 2
+        sol = sivri_sol(x0, w, hs, hr, yari)
         kemer = sol + [(x0 + x1 - u, v) for u, v in reversed(sol[:-1])]
     else:
         hs = H - ust - R
@@ -1663,9 +1690,8 @@ def kemer_yolu(x0, x1, hs, sivri=0.0, k_say=10):
     (sivri > 0: pointed, its rise sivri x span; 0: round)"""
     if sivri:
         w = x1 - x0; hr = sivri * w
-        rho = (w * w / 4 + hr * hr) / w; c = x0 + rho
-        ta = math.atan2(hr, (x0 + w / 2) - c); yari = k_say // 2
-        sol = [(c + rho * math.cos(math.pi - (math.pi - ta) * k / yari), hs + rho * math.sin(math.pi - (math.pi - ta) * k / yari)) for k in range(1, yari + 1)]
+        yari = k_say // 2
+        sol = sivri_sol(x0, w, hs, hr, yari)
         kemer = sol + [(x0 + x1 - u, v) for u, v in reversed(sol[:-1])]
     else:
         R = (x1 - x0) / 2

@@ -117,11 +117,9 @@ class Yapi:
         if sivri:
             w = x1 - x0; hr = sivri * w
             hs = H - ust - hr
-            rho = (w * w / 4 + hr * hr) / w
-            c = x0 + rho
-            ta = math.atan2(hr, (x0 + w / 2) - c)
             yari = k_say // 2
-            sol = [(c + rho * math.cos(math.pi - (math.pi - ta) * k / yari), hs + rho * math.sin(math.pi - (math.pi - ta) * k / yari)) for k in range(1, yari + 1)]
+            from parcalar import sivri_sol   # (a low rise: a Tudor arch, no notch at the crown)
+            sol = sivri_sol(x0, w, hs, hr, yari)
             sag = [(x0 + x1 - u, v) for u, v in reversed(sol[:-1])]
             kemer = sol + sag
         else:

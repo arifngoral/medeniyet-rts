@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Londra Kulesi: kurşun soğan kubbecikli dört köşe kuleli Beyaz Kule, iç ve dış surlar ve kuleleri, Byward kapısı, yeşil hendek, Thames\'e açılan Hainler Kapısı, toplar, Beefeater\'lar ve kuzgunlar.',
+        'Westminster Manastırı: Hawksmoor kuleli batı cephesi, çift uçan payandalı gotik nef, gül pencereli transept, VII. Henry şapeli, manastır avlusu ve sekizgen bölüm evi.',
+        'Okçu Talim Alanı: çim hedef setleri ve saplanmış oklu saman hedefler, atış çizgisinde uzun yaylı okçular, yarı ahşap yay ustası atölyesi, gotik köy kilisesi kulesi.',
+        'Malikâne: E planlı Tudor malikânesi, çıkmalı yarı ahşap üst kat, burgulu tuğla bacalar, kapı evi, ahır, güvercinlik, düğüm bahçesi ve labirent, balık havuzu.',
         'Les Invalides: altın kaburgalı, çelenkli, yaldızlı fenerli kurşun kubbe, Dor ve Korint sütunlu iki katlı cephe, iki kat revaklı Cour d\'Honneur, Mansart çatılı hastane, top sırası, hendek ve tarhlar.',
         'Versay Sarayı: Place d\'Armes ve atlı XIV. Louis, yaldızlı Grille Royale, Mermer Avlu, tuğla-taş şato ve Mansart çatılar, Kraliyet Şapeli, bahçe cephesi, Su Parteri ve Latona çeşmesi.',
         'Carcassonne: tepe üstünde çifte surlu ortaçağ kenti, konik arduvaz çatılı kuleler, Narbonne Kapısı, Comtal kalesi, Saint-Nazaire bazilikası ve sokak sokak evler.',
@@ -105,6 +109,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_londrakulesi', kind: 'building', tags: ['yeni'], note: 'Beyaz Kule ve surlar.' },
+      { id: 'lm_westminster', kind: 'building', tags: ['yeni'], note: 'Gotik manastır kilisesi.' },
+      { id: 'lm_okcutalim', kind: 'building', tags: ['yeni'], note: 'Okçular ve hedef setleri.' },
+      { id: 'lm_manor', kind: 'building', tags: ['yeni'], note: 'Tudor malikânesi.' },
       { id: 'lm_invalides', kind: 'building', tags: ['yeni'], note: 'Altın kaburgalı kubbe.' },
       { id: 'lm_versay', kind: 'building', tags: ['yeni'], note: 'U avlular, Mansart çatılar, bahçe.' },
       { id: 'lm_carcassonne', kind: 'building', tags: ['yeni'], note: 'Çifte surlu ortaçağ kenti.' },
