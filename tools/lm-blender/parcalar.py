@@ -1697,6 +1697,10 @@ def kemer_nis(y, a, b, z0, H, en=0.8, ust=0.03, sivri=0.5, derin=0.015, key='tas
             y.yuz_yon([L(*p, d), L(*q, d), L(*dis(q), d), L(*dis(p), d)], tas, nc)
             orta = (L(*dis(p), 0) + L(*dis(q), 0)) / 2
             y.yuz_yon([L(*dis(p), d), L(*dis(q), d), L(*dis(q), 0), L(*dis(p), 0)], mlz[0], orta - L(xm, (v0 + hs) / 2, 0))
+            # and its inner edge (as in Yapi.kemerli: seen slantwise the gap under it showed the outer edge's back)
+            vm = min(max((p[1] + q[1]) / 2, v0), hs)
+            ic_ = (L(*p) + L(*q)) / 2
+            y.yuz_yon([L(*p, d), L(*q, d), L(*q, 0), L(*p, 0)], mlz[0], L(xm, vm) - ic_)
     return L, x0, x1, hs, H - ust
 
 

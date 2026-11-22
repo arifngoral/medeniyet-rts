@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Şam Çeliği Dökümhanesi: kerpiç kubbeli pota fırınları ve yüksek bacalar, körükler, örsler ve demirciler, kılıç rafları, soğutma havuzu, kaburgalı kubbeli usta salonu, rüzgâr bacaları.',
+        'Büyük Kervan Hanı: dükkânlı ve cumbalı sokak cephesi, ablak mukarnaslı taçkapı, iki katlı revaklı avlu, kubbeli çeşme köşkü, mescit ve Şam minaresi, develer ve gelen kervan.',
+        'Memlûk Kışlası: kırmızı-beyaz ablak mukarnaslı taçkapı, kafes kabartmalı taş kubbeli türbe, kare-sekizgen-yuvarlak gövdeli Memlûk minaresi, revaklı avlu, ahırlar ve talim avlusu.',
+        'Elhamra Sarayı: Sabika tepesinde kızıl surlar ve kuleler, Alcazaba ve Vela kulesi, Comares kulesi, Mersinli Avlu, 12 aslanlı çeşmeli Aslanlı Avlu, Partal ve bahçeler.',
         'Jaguar Tapınağı: Malinalco gibi teraslar üstünde yılan ağızlı kapılı yuvarlak tapınak, kademeli konik saz çatı, jaguar ve kartal heykelleri, gladyatör taşında kartal ve jaguar savaşçıları.',
         'Tlatelolco Pazarı: tenteli pazar tezgâhları ve mallar, tüccar revakı, yargıç kürsüsü, kano iskeleli kanal, arkada kafatası frizli kırmızı ve turkuaz çizgili ikiz tapınaklı piramit.',
         'Kartal Evi: talud-tablero kaideli sütunlu salon, kartal başlı merdiven, kartal savaşçısı heykelleri, kalkan diskli kırmızı türbe ve tepede kanat açmış kartal, savaşçı alayı frizli sıralar.',
@@ -70,6 +74,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_samcelik', kind: 'building', tags: ['yeni'], note: 'Pota fırınları, bacalar, demirciler.' },
+      { id: 'lm_kervanhani', kind: 'building', tags: ['yeni'], note: 'Revaklı han, çeşme köşkü, kervan.' },
+      { id: 'lm_memlukkisla', kind: 'building', tags: ['yeni'], note: 'Ablak taçkapı, taş kubbe, Memlûk minaresi.' },
+      { id: 'lm_elhamra', kind: 'building', tags: ['yeni'], note: 'Kızıl surlar, Comares kulesi, Aslanlı Avlu.' },
       { id: 'lm_jaguartapinagi', kind: 'building', tags: ['yeni'], note: 'Yılan ağızlı yuvarlak tapınak, jaguarlar.' },
       { id: 'lm_tlatelolco', kind: 'building', tags: ['yeni'], note: 'Pazar ve ikiz tapınaklı piramit.' },
       { id: 'lm_kartalevi', kind: 'building', tags: ['yeni'], note: 'Kartal savaşçıları sarayı.' },
