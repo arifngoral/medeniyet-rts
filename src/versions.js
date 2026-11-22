@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Parlamento ve Saat Kulesi: yaldızlı kadranlı, sivri tepeli Saat Kulesi, payandalı gotik ırmak cephesi, avlular, bayraklı Victoria Kulesi, sekizgen merkez kule, Westminster Hall, Thames rıhtımı.',
+        'Kraliyet Cephaneliği: saatli kubbecikli Dial Square kapısı, Pirinç Dökümhanesi ve dumanlı bacalar, top sıraları ve gülle piramitleri, Nöbetçi Evi, vinçli iskele ve barut fıçıları.',
+        'Kraliyet Tersanesi: rıhtımda üç güverteli savaş gemisi, kızakta yapımı süren gemi, kuru havuzda bakır dipli firkateyn, uzun halat evi, saat kubbeli ambar, treadwheel vinç.',
+        'Globe Tiyatrosu: yirmi köşeli, üç katlı yarı ahşap tiyatro, katman katman saz çatı halkası, seyircili galeriler ve avlu, sütunlu sahne ve cennet sayvanı, Thames kıyısı.',
         'Toledo Kılıç Ocağı: Tajo kıyısında taş-tuğla kılıç atölyesi, ocaklar, örsler, su verme havuzları, su çarklı çekiç değirmeni, iki kapılı Alcántara köprüsü; tepede dört kuleli avlulu Alcázar, mudéjar kilise kulesi ve evler.',
         'Santiago Katedrali: kat kat yükselen barok Obradoiro cephesi ve fenerli iki kulesi, iki kollu merdiven, Romanesk gövde, sekizgen kesişim feneri, saat kulesi, klostr, Gelmírez sarayı ve hacılı meydan.',
         'Sınır Kalesi: kayalık tepede mazgallı yuvarlak kuleli Kastilya kalesi, konsollu kulecikli büyük kale kulesi, barbakanlı kapı ve rampa, Romanesk şapel, demirci ve ahır.',
@@ -116,6 +120,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_bigben', kind: 'building', tags: ['yeni'], note: 'Saat Kulesi ve Parlamento.' },
+      { id: 'lm_woolwich', kind: 'building', tags: ['yeni'], note: 'Kraliyet Cephaneliği.' },
+      { id: 'lm_kraliyettersane', kind: 'building', tags: ['yeni'], note: 'Savaş gemileri ve tersane.' },
+      { id: 'lm_globe', kind: 'building', tags: ['yeni'], note: 'Globe Tiyatrosu.' },
       { id: 'lm_toledo', kind: 'building', tags: ['yeni'], note: 'Kılıç atölyesi, köprü, Alcázar.' },
       { id: 'lm_santiago', kind: 'building', tags: ['yeni'], note: 'Barok Obradoiro cephesi.' },
       { id: 'lm_reconquista', kind: 'building', tags: ['yeni'], note: 'Kastilya tepe kalesi.' },
