@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Armada Tersanesi: beş sivri kemerli tuğla tersane salonu, kızakta kalyon iskeleti, rıhtımda Burgonya haçlı yelkenli büyük kalyon ve top yükleyen vinç, top dökümhanesi.',
+        'El Escorial: ızgara planlı granit manastır-saray, sivri arduvaz külahlı köşe kuleleri, kaburgalı kubbeli bazilika ve çan kuleleri, Müjdeciler avlusu, kral heykelli cephe, Lonja.',
+        'Tercio Kışlası: avlulu iki katlı kışla, çan duvarlı armalı taç kapı, gözcü kulesi, silah deposu, talimde mızrak karesi ve ateş eden arkebüzcüler.',
+        'Altın Kule: Guadalquivir kıyısında on iki köşeli Muvahhid kulesi, nal kemerli pencereler, çini frizli ince üst kat, sarı kubbecik; Arenal rıhtımı, kalyonlar ve arkada Giralda.',
         'Parlamento ve Saat Kulesi: yaldızlı kadranlı, sivri tepeli Saat Kulesi, payandalı gotik ırmak cephesi, avlular, bayraklı Victoria Kulesi, sekizgen merkez kule, Westminster Hall, Thames rıhtımı.',
         'Kraliyet Cephaneliği: saatli kubbecikli Dial Square kapısı, Pirinç Dökümhanesi ve dumanlı bacalar, top sıraları ve gülle piramitleri, Nöbetçi Evi, vinçli iskele ve barut fıçıları.',
         'Kraliyet Tersanesi: rıhtımda üç güverteli savaş gemisi, kızakta yapımı süren gemi, kuru havuzda bakır dipli firkateyn, uzun halat evi, saat kubbeli ambar, treadwheel vinç.',
@@ -120,6 +124,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_armada', kind: 'building', tags: ['yeni'], note: 'Tersane salonları ve kalyonlar.' },
+      { id: 'lm_escorial', kind: 'building', tags: ['yeni'], note: 'Granit manastır-saray.' },
+      { id: 'lm_tercio', kind: 'building', tags: ['yeni'], note: 'Kışla ve mızrak karesi.' },
+      { id: 'lm_altinkule', kind: 'building', tags: ['yeni'], note: 'On iki köşeli Altın Kule.' },
       { id: 'lm_bigben', kind: 'building', tags: ['yeni'], note: 'Saat Kulesi ve Parlamento.' },
       { id: 'lm_woolwich', kind: 'building', tags: ['yeni'], note: 'Kraliyet Cephaneliği.' },
       { id: 'lm_kraliyettersane', kind: 'building', tags: ['yeni'], note: 'Savaş gemileri ve tersane.' },

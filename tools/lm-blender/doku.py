@@ -22,6 +22,7 @@ MALZEME = {
     'kirmizi_tas': ('tas', (0.70, 0.36, 0.27), {}),        # red sandstone (Red Fort, Amber)
     'granit':   ('tas',  (0.63, 0.60, 0.58), {}),          # grey castle stone (England, France, Korea walls)
     'granit_koyu': ('tas', (0.46, 0.44, 0.43), {}),
+    'granit_acik': ('tas', (0.79, 0.77, 0.73), {}),         # light grey granite ashlar (El Escorial)
     'granit_kizil': ('tas', (0.66, 0.49, 0.44), {}),      # Aswan red granite (Old Kingdom temple casing, obelisks)
     'granit_kizil_koyu': ('tas', (0.50, 0.36, 0.33), {}),
     'tas_volkan': ('tas', (0.56, 0.50, 0.45), {'tugla': 9.0}),     # Teotihuacan volcanic stone (tezontle / andesite rubble): grey-brown
@@ -87,6 +88,13 @@ MALZEME = {
     'boya_yesil': ('duz', (0.24, 0.50, 0.38), {'leke': 0.03}),
     'turkuaz':  ('duz',  (0.18, 0.60, 0.58), {'leke': 0.03}),     # glazed tile (Persia, Timurid)
     'lacivert': ('duz',  (0.28, 0.22, 0.52), {'leke': 0.03}),     # deep blue glaze / paint (kept off team blue)
+    'mor':      ('duz',  (0.45, 0.17, 0.38), {'leke': 0.03}),     # Tyrian purple (Phoenician / Punic dyed cloth)
+    'boya_mor': ('duz',  (0.40, 0.15, 0.50), {'leke': 0.03}),     # violet dye (hue ~283, kept off team blue): vats, cloth
+    'boya_mor_acik': ('duz', (0.62, 0.40, 0.68), {'leke': 0.03}), # pale violet (a first dip, a faded cloth)
+    'kabuk':    ('duz',  (0.83, 0.78, 0.70), {'leke': 0.08}),     # heaps of crushed murex shells (lm_morboya colours them per corner)
+    'onggi':    ('duz',  (0.33, 0.20, 0.12), {'leke': 0.04}),     # Korean onggi jars: dark brown glaze
+    'onggi2':   ('duz',  (0.42, 0.26, 0.15), {'leke': 0.04}),     # a lighter jar / the glaze's sheen on the shoulder
+    'turuncu':  ('duz',  (0.90, 0.47, 0.16), {'leke': 0.04}),     # persimmons, drying chillies
     'kobalt':   ('duz',  (0.10, 0.18, 0.38), {'leke': 0.02}),     # dark cobalt glaze: a true blue kept off team blue by its
                                                                     # darkness (isTeamBlue needs max channel > 0.45)
     'kiremit_kobalt': ('duz', (0.10, 0.18, 0.38), {'leke': 0.02}),   # cobalt glazed roof tiles (Temple of Heaven): coursed like kiremit
@@ -343,7 +351,7 @@ def parca_nesne(yuzler, ad, aci=38):
 DESENLI = {
     'tas': (1.0, 1, 0), 'tas_koyu': (1.0, 1, 0), 'zemin': (1.6, 1, 0),
     'kirec': (1.1, 1, 0), 'kum': (1.2, 1, 0), 'kum_koyu': (1.2, 1, 0), 'kirmizi_tas': (1.0, 1, 0),
-    'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
+    'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_acik': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
     'tas_volkan': (0.6, 1, 0), 'tas_volkan_koyu': (0.6, 1, 0),
     'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'kerpic_tugla': (0.5, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
     'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0), 'porselen': (0.42, 1, 0),
@@ -353,7 +361,7 @@ DESENLI = {
     'ahsap_dikey': (0.5, 4, 1), 'sindira': (0.3, 1.4, 0), 'sindira2': (0.3, 1.4, 0),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
-           'granit_koyu', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'tugla_sari', 'tugla_sari_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla', 'tas_volkan', 'tas_volkan_koyu')   # (a shade per flat face)
+           'granit_koyu', 'granit_acik', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'tugla_sari', 'tugla_sari_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla', 'tas_volkan', 'tas_volkan_koyu')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 
