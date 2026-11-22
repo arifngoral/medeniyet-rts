@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Niani Kalesi: kaburgalı burçlu kerpiç sur, çivili kanatlı büyük kapı, terasta kireç sıvalı, kubbeli kabul salonu, altın kuşlu şemsiye altında Mansa ve saray erkânı, sazlı kulübeler, baobablar.',
+        'Djinguereber Camii: Timbuktu\'nun alçak uzun kerpiç salonu, kademeli payandalar ve toronlar, bölmeli dam ve fenerler, iri sivrilen minare, avluda cemaat, sıva şenliği yapan ustalar, tuz kervanı.',
+        'Atlı Avlusu: payandalı, pinakıllı kerpiç süvari avlusu, sivri kuleli kapı yapısı, sazlı sundurmalar ve kapitone örtülü atlar, koşu halkasında süvariler, saraç gölgeliği, tahıl ambarları.',
+        'Nijer Pazarı: Nijer kıyısında süslü cepheli Djenné evleri, minareli kerpiç cami, sazlı gölgeliklerde tuz, altın, kola tezgâhları, pirogue kayıklar, develer ve Tuareg tüccarlar.',
         'Hannibal\'ın Ordugâhı: karlı Alpler önünde kazık palisatlı kamp, şeritli kırmızı komutan çadırı, Kartaca / İber / Numidya çadırları, Kuzey Afrika filleri, geçide tırmanan ordu kolu, kamp ateşleri.',
         'Tanit Tapınağı: boya şeritli pilon kapılı temenos, yüksek podyumlu tapınak, iki serbest sütun, tepede altın disk ve hilal, sfenksler, boynuzlu sunak, Tanit işaretli stellerle dolu Tofet, kutsal koru.',
         'Kartaca Surları: L biçimli üç katlı sur, altta fil, üstte at ahırları ve ahşap galeri, payandalar, mazgallı kuleler, Tanit\'li ana kapı, hendek ve kazık palisat, Megara evleri.',
@@ -132,6 +136,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_nianikale', kind: 'building', tags: ['yeni'], note: 'Kerpiç başkent ve Mansa\'nın sarayı.' },
+      { id: 'lm_djinguereber', kind: 'building', tags: ['yeni'], note: 'Timbuktu\'nun kerpiç camisi.' },
+      { id: 'lm_atliavlusu', kind: 'building', tags: ['yeni'], note: 'Kerpiç süvari avlusu.' },
+      { id: 'lm_nijerpazari', kind: 'building', tags: ['yeni'], note: 'Nijer kıyısında pazar.' },
       { id: 'lm_hannibalkamp', kind: 'building', tags: ['yeni'], note: 'Alpler önünde ordu kampı.' },
       { id: 'lm_tanit', kind: 'building', tags: ['yeni'], note: 'Tanit tapınağı ve Tofet.' },
       { id: 'lm_kartacasur', kind: 'building', tags: ['yeni'], note: 'Üç katlı sur ve ahırlar.' },

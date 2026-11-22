@@ -300,24 +300,43 @@ def deve(y, x, yy, z, aci, renk='ahsap_acik', yuk=True, cul='boya_kirmizi', olce
     """a stylised dromedary (head towards +x before turning); yuk: bales over a saddle cloth; cok: kneeling"""
     with parca(y, (x, yy, z), aci, olcek):
         h = 0.075 if not cok else 0.03
-        boru(y, [V(-0.045, 0, h + 0.012), V(-0.01, 0, h + 0.02), V(0.03, 0, h + 0.018), V(0.048, 0, h + 0.012)], 0.02, renk, n=8)
-        kure(y, (-0.045, 0, h + 0.012), 0.019, renk, n=8, kat=4)
-        kure(y, (0.046, 0, h + 0.013), 0.018, renk, n=8, kat=4)
-        donel(y, (-0.004, 0), [(0.026, h + 0.02), (0.022, h + 0.04), (0.012, h + 0.054), (0.0, h + 0.058)], renk, n=10)
-        boru(y, [V(0.05, 0, h + 0.016), V(0.082, 0, h + 0.004), V(0.102, 0, h + 0.026), V(0.106, 0, h + 0.05)], 0.009, renk, n=6, r_son=0.007)
-        boru(y, [V(0.102, 0, h + 0.054), V(0.13, 0, h + 0.047)], 0.009, renk, n=6, r_son=0.006)
-        for s in (-1, 1):
-            cubuk(y, V(0.104, s * 0.006, h + 0.06), V(0.101, s * 0.007, h + 0.069), 0.003, renk)
+        boru(y, [V(-0.045, 0, h + 0.012), V(-0.01, 0, h + 0.02), V(0.03, 0, h + 0.018), V(0.048, 0, h + 0.012)], 0.02, renk, n=10)
+        kure(y, (-0.045, 0, h + 0.012), 0.019, renk, n=10, kat=5)
+        kure(y, (0.046, 0, h + 0.013), 0.018, renk, n=10, kat=5)
+        donel(y, (-0.004, 0), [(0.026, h + 0.02), (0.025, h + 0.03), (0.021, h + 0.042), (0.014, h + 0.052), (0.006, h + 0.057), (0.0, h + 0.058)], renk, n=12)
+        if not cok:
+            boru(y, [V(0.05, 0, h + 0.016), V(0.082, 0, h + 0.004), V(0.102, 0, h + 0.026), V(0.106, 0, h + 0.05)], 0.009, renk, n=6, r_son=0.007)
+            boru(y, [V(0.102, 0, h + 0.054), V(0.13, 0, h + 0.047)], 0.009, renk, n=6, r_son=0.006)
+            for s in (-1, 1):
+                cubuk(y, V(0.104, s * 0.006, h + 0.06), V(0.101, s * 0.007, h + 0.069), 0.003, renk)
+        else:
+            # kneeling: the neck held up in an S, the head high and level, a muzzle and small ears
+            boru(y, [V(0.05, 0, h + 0.018), V(0.07, 0, h + 0.02), V(0.086, 0, h + 0.044), V(0.09, 0, h + 0.07)], 0.009, renk, n=8, r_son=0.0072)
+            boru(y, [V(0.087, 0, h + 0.074), V(0.105, 0, h + 0.071), V(0.118, 0, h + 0.064)], 0.0085, renk, n=8, r_son=0.0055)
+            kure(y, (0.119, 0, h + 0.063), 0.0056, renk, n=8, kat=4)
+            for s in (-1, 1):
+                cubuk(y, V(0.088, s * 0.006, h + 0.078), V(0.085, s * 0.008, h + 0.086), 0.0028, renk)
+                kure(y, (0.101, s * 0.0068, h + 0.076), 0.0018, 'koyu', n=5, kat=3)      # the eyes
+            # the hairy pad on the throat and the mouth line
+            kure(y, (0.08, 0, h + 0.03), 0.0075, renk, n=8, kat=4)
         boru(y, [V(-0.062, 0, h + 0.02), V(-0.07, 0, h - 0.005), V(-0.068, 0, h - 0.02 if not cok else h - 0.01)], 0.0025, 'ahsap_koyu', n=4, r_son=0.0015)
         if not cok:
             for lx in (-0.04, 0.038):
                 for s in (-1, 1):
                     boru(y, [V(lx, s * 0.01, h + 0.004), V(lx + 0.004, s * 0.01, h * 0.5), V(lx, s * 0.01, 0.006)], 0.0055, renk, n=5, r_son=0.004)
                     kutu_merkez(y, (lx + 0.003, s * 0.01), 0.012, 0.01, 0.006, 'ahsap_koyu')
-        else:   # folded legs under the body
-            for lx in (-0.035, 0.03):
-                for s in (-1, 1):
-                    boru(y, [V(lx - 0.012, s * 0.016, 0.008), V(lx + 0.016, s * 0.016, 0.008)], 0.007, renk, n=5)
+        else:
+            # the body sinks onto its chest pad and folded legs: a belly mass down to the ground, the forelegs
+            # folded with the knees forward, the hind legs folded with the haunches bulging out and the feet back
+            boru(y, [V(-0.042, 0, h - 0.006), V(0.0, 0, h - 0.01), V(0.036, 0, h - 0.008)], 0.017, renk, n=8, r_son=0.015)
+            kure(y, (0.04, 0, h - 0.016), 0.012, renk, n=8, kat=4)      # the chest pad on the ground
+            for s in (-1, 1):
+                boru(y, [V(0.034, s * 0.014, h - 0.002), V(0.06, s * 0.012, 0.007), V(0.03, s * 0.0135, 0.005)], 0.006, renk, n=6, r_son=0.0048)
+                kure(y, (0.06, s * 0.012, 0.0075), 0.0068, renk, n=6, kat=4)                                  # the knee
+                kure(y, (0.027, s * 0.0135, 0.0052), 0.0058, renk, n=6, kat=3)                               # the padded foot
+                kure(y, (-0.04, s * 0.012, h - 0.004), 0.016, renk, n=8, kat=4)                              # the haunch
+                boru(y, [V(-0.03, s * 0.022, 0.012), V(-0.052, s * 0.022, 0.007), V(-0.072, s * 0.016, 0.005)], 0.0062, renk, n=6, r_son=0.0045)
+                kure(y, (-0.073, s * 0.016, 0.0052), 0.0056, renk, n=6, kat=3)
         if yuk:
             kutu_merkez(y, (-0.004, 0), 0.05, 0.05, 0.004, cul, z0=h + 0.03)
             for s in (-1, 1):
