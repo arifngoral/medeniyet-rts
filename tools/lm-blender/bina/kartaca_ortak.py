@@ -210,6 +210,9 @@ def gemi(y, konum, aci, egim=0.0, L=0.3, B=0.05, H=0.028, kurek=True, yelken=Fal
             x, w, h = st[i]
             y.yuz_yon([V(x, -w, h), V(x, -w * 1.02, h * 0.62), V(x, -w, h * 0.45), V(x, 0, kz), V(x, w, h * 0.45),
                        V(x, w * 1.02, h * 0.62), V(x, w, h)], 'ahsap_koyu', V(sg, 0, 0))
+            if not kaba:   # (the cap's upper part stands above the deck: seen from inside the hull it was a back face)
+                xi = x - sg * 0.0006
+                y.yuz_yon([V(xi, -w, h * dk), V(xi, w, h * dk), V(xi, w, h), V(xi, -w, h)], 'ahsap', V(-sg, 0, 0))
         xb, wb, hb = st[-1]
         x0, w0, h0 = st[0]
         if tur == 'savas':

@@ -41,6 +41,8 @@ MALZEME = {
     # brick, earth, plaster
     'tugla':    ('tas',  (0.68, 0.37, 0.26), {}),
     'tugla_koyu': ('tas', (0.52, 0.28, 0.20), {}),
+    'tugla_gri': ('tas', (0.60, 0.58, 0.55), {}),      # grey fired brick (Korean fortress parapets, Hwaseong)
+    'tugla_gri_koyu': ('tas', (0.47, 0.46, 0.44), {}),
     'tugla_sari': ('tas', (0.84, 0.69, 0.47), {}),     # Abbasid / Mesopotamian yellow baked brick (Baghdad, Samarra)
     'tugla_sari_koyu': ('tas', (0.70, 0.55, 0.37), {}),
     'tugla_roma': ('tas', (0.73, 0.58, 0.46), {}),     # Roman fired brick, weathered: greyish tan-brown (Pantheon, forum)
@@ -105,6 +107,8 @@ MALZEME = {
     'fil':      ('duz',  (0.50, 0.47, 0.46), {'leke': 0.04}),     # elephant hide (grey, a touch warm)
     'kirmizi_tas_acik': ('duz', (0.80, 0.50, 0.40), {'leke': 0.04}),   # dressed red sandstone trim (Mughal / Rajput)
     'mavi':     ('duz',  (0.10, 0.32, 0.88), {'leke': 0.0, 'aosuz': True}),   # TEAM COLOUR (banners)
+    'buhar':    ('duz',  (0.93, 0.93, 0.92), {'leke': 0.0}),      # steam (a soft baked shadow: YUMUSAK_AO)
+    'duman':    ('duz',  (0.72, 0.70, 0.68), {'leke': 0.0}),      # wood smoke (a soft baked shadow: YUMUSAK_AO)
 }
 
 
@@ -354,14 +358,14 @@ DESENLI = {
     'granit': (0.9, 1, 0), 'granit_koyu': (0.9, 1, 0), 'granit_acik': (0.9, 1, 0), 'granit_kizil': (0.9, 1, 0), 'granit_kizil_koyu': (0.9, 1, 0),
     'tas_volkan': (0.6, 1, 0), 'tas_volkan_koyu': (0.6, 1, 0),
     'tugla': (0.42, 1, 0), 'tugla_koyu': (0.42, 1, 0), 'kerpic_tugla': (0.5, 1, 0), 'tugla_roma': (0.42, 1, 0), 'tugla_roma_koyu': (0.42, 1, 0),
-    'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0), 'porselen': (0.42, 1, 0),
+    'tugla_sari': (0.42, 1, 0), 'tugla_sari_koyu': (0.42, 1, 0), 'porselen': (0.42, 1, 0), 'tugla_gri': (0.42, 1, 0), 'tugla_gri_koyu': (0.42, 1, 0),
     'kiremit': (0.36, 1.6, 0), 'kiremit2': (0.36, 1.6, 0), 'kiremit_koyu': (0.36, 1.6, 0), 'kiremit_koyu2': (0.36, 1.6, 0),
     'kiremit_sari': (0.36, 1.6, 0), 'kiremit_yesil': (0.36, 1.6, 0), 'kiremit_kobalt': (0.36, 1.6, 0), 'arduvaz': (0.3, 1.3, 0),
     'ahsap': (0.5, 4, 0), 'ahsap_acik': (0.5, 4, 0), 'ahsap_koyu': (0.5, 4, 0), 'kutuk': (0.6, 6, 0),
     'ahsap_dikey': (0.5, 4, 1), 'sindira': (0.3, 1.4, 0), 'sindira2': (0.3, 1.4, 0),
 }
 DUZ_TON = ('tas', 'tas_koyu', 'tas_acik', 'zemin', 'kirec', 'kum', 'kum_koyu', 'kum_acik', 'kirmizi_tas', 'granit',
-           'granit_koyu', 'granit_acik', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_roma', 'tugla_roma_koyu', 'tugla_sari', 'tugla_sari_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla', 'tas_volkan', 'tas_volkan_koyu')   # (a shade per flat face)
+           'granit_koyu', 'granit_acik', 'granit_kizil', 'granit_kizil_koyu', 'tugla', 'tugla_koyu', 'tugla_gri', 'tugla_gri_koyu', 'tugla_roma', 'tugla_roma_koyu', 'tugla_sari', 'tugla_sari_koyu', 'siva', 'siva_krem', 'kerpic', 'kerpic_koyu', 'kerpic_tugla', 'tas_volkan', 'tas_volkan_koyu')   # (a shade per flat face)
 KARO = 0.11                                              # model units per tile (4 courses)
 DUZ_UV = (40 / 512, 1 - 25 / 512)                        # the plain (white, grainless) spot of the tile's first block (Blender UV: v up)
 
@@ -415,6 +419,7 @@ KOSE_RENK = {}
 
 CATI_MALZEME = ('kiremit', 'kiremit2', 'kiremit_koyu', 'kiremit_koyu2', 'kiremit_sari', 'kiremit_yesil', 'kiremit_kobalt', 'arduvaz', 'bakir',
                 'bakir2', 'saz', 'saz_koyu', 'cimen', 'sindira', 'sindira2')
+YUMUSAK_AO = ('buhar', 'duman')   # (overlapping puffs: a much softer baked shadow, the creases between them looked hard)
 
 
 def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
@@ -455,6 +460,8 @@ def detayli_aktar(ob, anahtarlar, yol, ornek=96, ao_guc=0.72, tohum=9):
     for p in me.polygons:
         if anahtarlar[p.material_index] in CATI_MALZEME:
             guc[p.loop_start:p.loop_start + p.loop_total] = ao_guc * 0.5
+        elif anahtarlar[p.material_index] in YUMUSAK_AO:
+            guc[p.loop_start:p.loop_start + p.loop_total] = ao_guc * 0.2
     carp = (1 - guc) + guc * a
     son = renk.copy()
     son[:, :3] = np.where(mavi[:, None], renk[:, :3], renk[:, :3] * carp)

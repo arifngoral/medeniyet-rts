@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Hannibal\'ın Ordugâhı: karlı Alpler önünde kazık palisatlı kamp, şeritli kırmızı komutan çadırı, Kartaca / İber / Numidya çadırları, Kuzey Afrika filleri, geçide tırmanan ordu kolu, kamp ateşleri.',
+        'Tanit Tapınağı: boya şeritli pilon kapılı temenos, yüksek podyumlu tapınak, iki serbest sütun, tepede altın disk ve hilal, sfenksler, boynuzlu sunak, Tanit işaretli stellerle dolu Tofet, kutsal koru.',
+        'Kartaca Surları: L biçimli üç katlı sur, altta fil, üstte at ahırları ve ahşap galeri, payandalar, mazgallı kuleler, Tanit\'li ana kapı, hendek ve kazık palisat, Megara evleri.',
+        'Mor Boya Atölyesi: dört katlı Pön depo kulesi, revaklı boyahane, mor boya tekneleri ve buharı tüten kazanlar, kuruyan mor kumaşlar, murex kabuk yığınları, mor yelkenli gemiler.',
         'Fil Ahırları: iki katlı Kartaca suru içinde kemerlerden bakan Kuzey Afrika filleri ve atlar, rampalar, kuleler, Tanit\'li fil kapısı, hendek ve palisat, avluda savaş filleri.',
         'Byrsa Sarayı: payandalı teraslar ve 60 basamaklı merdiven, kanatlı güneşli kapılı akropol, İyon portikli Eşmun tapınağı, avlulu Pön sarayı ve yamaçta beyaz evler.',
         'Paralı Asker Kampı: palisat içinde Kelt, İber, Libya ve Numidya (ters tekne biçimli mapalia) konutları, mor-beyaz komutan çadırı, gözcü kulesi, ödeme masası ve talim alanı.',
@@ -128,6 +132,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_hannibalkamp', kind: 'building', tags: ['yeni'], note: 'Alpler önünde ordu kampı.' },
+      { id: 'lm_tanit', kind: 'building', tags: ['yeni'], note: 'Tanit tapınağı ve Tofet.' },
+      { id: 'lm_kartacasur', kind: 'building', tags: ['yeni'], note: 'Üç katlı sur ve ahırlar.' },
+      { id: 'lm_morboya', kind: 'building', tags: ['yeni'], note: 'Mor boya atölyesi.' },
       { id: 'lm_filahirlari', kind: 'building', tags: ['yeni'], note: 'Sur içinde fil ahırları.' },
       { id: 'lm_byrsa', kind: 'building', tags: ['yeni'], note: 'Teraslı akropol ve Eşmun tapınağı.' },
       { id: 'lm_paraliasker', kind: 'building', tags: ['yeni'], note: 'Çok halklı paralı asker kampı.' },

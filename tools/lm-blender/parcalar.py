@@ -945,12 +945,20 @@ def kale_kapisi(y, cx, cy, en, z0, h, derin=0.12, key='tas', kule='yuvarlak', ku
 
 
 # ---------------------------------------------------------------- roofs
+# the corner lift's reach along the eave: (|x| / a * |y| / b) ** CATI_US; 6 lifts only the last stretch before the corner
+# (Chinese / Japanese); a script may lower it (Korean eaves, 3: the whole eave curves gently up towards the corners)
+CATI_US = 6
+# how many chords the hip caps of cati_kirma follow (4: the old look; a script may raise it so the caps hug a curved,
+# lifted hip instead of floating off it between the samples)
+KALCA_N = 4
+
+
 def _cati_z(x, yy, a, b, H, kivrim, yukari):
     m = min(a, b)
     t = max(0.0, min(1.0, min(a - abs(x), b - abs(yy)) / m))
     z = H * ((1 - kivrim) * t + kivrim * t * t)
     if yukari:
-        z += yukari * (1 - t) ** 2 * (abs(x) / a) ** 5 * (abs(yy) / b) ** 5 * 0 + yukari * (1 - t) ** 2.2 * ((abs(x) / a) * (abs(yy) / b)) ** 6
+        z += yukari * (1 - t) ** 2.2 * ((abs(x) / a) * (abs(yy) / b)) ** CATI_US
     return z
 
 
@@ -1003,8 +1011,9 @@ def cati_kirma(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
             cubuk(y, V(cx - (a - b), cy, zr + mahya_en * 0.3), V(cx + (a - b), cy, zr + mahya_en * 0.3), mahya_en, mk)
         for sx in (-1, 1):   # hips
             for sy in (-1, 1):
-                pts = [V(cx + sx * (a - b * r), cy + sy * b * (1 - r), zf(sx * (a - b * r), sy * b * (1 - r)) + mahya_en * 0.3) for r in (0, 0.25, 0.5, 0.75, 1.0)]
-                for k in range(4):
+                pts = [V(cx + sx * (a - b * r), cy + sy * b * (1 - r), zf(sx * (a - b * r), sy * b * (1 - r)) + mahya_en * 0.3)
+                       for r in [k / KALCA_N for k in range(KALCA_N + 1)]]
+                for k in range(KALCA_N):
                     cubuk(y, pts[k], pts[k + 1], mahya_en * 0.8, mk)
         return zr + mahya_en * 0.8
     return zf(0, b * (1 - r_ust))
@@ -1089,19 +1098,20 @@ def cati_besik(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
 
 
 def cati_irimoya(y, x0, x1, y0, y1, z, h, sacak=0.05, key='kiremit_koyu', mahya='kiremit_koyu2', kivrim=0.45, yukari=0.03,
-                 alt_key='ahsap_koyu', ucluk_key='ahsap', oran=0.55, sus=None, dilim=None, ns=10, nr=6, ns2=8, nr2=6):
+                 alt_key='ahsap_koyu', ucluk_key='ahsap', oran=0.55, sus=None, dilim=None, ns=10, nr=6, ns2=8, nr2=6, r_ust=0.5,
+                 dik=1.45):
     """a hip-and-gable roof (Japanese irimoya, Chinese xieshan, Korean paljak): hipped below up to oran of the
     height, a small gable roof on top with its triangular gable walls. ns / nr, ns2 / nr2: the grid of the hipped and
-    the gable part (fewer for small roofs). Returns the ridge z"""
+    the gable part (fewer for small roofs). r_ust: how far up the hips run (0.5; higher = a smaller gable); dik: the
+    gable's rise over what the hips leave (1.45 steep, Japanese; ~0.8 the low Korean hapgak). Returns the ridge z"""
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
     a, b = (x1 - x0) / 2 + sacak, (y1 - y0) / 2 + sacak
     if a < b:
         with parca(y, (cx, cy, 0), math.pi / 2):
             return cati_irimoya(y, -(y1 - y0) / 2, (y1 - y0) / 2, -(x1 - x0) / 2, (x1 - x0) / 2, z, h, sacak, key, mahya, kivrim, yukari, alt_key, ucluk_key, oran, sus, dilim,
-                                ns, nr, ns2, nr2)
+                                ns, nr, ns2, nr2, r_ust, dik)
     m = b
     # the lower slopes stop at r_ust (t = r_ust): the hip ring's top edge
-    r_ust = 0.5
     zt = cati_kirma(y, x0, x1, y0, y1, z, h * 1.0, sacak, key, mahya, 0.012, kivrim, yukari, alt_key, r_ust=r_ust, dilim=dilim, ns=ns, nr=nr)
     # upper gable roof: covers the opening (half sizes a - b r_ust, b (1 - r_ust)) plus a small overhang
     ai, bi = a - m * r_ust, b * (1 - r_ust)
@@ -1110,7 +1120,7 @@ def cati_irimoya(y, x0, x1, y0, y1, z, h, sacak=0.05, key='kiremit_koyu', mahya=
     y.yuz_yon([V(cx - ai, cy - bi, zt - 0.001), V(cx + ai, cy - bi, zt - 0.001), V(cx + ai, cy + bi, zt - 0.001), V(cx - ai, cy + bi, zt - 0.001)], key, Z)
     # (steeper than the hips, its verges projecting over the hip slopes: the gable reads as a raised triangle, not a
     #  hole in the roof)
-    zr = cati_besik(y, cx - ai + sacak * 0.6, cx + ai - sacak * 0.6, cy - bi + 0.012, cy + bi - 0.012, zt - 0.004, max(0.02, ho * 1.45), 0.016, key, mahya,
+    zr = cati_besik(y, cx - ai + sacak * 0.6, cx + ai - sacak * 0.6, cy - bi + 0.012, cy + bi - 0.012, zt - 0.004, max(0.02, ho * dik), 0.016, key, mahya,
                     0.008, kivrim * 0.5, alt_key, ucluk_key, None, sacak * 0.6, sus=sus, dilim=dilim, nr=nr2, ns=ns2)
     return zr
 
@@ -1496,6 +1506,7 @@ def cadir(y, c, r, h, key='kumas', serit_key='kirmizi', n=16, direk_key='ahsap',
     """a conical army tent (bell tent): a cone with a short wall, a pole tip, stripes and guy ropes"""
     cx, cy = c
     donel(y, c, [(r, 0), (r, h * 0.15), (r * 0.45, h * 0.6), (0.004, h)], key, n=n, dilim=[key, serit_key] if serit_key else None)
+    y.yuz_yon(cokgen(c, 0.004, n, z=h), key, Z)   # (the ring round the pole was open: it showed the cone's inside)
     y.prizma(c, 0.003, h, h + 0.035, direk_key, n=5)
     if ip:
         for i in range(6):
