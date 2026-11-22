@@ -801,16 +801,19 @@ def kule_yuvarlak(y, c, r, z0, h, key='tas', cati='konik', cati_key='kiremit', c
         if cati in ('duz', None):
             y.yuz_yon([V(p.x, p.y, zt + 0.0005) for p in disa(ring, -0.016)], 'zemin', Z)
     rr = r + (0.016 if konsol else 0)
+    # (no parapet drawn - a roof with mazgal_h=0 - the roof sits right on the shaft: it left an open ring of 0.012)
+    zb = zt + 0.012 if (cati in ('duz', None) or mazgal_h) else zt
     if cati == 'konik':
         hh = cati_h or r * 2.1
-        ze = zt + (0.012 if mazgal_h == 0 else 0.012)
+        ze = zb
         donel(y, c, [(rr * 0.98, ze), (rr + sacak, ze), (rr * 0.6, ze + hh * 0.45), (0, ze + hh)], cati_key, n=n)
         y.yuz_yon([V(p.x, p.y, ze) for p in cokgen(c, rr + sacak, n)], 'ahsap_koyu', -Z)
         return ze + hh
     if cati == 'kubbe':
-        return y.kubbe(c, rr, zt + 0.012, cati_h or rr * 0.9, cati_key, n=n, kat=8).z
+        return y.kubbe(c, rr, zb, cati_h or rr * 0.9, cati_key, n=n, kat=8).z
     if cati == 'sogan':
-        return sogan_kubbe(y, c, rr * 0.8, zt + 0.012, cati_h, cati_key)
+        y.yuz_yon([V(p.x, p.y, zb) for p in cokgen(c, rr, n)], 'zemin', Z)   # (the onion's neck is narrower than the shaft)
+        return sogan_kubbe(y, c, rr * 0.8, zb, cati_h, cati_key)
     return zt + 0.012 + (mazgal_h or 0)
 
 
@@ -986,10 +989,21 @@ def cati_besik(y, x0, x1, y0, y1, z, h, sacak=0.03, key='kiremit', mahya=None, k
                 for k in range(len(pts) - 1):
                     qa, qb = pts[k] - Z * kalinlik, pts[k + 1] - Z * kalinlik
                     iki_yuzlu(y, [qa, qb, qb - V(sx * us, 0), qa - V(sx * us, 0)], alt_key, -Z)
+            # (the wedge between the eave soffit and the roof's underside, open at the verge end: close it)
+            e_ = zf(rs) - kalinlik - z
+            if e_ > 0.0005:
+                y.yuz_yon([V(cx + sx * a, cy + sy * b, z - kalinlik), V(cx + sx * a, cy + sy * wb, z), V(cx + sx * a, cy + sy * wb, z + e_)], alt_key, V(sx, 0))
+                if us > 0.001:   # (and its side towards the open air under the gable overhang)
+                    xi, xo = cx + sx * (a - us), cx + sx * a
+                    y.yuz_yon([V(xi, cy + sy * wb, z), V(xo, cy + sy * wb, z), V(xo, cy + sy * wb, z + e_), V(xi, cy + sy * wb, z + e_)], alt_key, V(0, -sy))
     # gable walls (the triangle above the wall top, on the wall line)
     for sx in (-1, 1):
         xg = cx + sx * (a - us)
         tri = [V(xg, cy - wb, z), V(xg, cy + wb, z), V(xg, cy, zf(1) - kalinlik)]
+        # (the roof's underside crosses the wall line above the wall top: close that wedge, it showed the inside)
+        e_ = h * rs - kalinlik
+        if e_ > 0.0005:
+            tri = [V(xg, cy - wb, z), V(xg, cy + wb, z), V(xg, cy + wb, z + e_), V(xg, cy, zf(1) - kalinlik), V(xg, cy - wb, z + e_)]
         # follow the roof's curve with a few points
         if kivrim:
             tri = [V(xg, cy - wb, z)] + [V(xg, cy - wb * (1 - r), zf(r) - kalinlik) for r in (0.25, 0.5, 0.75)] + [V(xg, cy, zf(1) - kalinlik)] + \
@@ -1319,6 +1333,13 @@ def uzun_ev(y, cx, cy, L, W, h, cati_h, key='ahsap_dikey', cati_key='saz', mahya
         # gable triangle on the end wall
         xg = sx * L / 2
         tri = [V(cx + xg, cy - sx * hw(xg), h), V(cx + xg, cy + sx * hw(xg), h), V(cx + xg, cy, rp(xg, 1, 1).z - 0.02)]
+        # (the roof's underside meets the end wall above its top at the eaves: a slit there showed the inside; close it)
+        e_ = rp(xg, 1, sacak / (hw(xg) + sacak)).z - 0.02 - h
+        if e_ > 0.0005:
+            tri = [tri[0], tri[1], tri[1] + Z * e_, tri[2], tri[0] + Z * e_]
+            for sy in (-1, 1):   # (and the same wedge between the eave soffit and the roof's underside at the roof's end)
+                yw = V(cx + x, cy + sy * hw(xg), h)
+                y.yuz_yon([rp(x, sy, 0) - Z * 0.02, yw, yw + Z * e_], 'ahsap_koyu', V(sx, 0))
         y.yuz_yon(tri, key, V(sx, 0))
         if ejder:   # crossed barge boards ending in carved heads
             top = rp(x, 1, 1)

@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Uzun Gemi Tersanesi: taş duvarlı çim ve saz çatılı gemi barınakları, kızakta yapımı süren gemi, kırmızı-beyaz yelkenli ejder pruvalı drakkar, iskele, gözcü kulesi, ağlar ve katran kazanı.',
+        'Thing Meydanı: taş setli çimenli kanun tepesi, tepede ejder başlı köşk, kutsal ip çiti, búðir barakaları, boyalı büyük runik taş ve çim çatılı meclis salonu.',
+        'Hof Tapınağı: dik şindıra çatılı, ejder başlı, fener kuleli ahşap tapınak, revaklı galeri, altın zincir, hörgr sunağı, put direkleri, kutsal dişbudak ve dikili taş çemberi.',
+        'Uzun Ev: payanda direkli, kıvrık sırtlı saz çatılı Trelleborg uzun evi; çitle çevrili çiftlik avlusu, ambar, bostan, koyun ağılı, balık kurutma rafları.',
         'Akropolis Surları: kayalık tepe üstünde mazgallı sur ve kuleler, büyük merdivenli Propylaia, burç üstünde Athena Nike, Erekhtheion, Athena Promakhos, Eski Athena tapınağının kalıntıları.',
         'Delfi Kahinliği: poligonal duvarlı teraslarda Apollon tapınağı, Atinalılar ve Sifnoslular hazineleri, Sakızlılar sunağı, Yılanlı Sütun, Naksos sfenksi, tiyatro ve Phaedriades kayalıkları.',
         'Gymnasion: peristil avlulu palaistra, yüksek ephebeion salonu, İyon propylon, uzun örtülü koşu stoası, açık koşu yolu, bronz atletler ve zeytinler.',
@@ -50,6 +54,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_naust', kind: 'building', tags: ['yeni'], note: 'Gemi barınakları, yapımı süren gemi, drakkar.' },
+      { id: 'lm_thing', kind: 'building', tags: ['yeni'], note: 'Kanun tepesi, köşk, runik taş.' },
+      { id: 'lm_hof', kind: 'building', tags: ['yeni'], note: 'Dik çatılı ahşap tapınak, ejder başları.' },
+      { id: 'lm_uzunev', kind: 'building', tags: ['yeni'], note: 'Saz çatılı uzun ev ve çiftlik avlusu.' },
       { id: 'lm_akropolsur', kind: 'building', tags: ['yeni'], note: 'Sur, Propylaia, Athena Nike, Erekhtheion.' },
       { id: 'lm_delfi', kind: 'building', tags: ['yeni'], note: 'Teraslar, Apollon tapınağı, hazineler, tiyatro.' },
       { id: 'lm_gymnasion', kind: 'building', tags: ['yeni'], note: 'Palaistra avlusu, koşu stoası.' },
