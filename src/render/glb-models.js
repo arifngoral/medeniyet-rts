@@ -335,7 +335,8 @@ export function glbVersion() { return version; }
 // the same in every era. Only the ones listed here have a file; the others keep their procedural model (render/lm/).
 // A file is loaded the first time its building is drawn; the building is drawn again once it is in (glbVersion()).
 export const LM_GLB = new Set(['lm_ayasofya', 'lm_himeji', 'lm_tacmahal', 'lm_aziz_basil', 'lm_kolezyum', 'lm_suleymaniye',
-  'lm_tophane', 'lm_dolmabahce', 'lm_harbiye', 'lm_kervansaray', 'lm_akinciocagi', 'lm_ulucami', 'lm_rumelihisari']);
+  'lm_tophane', 'lm_dolmabahce', 'lm_harbiye', 'lm_kervansaray', 'lm_akinciocagi', 'lm_ulucami', 'lm_rumelihisari',
+  'lm_forum', 'lm_castra', 'lm_pantheon', 'lm_limes']);
 const LM_STARTED = new Set();
 export function loadLandmarkGlb(id) {
   if (!LM_GLB.has(id) || LM_STARTED.has(id) || !enabled()) return;

@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Limes Kalesi: kare kuleli, kırmızı tuğla bantlı taş kale, derin hendek, toprak set ve kazık çitli sınır hattı, işaret ateşli ve ahşap gözcü kuleleri, kale dışında hamam.',
+        'Castra: köşeleri yuvarlak surlu lejyon kampı, iki katlı kuleler, dört kuleli kapı, kavşakta anıtsal dört yönlü kapı, principia, kışla sıraları, hendek.',
+        'Pantheon: kör kemerli ve pencereli tuğla rotunda, basamak halkalı kubbe ve oculus, 16 Korint sütunlu portiko (AGRIPPA yazıtlı), iki yanda sütunlu revaklı meydan.',
+        'Forum: yüksek podyumlu Korint tapınağı, zafer takı, onur sütunu, iki katlı bazilika, Curia, gemi burunlu Rostra ve revaklarla çevrili meydan.',
         'Rumeli Hisarı: Boğaz kıyısından tepeye basamaklanan yamaçta üç büyük kule (Saruca, Halil, Zağanos), aralarında tırmanan mazgallı surlar, küçük kuleler, iç avluda mescit ve garnizon evleri; kıyıda iskele, kayık ve toplar.',
         'Bursa Ulu Camii: 5x4 dizilmiş yirmi kubbe (ortadakinde aydınlık feneri), kör kemerli nişli duvarlar, yıldız bordürlü mukarnaslı taçkapılar, iki minare, şadırvan ve çınarlı meydan.',
         'Akıncı Ocağı: kazıklı çitle çevrili avlu, ahırlar ve atlar, taş kışla, ahşap gözcü kulesi, kırmızı-sarı süslü Osmanlı otağı, at kuyruğu tuğlar, çan çadırlar ve nişan tahtaları.',
@@ -29,6 +33,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_limes', kind: 'building', tags: ['yeni'], note: 'Taş kale, derin hendek ve kazıklı sınır hattı, gözcü kuleleri.' },
+      { id: 'lm_castra', kind: 'building', tags: ['yeni'], note: 'Yuvarlak köşeli surlu lejyon kampı, kuleli kapılar, ortada anıtsal kapı.' },
+      { id: 'lm_pantheon', kind: 'building', tags: ['yeni'], note: 'Rotunda, oculuslu kubbe, Korint portiko.' },
+      { id: 'lm_forum', kind: 'building', tags: ['yeni'], note: 'Tapınak, zafer takı, bazilika ve revaklı meydan.' },
       { id: 'lm_rumelihisari', kind: 'building', tags: ['yeni'], note: 'Yamaçta üç büyük kule ve basamaklı surlar, kıyıda iskele.' },
       { id: 'lm_ulucami', kind: 'building', tags: ['yeni'], note: 'Yirmi kubbe, mukarnaslı taçkapılar, iki minare.' },
       { id: 'lm_akinciocagi', kind: 'building', tags: ['yeni'], note: 'Kazıklı çit, ahırlar, gözcü kulesi, Osmanlı otağı ve tuğlar.' },

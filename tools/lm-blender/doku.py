@@ -25,6 +25,8 @@ MALZEME = {
     'zemin':    ('tas',  (0.80, 0.77, 0.70), {'tugla': 5.0, 'yatay': True}),
     'toprak':   ('duz',  (0.58, 0.47, 0.34), {'leke': 0.08}),
     'cimen':    ('duz',  (0.42, 0.52, 0.27), {'leke': 0.08}),   # turf roof, lawn
+    'cimen_kuru': ('duz', (0.47, 0.51, 0.29), {'leke': 0.08}),  # sun-dried grass: one step from cimen towards toprak
+    'toprak_ot': ('duz', (0.53, 0.49, 0.31), {'leke': 0.08}),   # earth with scrub: the next step (terrain colour ramps)
     'zeytin':   ('duz',  (0.50, 0.57, 0.40), {'leke': 0.07}),   # olive foliage (silvery grey-green)
     'kaya':     ('duz',  (0.69, 0.62, 0.54), {'leke': 0.1}),     # bare limestone rock, cliffs (no coursing)
     'kaya_koyu': ('duz', (0.54, 0.47, 0.40), {'leke': 0.1}),
