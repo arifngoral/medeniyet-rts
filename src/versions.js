@@ -14,6 +14,10 @@ export const VERSIONS = [
     intro: 'Çağ binaları birer birer Blender\'da kurulan ayrıntılı 3B modellere geçiyor: Süleymaniye, Kolezyum ve ardından gelenler.',
     items: [
       ['Yeni çağ binası modelleri', [
+        'Turnuva Alanı: ayırma çitinde mızrakla koşan şövalyeler (dalgalanan at örtüleri), çizgili tenteli tribünler, kral locası, şövalye çadırları, kalkan ve mızrak rafları, arkada kale kulesi.',
+        'Aachen Sarayı: sekizgen kubbeli Palatine Şapeli, 16 köşeli koridor, iki kuleli batı yapısı, üç apsisli Aula Regia, Granus kulesi, revaklı atrium, kaplıca havuzu.',
+        'Motte Kalesi: hendekle çevrili toprak tepe üstünde çıkma galerili ahşap donjon, uçan köprü, palisatlı bailey (salon, şapel, ahır, demirhane), asma köprü.',
+        'Değirmen Köyü: taş bentli dere, savak kanallı su değirmeni, tepede kanatlı direk yel değirmeni, yarı ahşap evler, Romanesk köy kilisesi, tarlalar ve meyve bahçesi.',
         'Cennet Tapınağı: üç katlı yuvarlak mermer sunak üstünde kobalt mavisi üç kat konik çatılı Qiniandian, Gök Kubbesi Salonu ve Yankı Duvarı, açık Huanqiu sunağı ve lingxing kapıları.',
         'Porselen Kule: Bao\'en avlusunda dokuz katlı beyaz porselen sekizgen pagoda, yeşil sırlı kıvrık saçaklar ve çanlar, altın tepelik; dağ kapısı, çan ve davul kuleleri, kaplumbağa sırtında steller.',
         'Barut Atölyesi: gözcü kulesi, havan ve değirmenler, toprak örtülü barut deposu, güherçile tekneleri, ateş oku rampaları, çekmeli mancınık, tunç toplar ve deneme alanı.',
@@ -93,6 +97,10 @@ export const VERSIONS = [
       ]],
     ],
     showcase: [
+      { id: 'lm_turnuva', kind: 'building', tags: ['yeni'], note: 'Mızrak dövüşü, tribünler, çadırlar.' },
+      { id: 'lm_aachen', kind: 'building', tags: ['yeni'], note: 'Sekizgen kubbeli Palatine Şapeli.' },
+      { id: 'lm_motte', kind: 'building', tags: ['yeni'], note: 'Toprak tepe üstünde ahşap donjon.' },
+      { id: 'lm_degirmenkoy', kind: 'building', tags: ['yeni'], note: 'Su ve yel değirmenli köy.' },
       { id: 'lm_cennettapinagi', kind: 'building', tags: ['yeni'], note: 'Kobalt çatılı yuvarlak salon ve sunaklar.' },
       { id: 'lm_porselenkule', kind: 'building', tags: ['yeni'], note: 'Dokuz katlı porselen pagoda.' },
       { id: 'lm_barutatolye', kind: 'building', tags: ['yeni'], note: 'Barut değirmenleri, roket rampaları, mancınık.' },
